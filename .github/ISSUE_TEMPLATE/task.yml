@@ -1,0 +1,42 @@
+name: Задача
+description: Рабочая задача по этапу проекта
+title: "[Этап N] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        После создания назначьте исполнителя и добавьте метки: `stage-N`, область (`frontend`, `backend`, `api`, `design`, `docs`, `testing`) и `FR-xx`, если задача связана с требованием ТЗ.
+  - type: textarea
+    id: goal
+    attributes:
+      label: Цель
+      description: Какой результат нужен и зачем.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Объём
+      description: Что входит в задачу и что не входит.
+    validations:
+      required: true
+  - type: input
+    id: requirements
+    attributes:
+      label: Требования ТЗ
+      description: Идентификаторы требований, которые закрывает задача.
+      placeholder: FR-02, FR-09
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Зависимости
+      description: Номера Issues или решения, без которых задачу не начать.
+      placeholder: "#7, #9"
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Критерии готовности
+      description: Проверяемые условия, при которых задачу можно закрыть.
+      value: "- [ ] "
+    validations:
+      required: true

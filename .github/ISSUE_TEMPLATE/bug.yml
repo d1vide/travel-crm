@@ -1,0 +1,49 @@
+name: Дефект или замечание
+description: Ошибка в работе системы или замечание по результатам проверки и приёмки
+title: "[Дефект] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: actual
+    attributes:
+      label: Что происходит
+      description: Фактическое поведение, текст ошибки, скриншот при необходимости.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Что ожидалось
+      description: Ожидаемое поведение со ссылкой на требование ТЗ или критерий Issue, если есть.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Шаги воспроизведения
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: input
+    id: requirements
+    attributes:
+      label: Требования ТЗ
+      placeholder: FR-05
+  - type: input
+    id: environment
+    attributes:
+      label: Окружение
+      description: Браузер и версия, роль пользователя, версия приложения или коммит.
+      placeholder: Chrome, роль «менеджер», коммит abc1234
+  - type: dropdown
+    id: source
+    attributes:
+      label: Источник
+      options:
+        - Проверка командой
+        - Приёмка другой командой
+    validations:
+      required: true
