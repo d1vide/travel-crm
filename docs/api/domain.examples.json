@@ -1,5 +1,5 @@
 {
-  "contract_version": "0.1",
+  "contract_version": "0.2",
   "examples": [
     {
       "schema": "User",
@@ -21,7 +21,11 @@
         "note": "Вымышленные данные",
         "version": 1,
         "created_at": "2026-11-15T09:00:00Z",
-        "updated_at": "2026-11-15T09:00:00Z"
+        "updated_at": "2026-11-15T09:00:00Z",
+        "allowed_actions": [
+          "update",
+          "create_request"
+        ]
       }
     },
     {
@@ -33,7 +37,10 @@
         "ends_on": "2027-06-08",
         "tourist_count": 2,
         "supplier": "Тестовый поставщик",
-        "services": ["Перелёт", "Отель"],
+        "services": [
+          "Перелёт",
+          "Отель"
+        ],
         "price": "100000.00",
         "currency": "RUB"
       }
@@ -48,7 +55,10 @@
         "ends_on": "2027-06-08",
         "tourist_count": 2,
         "supplier": "Тестовый поставщик",
-        "services": ["Перелёт", "Отель"],
+        "services": [
+          "Перелёт",
+          "Отель"
+        ],
         "price": "100000.00",
         "currency": "RUB",
         "is_active": true,
@@ -68,7 +78,10 @@
           "ends_on": "2027-06-08",
           "tourist_count": 2,
           "supplier": "Тестовый поставщик",
-          "services": ["Перелёт", "Отель"],
+          "services": [
+            "Перелёт",
+            "Отель"
+          ],
           "price": "100000.00",
           "currency": "RUB"
         }
@@ -85,7 +98,10 @@
           "ends_on": "2027-06-08",
           "tourist_count": 2,
           "supplier": "Тестовый поставщик",
-          "services": ["Перелёт", "Отель"],
+          "services": [
+            "Перелёт",
+            "Отель"
+          ],
           "price": "100000.00",
           "currency": "RUB"
         }
@@ -109,7 +125,45 @@
         "cancelled_at": null,
         "version": 4,
         "created_at": "2026-11-15T09:00:00Z",
-        "updated_at": "2026-11-15T09:00:00Z"
+        "updated_at": "2026-11-15T09:00:00Z",
+        "client": {
+          "id": "00000000-0000-4000-8000-000000000002",
+          "client_number": 1,
+          "full_name": "Тестовый Клиент"
+        },
+        "manager": {
+          "id": "00000000-0000-4000-8000-000000000001",
+          "full_name": "Тестовый Менеджер",
+          "role": "manager"
+        },
+        "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+        "selected_offer": {
+          "title": "Учебный тур",
+          "destination": "Сочи",
+          "starts_on": "2027-06-01",
+          "ends_on": "2027-06-08",
+          "tourist_count": 2,
+          "supplier": "Тестовый поставщик",
+          "services": [
+            "Перелёт",
+            "Отель"
+          ],
+          "price": "100000.00",
+          "currency": "RUB"
+        },
+        "active_booking": {
+          "id": "00000000-0000-4000-8000-000000000008",
+          "status": "confirmed",
+          "total_amount": "100000.00",
+          "currency": "RUB",
+          "paid_amount": "30000.00",
+          "remaining_amount": "70000.00"
+        },
+        "tourists_received": 2,
+        "tourist_form_editable": false,
+        "tourist_link": null,
+        "cancellation_reason": null,
+        "allowed_actions": []
       }
     },
     {
@@ -151,7 +205,9 @@
       "value": {
         "tourist_count": 2,
         "request_version": 3,
-        "expires_at": "2026-11-22T09:00:00Z"
+        "expires_at": "2026-11-22T09:00:00Z",
+        "is_editable": true,
+        "closed_reason": null
       }
     },
     {
@@ -174,7 +230,10 @@
           "ends_on": "2027-06-08",
           "tourist_count": 2,
           "supplier": "Тестовый поставщик",
-          "services": ["Перелёт", "Отель"],
+          "services": [
+            "Перелёт",
+            "Отель"
+          ],
           "price": "100000.00",
           "currency": "RUB"
         },
@@ -194,7 +253,33 @@
         "refunded_amount": "0.00",
         "version": 3,
         "created_at": "2026-11-15T09:00:00Z",
-        "updated_at": "2026-11-15T09:00:00Z"
+        "updated_at": "2026-11-15T09:00:00Z",
+        "tourists": [
+          {
+            "tourist_id": "00000000-0000-4000-8000-000000000007",
+            "tourist_snapshot": {
+              "full_name": "Тестовый Турист",
+              "birth_date": "1995-05-20",
+              "document_type": "passport",
+              "document_number": "TEST-000001",
+              "document_expires_on": null
+            }
+          },
+          {
+            "tourist_id": "00000000-0000-4000-8000-000000000014",
+            "tourist_snapshot": {
+              "full_name": "Второй Тестовый Турист",
+              "birth_date": "1995-05-20",
+              "document_type": "passport",
+              "document_number": "TEST-000002",
+              "document_expires_on": null
+            }
+          }
+        ],
+        "allowed_actions": [
+          "create_payment",
+          "request_cancellation"
+        ]
       }
     },
     {
@@ -209,7 +294,15 @@
         "payment_url": "http://localhost:8080/demo-payments/DEMO-PAY-1",
         "failure_reason": null,
         "succeeded_at": "2026-11-15T09:00:00Z",
-        "created_at": "2026-11-15T09:00:00Z"
+        "created_at": "2026-11-15T09:00:00Z",
+        "request_id": "00000000-0000-4000-8000-000000000004",
+        "booking_status": "confirmed",
+        "pending_reason": null,
+        "refunded_amount": "0.00",
+        "reserved_refund_amount": "0.00",
+        "available_refund_amount": "0.00",
+        "can_open_request": true,
+        "allowed_actions": []
       }
     },
     {
@@ -223,7 +316,14 @@
         "external_operation_id": "DEMO-REFUND-1",
         "failure_reason": null,
         "succeeded_at": null,
-        "created_at": "2026-11-15T09:00:00Z"
+        "created_at": "2026-11-15T09:00:00Z",
+        "booking_id": "00000000-0000-4000-8000-000000000008",
+        "request_id": "00000000-0000-4000-8000-000000000004",
+        "pending_reason": null,
+        "can_open_request": true,
+        "allowed_actions": [
+          "reconcile"
+        ]
       }
     },
     {
@@ -236,7 +336,12 @@
         "channel": "phone",
         "text": "Клиент сообщил пожелания",
         "occurred_at": "2026-11-15T09:00:00Z",
-        "created_at": "2026-11-15T09:00:00Z"
+        "created_at": "2026-11-15T09:00:00Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000001",
+          "full_name": "Тестовый Менеджер",
+          "role": "manager"
+        }
       }
     },
     {
@@ -247,7 +352,11 @@
         "payment_id": "00000000-0000-4000-8000-000000000009",
         "type": "payment_succeeded",
         "read_at": null,
-        "created_at": "2026-11-15T09:00:00Z"
+        "created_at": "2026-11-15T09:00:00Z",
+        "request_id": "00000000-0000-4000-8000-000000000004",
+        "amount": "30000.00",
+        "currency": "RUB",
+        "can_open_request": true
       }
     },
     {
@@ -255,7 +364,7 @@
       "value": {
         "id": "00000000-0000-4000-8000-000000000013",
         "purpose": "selection",
-        "url": "http://localhost:8080/public/selections/EXAMPLE_TOKEN_NOT_FOR_USE",
+        "url": "http://localhost:8080/public/selections/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         "expires_at": "2026-11-22T09:00:00Z"
       }
     },
@@ -320,13 +429,22 @@
               "ends_on": "2027-06-08",
               "tourist_count": 2,
               "supplier": "Тестовый поставщик",
-              "services": ["Перелёт", "Отель"],
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
               "price": "100000.00",
               "currency": "RUB"
             }
           }
         ],
-        "created_at": "2026-11-15T09:00:00Z"
+        "created_at": "2026-11-15T09:00:00Z",
+        "public_link": {
+          "id": "00000000-0000-4000-8000-000000000013",
+          "purpose": "selection",
+          "expires_at": "2026-11-22T09:00:00Z",
+          "is_active": true
+        }
       }
     },
     {
@@ -342,7 +460,10 @@
               "ends_on": "2027-06-08",
               "tourist_count": 2,
               "supplier": "Тестовый поставщик",
-              "services": ["Перелёт", "Отель"],
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
               "price": "100000.00",
               "currency": "RUB"
             }
@@ -373,6 +494,641 @@
             "document_expires_on": null
           }
         ]
+      }
+    },
+    {
+      "schema": "ClientBrief",
+      "value": {
+        "id": "00000000-0000-4000-8000-000000000002",
+        "client_number": 1,
+        "full_name": "Тестовый Клиент"
+      }
+    },
+    {
+      "schema": "PublicLinkInfo",
+      "value": {
+        "id": "00000000-0000-4000-8000-000000000013",
+        "purpose": "selection",
+        "expires_at": "2026-11-22T09:00:00Z",
+        "is_active": true
+      }
+    },
+    {
+      "schema": "BookingSummary",
+      "value": {
+        "id": "00000000-0000-4000-8000-000000000008",
+        "status": "confirmed",
+        "total_amount": "100000.00",
+        "currency": "RUB",
+        "paid_amount": "30000.00",
+        "remaining_amount": "70000.00"
+      }
+    },
+    {
+      "schema": "BookingTourist",
+      "value": {
+        "tourist_id": "00000000-0000-4000-8000-000000000007",
+        "tourist_snapshot": {
+          "full_name": "Тестовый Турист",
+          "birth_date": "1995-05-20",
+          "document_type": "passport",
+          "document_number": "TEST-000001",
+          "document_expires_on": null
+        }
+      }
+    },
+    {
+      "schema": "FinancialBooking",
+      "value": {
+        "id": "00000000-0000-4000-8000-000000000008",
+        "request_id": "00000000-0000-4000-8000-000000000004",
+        "status": "confirmed",
+        "total_amount": "100000.00",
+        "currency": "RUB",
+        "paid_amount": "30000.00",
+        "reserved_payment_amount": "20000.00",
+        "remaining_amount": "70000.00",
+        "refunded_amount": "0.00",
+        "can_open_request": false,
+        "confirmed_at": "2026-11-15T09:00:00Z",
+        "cancelled_at": null,
+        "created_at": "2026-11-15T09:00:00Z"
+      }
+    },
+    {
+      "schema": "DuplicateCheckResult",
+      "value": {
+        "matches": [
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "client_number": 1,
+            "full_name": "Тестовый Клиент"
+          }
+        ],
+        "requires_head_review": false
+      }
+    },
+    {
+      "schema": "LoginInput",
+      "value": {
+        "email": "manager@example.test",
+        "password": "EXAMPLE_ONLY_NOT_A_REAL_PASSWORD"
+      }
+    },
+    {
+      "schema": "ClientCreate",
+      "value": {
+        "full_name": "Тестовый Клиент",
+        "phone": "+79990000000",
+        "email": null,
+        "preferences": "Море",
+        "note": "Вымышленные данные",
+        "duplicate_acknowledged": false
+      }
+    },
+    {
+      "schema": "ClientUpdate",
+      "value": {
+        "full_name": "Тестовый Клиент",
+        "phone": "+79990000000",
+        "email": null,
+        "preferences": "Море",
+        "note": "Вымышленные данные",
+        "duplicate_acknowledged": false,
+        "version": 1
+      }
+    },
+    {
+      "schema": "RequestCreate",
+      "value": {
+        "client_id": "00000000-0000-4000-8000-000000000002",
+        "manager_id": null,
+        "destination": "Сочи",
+        "starts_on": "2027-06-01",
+        "ends_on": "2027-06-08",
+        "tourist_count": 2,
+        "budget": "120000.00",
+        "wishes": "Море"
+      }
+    },
+    {
+      "schema": "RequestUpdate",
+      "value": {
+        "version": 1,
+        "destination": "Сочи",
+        "starts_on": "2027-06-01",
+        "ends_on": "2027-06-08",
+        "tourist_count": 2,
+        "budget": "120000.00",
+        "wishes": "Море"
+      }
+    },
+    {
+      "schema": "AuditChange",
+      "value": {
+        "field": "payment_status",
+        "old_value": "pending",
+        "new_value": "succeeded"
+      }
+    },
+    {
+      "schema": "AuditRecord",
+      "value": {
+        "id": "00000000-0000-4000-8000-000000000015",
+        "request_id": "00000000-0000-4000-8000-000000000004",
+        "entity_id": "00000000-0000-4000-8000-000000000009",
+        "entity_type": "payment",
+        "actor": null,
+        "source": "payment_service",
+        "action": "payment_succeeded",
+        "changes": [
+          {
+            "field": "payment_status",
+            "old_value": "pending",
+            "new_value": "succeeded"
+          }
+        ],
+        "created_at": "2026-11-15T09:00:00Z"
+      }
+    },
+    {
+      "schema": "ExpectedVersion",
+      "value": {
+        "version": 1
+      }
+    },
+    {
+      "schema": "ReasonCommand",
+      "value": {
+        "version": 1,
+        "reason": "Учебный пример"
+      }
+    },
+    {
+      "schema": "AssignRequest",
+      "value": {
+        "version": 1,
+        "manager_id": "00000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "schema": "SelectTour",
+      "value": {
+        "version": 1,
+        "selection_item_id": "00000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "schema": "SelectionCreate",
+      "value": {
+        "version": 1,
+        "tour_offer_ids": [
+          "00000000-0000-4000-8000-000000000001"
+        ]
+      }
+    },
+    {
+      "schema": "ConfirmBooking",
+      "value": {
+        "version": 1,
+        "supplier_booking_number": "Учебный пример"
+      }
+    },
+    {
+      "schema": "ConfirmCancellation",
+      "value": {
+        "version": 1,
+        "supplier_response": "Учебный пример"
+      }
+    },
+    {
+      "schema": "PaymentCreate",
+      "value": {
+        "version": 1,
+        "amount": "1.00",
+        "currency": "RUB"
+      }
+    },
+    {
+      "schema": "RefundCreate",
+      "value": {
+        "amount": "1.00",
+        "currency": "RUB"
+      }
+    },
+    {
+      "schema": "CommunicationCreate",
+      "value": {
+        "request_id": "00000000-0000-4000-8000-000000000001",
+        "channel": "phone",
+        "text": "Учебный пример",
+        "occurred_at": "2026-11-15T09:00:00Z"
+      }
+    },
+    {
+      "schema": "UserPage",
+      "value": {
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "full_name": "Тестовый Менеджер",
+            "role": "manager"
+          }
+        ],
+        "page": 1,
+        "page_size": 20,
+        "total": 1
+      }
+    },
+    {
+      "schema": "ClientPage",
+      "value": {
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "client_number": 1,
+            "full_name": "Тестовый Клиент",
+            "phone": "+79990000000",
+            "email": null,
+            "preferences": "Море",
+            "note": "Вымышленные данные",
+            "version": 1,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "allowed_actions": [
+              "update",
+              "create_request"
+            ]
+          }
+        ],
+        "page": 1,
+        "page_size": 20,
+        "total": 1
+      }
+    },
+    {
+      "schema": "RequestPage",
+      "value": {
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "client_id": "00000000-0000-4000-8000-000000000002",
+            "manager_id": "00000000-0000-4000-8000-000000000001",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "budget": "120000.00",
+            "wishes": "Море",
+            "status": "booked",
+            "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "completed_at": null,
+            "cancelled_at": null,
+            "version": 4,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "client": {
+              "id": "00000000-0000-4000-8000-000000000002",
+              "client_number": 1,
+              "full_name": "Тестовый Клиент"
+            },
+            "manager": {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "full_name": "Тестовый Менеджер",
+              "role": "manager"
+            },
+            "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+            "selected_offer": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "active_booking": {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "status": "confirmed",
+              "total_amount": "100000.00",
+              "currency": "RUB",
+              "paid_amount": "30000.00",
+              "remaining_amount": "70000.00"
+            },
+            "tourists_received": 2,
+            "tourist_form_editable": false,
+            "tourist_link": null,
+            "cancellation_reason": null,
+            "allowed_actions": []
+          }
+        ],
+        "page": 1,
+        "page_size": 20,
+        "total": 1
+      }
+    },
+    {
+      "schema": "SelectionPage",
+      "value": {
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000006",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000005",
+                "tour_offer_id": "00000000-0000-4000-8000-000000000003",
+                "position": 0,
+                "offer_snapshot": {
+                  "title": "Учебный тур",
+                  "destination": "Сочи",
+                  "starts_on": "2027-06-01",
+                  "ends_on": "2027-06-08",
+                  "tourist_count": 2,
+                  "supplier": "Тестовый поставщик",
+                  "services": [
+                    "Перелёт",
+                    "Отель"
+                  ],
+                  "price": "100000.00",
+                  "currency": "RUB"
+                }
+              }
+            ],
+            "created_at": "2026-11-15T09:00:00Z",
+            "public_link": {
+              "id": "00000000-0000-4000-8000-000000000013",
+              "purpose": "selection",
+              "expires_at": "2026-11-22T09:00:00Z",
+              "is_active": true
+            }
+          }
+        ],
+        "page": 1,
+        "page_size": 20,
+        "total": 1
+      }
+    },
+    {
+      "schema": "TourOfferPage",
+      "value": {
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000003",
+            "title": "Учебный тур",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "supplier": "Тестовый поставщик",
+            "services": [
+              "Перелёт",
+              "Отель"
+            ],
+            "price": "100000.00",
+            "currency": "RUB",
+            "is_active": true,
+            "version": 1
+          }
+        ],
+        "page": 1,
+        "page_size": 20,
+        "total": 1
+      }
+    },
+    {
+      "schema": "BookingPage",
+      "value": {
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000008",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "offer_snapshot": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "total_amount": "100000.00",
+            "currency": "RUB",
+            "status": "confirmed",
+            "supplier_booking_number": "DEMO-001",
+            "rejection_reason": null,
+            "cancellation_reason": null,
+            "cancellation_response": null,
+            "confirmed_at": "2026-11-15T09:00:00Z",
+            "cancelled_at": null,
+            "paid_amount": "30000.00",
+            "reserved_payment_amount": "20000.00",
+            "remaining_amount": "70000.00",
+            "available_payment_amount": "50000.00",
+            "refunded_amount": "0.00",
+            "version": 3,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "tourists": [
+              {
+                "tourist_id": "00000000-0000-4000-8000-000000000007",
+                "tourist_snapshot": {
+                  "full_name": "Тестовый Турист",
+                  "birth_date": "1995-05-20",
+                  "document_type": "passport",
+                  "document_number": "TEST-000001",
+                  "document_expires_on": null
+                }
+              },
+              {
+                "tourist_id": "00000000-0000-4000-8000-000000000014",
+                "tourist_snapshot": {
+                  "full_name": "Второй Тестовый Турист",
+                  "birth_date": "1995-05-20",
+                  "document_type": "passport",
+                  "document_number": "TEST-000002",
+                  "document_expires_on": null
+                }
+              }
+            ],
+            "allowed_actions": [
+              "create_payment",
+              "request_cancellation"
+            ]
+          }
+        ],
+        "page": 1,
+        "page_size": 20,
+        "total": 1
+      }
+    },
+    {
+      "schema": "PaymentPage",
+      "value": {
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000009",
+            "booking_id": "00000000-0000-4000-8000-000000000008",
+            "amount": "30000.00",
+            "currency": "RUB",
+            "status": "succeeded",
+            "external_operation_id": "DEMO-PAY-1",
+            "payment_url": "http://localhost:8080/demo-payments/DEMO-PAY-1",
+            "failure_reason": null,
+            "succeeded_at": "2026-11-15T09:00:00Z",
+            "created_at": "2026-11-15T09:00:00Z",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "booking_status": "confirmed",
+            "pending_reason": null,
+            "refunded_amount": "0.00",
+            "reserved_refund_amount": "0.00",
+            "available_refund_amount": "0.00",
+            "can_open_request": true,
+            "allowed_actions": []
+          }
+        ],
+        "page": 1,
+        "page_size": 20,
+        "total": 1
+      }
+    },
+    {
+      "schema": "RefundPage",
+      "value": {
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000010",
+            "payment_id": "00000000-0000-4000-8000-000000000009",
+            "amount": "10000.00",
+            "currency": "RUB",
+            "status": "processing",
+            "external_operation_id": "DEMO-REFUND-1",
+            "failure_reason": null,
+            "succeeded_at": null,
+            "created_at": "2026-11-15T09:00:00Z",
+            "booking_id": "00000000-0000-4000-8000-000000000008",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "pending_reason": null,
+            "can_open_request": true,
+            "allowed_actions": [
+              "reconcile"
+            ]
+          }
+        ],
+        "page": 1,
+        "page_size": 20,
+        "total": 1
+      }
+    },
+    {
+      "schema": "CommunicationPage",
+      "value": {
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000011",
+            "client_id": "00000000-0000-4000-8000-000000000002",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "author_id": "00000000-0000-4000-8000-000000000001",
+            "channel": "phone",
+            "text": "Клиент сообщил пожелания",
+            "occurred_at": "2026-11-15T09:00:00Z",
+            "created_at": "2026-11-15T09:00:00Z",
+            "author": {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "full_name": "Тестовый Менеджер",
+              "role": "manager"
+            }
+          }
+        ],
+        "page": 1,
+        "page_size": 20,
+        "total": 1
+      }
+    },
+    {
+      "schema": "AuditRecordPage",
+      "value": {
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000015",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "entity_id": "00000000-0000-4000-8000-000000000009",
+            "entity_type": "payment",
+            "actor": null,
+            "source": "payment_service",
+            "action": "payment_succeeded",
+            "changes": [
+              {
+                "field": "payment_status",
+                "old_value": "pending",
+                "new_value": "succeeded"
+              }
+            ],
+            "created_at": "2026-11-15T09:00:00Z"
+          }
+        ],
+        "page": 1,
+        "page_size": 20,
+        "total": 1
+      }
+    },
+    {
+      "schema": "FinancialBookingPage",
+      "value": {
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000008",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "status": "confirmed",
+            "total_amount": "100000.00",
+            "currency": "RUB",
+            "paid_amount": "30000.00",
+            "reserved_payment_amount": "20000.00",
+            "remaining_amount": "70000.00",
+            "refunded_amount": "0.00",
+            "can_open_request": false,
+            "confirmed_at": "2026-11-15T09:00:00Z",
+            "cancelled_at": null,
+            "created_at": "2026-11-15T09:00:00Z"
+          }
+        ],
+        "page": 1,
+        "page_size": 20,
+        "total": 1
+      }
+    },
+    {
+      "schema": "NotificationPage",
+      "value": {
+        "items": [
+          {
+            "id": "00000000-0000-4000-8000-000000000012",
+            "recipient_id": "00000000-0000-4000-8000-000000000001",
+            "payment_id": "00000000-0000-4000-8000-000000000009",
+            "type": "payment_succeeded",
+            "read_at": null,
+            "created_at": "2026-11-15T09:00:00Z",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "amount": "30000.00",
+            "currency": "RUB",
+            "can_open_request": true
+          }
+        ],
+        "page": 1,
+        "page_size": 20,
+        "total": 1,
+        "unread_count": 1
       }
     }
   ]
