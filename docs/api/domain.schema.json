@@ -1,0 +1,2697 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://travel-crm.example/schemas/domain-0.2.json",
+  "title": "TravelCRM domain and API DTOs 0.2",
+  "$comment": "Contract baseline fixed after source and scenario review on 2026-11-15. HTTP operations are in openapi.json. Backend implementation is pending.",
+  "x-contract-version": "0.2",
+  "x-state-transitions": {
+    "RequestStatus": [
+      [
+        null,
+        "new"
+      ],
+      [
+        "new",
+        "in_progress"
+      ],
+      [
+        "in_progress",
+        "offer_prepared"
+      ],
+      [
+        "offer_prepared",
+        "in_progress"
+      ],
+      [
+        "offer_prepared",
+        "booked"
+      ],
+      [
+        "booked",
+        "completed"
+      ],
+      [
+        "new",
+        "cancelled"
+      ],
+      [
+        "in_progress",
+        "cancelled"
+      ],
+      [
+        "offer_prepared",
+        "cancelled"
+      ],
+      [
+        "booked",
+        "in_progress"
+      ],
+      [
+        "booked",
+        "cancelled"
+      ],
+      [
+        "cancelled",
+        "in_progress"
+      ]
+    ],
+    "BookingStatus": [
+      [
+        null,
+        "pending_confirmation"
+      ],
+      [
+        "pending_confirmation",
+        "confirmed"
+      ],
+      [
+        "pending_confirmation",
+        "rejected"
+      ],
+      [
+        "confirmed",
+        "cancellation_requested"
+      ],
+      [
+        "cancellation_requested",
+        "cancelled"
+      ],
+      [
+        "cancellation_requested",
+        "confirmed"
+      ]
+    ],
+    "PaymentStatus": [
+      [
+        null,
+        "pending"
+      ],
+      [
+        "pending",
+        "succeeded"
+      ],
+      [
+        "pending",
+        "failed"
+      ]
+    ],
+    "RefundStatus": [
+      [
+        null,
+        "processing"
+      ],
+      [
+        "processing",
+        "succeeded"
+      ],
+      [
+        "processing",
+        "failed"
+      ]
+    ]
+  },
+  "$defs": {
+    "Id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "Date": {
+      "type": "string",
+      "format": "date"
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "Money": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{2}$",
+      "description": "RUB, decimal string; numeric(14,2), never float."
+    },
+    "PositiveMoney": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Money"
+        },
+        {
+          "not": {
+            "const": "0.00"
+          }
+        }
+      ]
+    },
+    "Role": {
+      "type": "string",
+      "enum": [
+        "manager",
+        "head",
+        "accountant"
+      ]
+    },
+    "RequestStatus": {
+      "type": "string",
+      "enum": [
+        "new",
+        "in_progress",
+        "offer_prepared",
+        "booked",
+        "completed",
+        "cancelled"
+      ]
+    },
+    "BookingStatus": {
+      "type": "string",
+      "enum": [
+        "pending_confirmation",
+        "confirmed",
+        "rejected",
+        "cancellation_requested",
+        "cancelled"
+      ]
+    },
+    "PaymentStatus": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "succeeded",
+        "failed"
+      ]
+    },
+    "RefundStatus": {
+      "type": "string",
+      "enum": [
+        "processing",
+        "succeeded",
+        "failed"
+      ]
+    },
+    "CommunicationChannel": {
+      "type": "string",
+      "enum": [
+        "phone",
+        "email",
+        "messenger",
+        "office",
+        "other"
+      ]
+    },
+    "DocumentType": {
+      "type": "string",
+      "enum": [
+        "passport",
+        "international_passport"
+      ]
+    },
+    "PublicLinkPurpose": {
+      "type": "string",
+      "enum": [
+        "selection",
+        "tourists"
+      ]
+    },
+    "User": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "full_name",
+        "role"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "full_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "$ref": "#/$defs/Role"
+        }
+      }
+    },
+    "AuthResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "access_token",
+        "user"
+      ],
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "minLength": 1
+        },
+        "user": {
+          "$ref": "#/$defs/User"
+        }
+      }
+    },
+    "FieldError": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field",
+        "message"
+      ],
+      "properties": {
+        "field": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message",
+        "fields"
+      ],
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/ErrorCode"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FieldError"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "Client": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "client_number",
+        "full_name",
+        "phone",
+        "email",
+        "preferences",
+        "note",
+        "version",
+        "created_at",
+        "updated_at",
+        "allowed_actions"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "client_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "full_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "preferences": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "created_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "updated_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "allowed_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ClientAction"
+          },
+          "minItems": 0
+        }
+      },
+      "anyOf": [
+        {
+          "properties": {
+            "phone": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "properties": {
+            "email": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "OfferSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "destination",
+        "starts_on",
+        "ends_on",
+        "tourist_count",
+        "supplier",
+        "services",
+        "price",
+        "currency"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "destination": {
+          "type": "string",
+          "minLength": 1
+        },
+        "starts_on": {
+          "$ref": "#/$defs/Date"
+        },
+        "ends_on": {
+          "$ref": "#/$defs/Date"
+        },
+        "tourist_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "supplier": {
+          "type": "string",
+          "minLength": 1
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "price": {
+          "$ref": "#/$defs/Money"
+        },
+        "currency": {
+          "const": "RUB"
+        }
+      }
+    },
+    "TourOffer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "destination",
+        "starts_on",
+        "ends_on",
+        "tourist_count",
+        "supplier",
+        "services",
+        "price",
+        "currency",
+        "is_active",
+        "version"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "destination": {
+          "type": "string",
+          "minLength": 1
+        },
+        "starts_on": {
+          "$ref": "#/$defs/Date"
+        },
+        "ends_on": {
+          "$ref": "#/$defs/Date"
+        },
+        "tourist_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "supplier": {
+          "type": "string",
+          "minLength": 1
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "price": {
+          "$ref": "#/$defs/Money"
+        },
+        "currency": {
+          "const": "RUB"
+        },
+        "is_active": {
+          "type": "boolean"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "SelectionItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "tour_offer_id",
+        "position",
+        "offer_snapshot"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "tour_offer_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "offer_snapshot": {
+          "$ref": "#/$defs/OfferSnapshot"
+        }
+      }
+    },
+    "Selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "request_id",
+        "items",
+        "created_at",
+        "public_link"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "request_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SelectionItem"
+          },
+          "minItems": 1
+        },
+        "created_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "public_link": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicLinkInfo"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "PublicSelectionItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "offer_snapshot"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "offer_snapshot": {
+          "$ref": "#/$defs/OfferSnapshot"
+        }
+      }
+    },
+    "PublicSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "expires_at"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PublicSelectionItem"
+          },
+          "minItems": 1
+        },
+        "expires_at": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      }
+    },
+    "Request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "client_id",
+        "manager_id",
+        "destination",
+        "starts_on",
+        "ends_on",
+        "tourist_count",
+        "budget",
+        "wishes",
+        "status",
+        "selected_selection_item_id",
+        "completed_at",
+        "cancelled_at",
+        "version",
+        "created_at",
+        "updated_at",
+        "client",
+        "manager",
+        "selected_selection_id",
+        "selected_offer",
+        "active_booking",
+        "tourists_received",
+        "tourist_form_editable",
+        "tourist_link",
+        "cancellation_reason",
+        "allowed_actions"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "client_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "manager_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "destination": {
+          "type": "string",
+          "minLength": 1
+        },
+        "starts_on": {
+          "$ref": "#/$defs/Date"
+        },
+        "ends_on": {
+          "$ref": "#/$defs/Date"
+        },
+        "tourist_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "budget": {
+          "$ref": "#/$defs/Money"
+        },
+        "wishes": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/RequestStatus"
+        },
+        "selected_selection_item_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "completed_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cancelled_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "created_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "updated_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "client": {
+          "$ref": "#/$defs/ClientBrief"
+        },
+        "manager": {
+          "$ref": "#/$defs/User"
+        },
+        "selected_selection_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selected_offer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OfferSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "active_booking": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BookingSummary"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tourists_received": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tourist_form_editable": {
+          "type": "boolean"
+        },
+        "tourist_link": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicLinkInfo"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cancellation_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "allowed_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RequestAction"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "TouristSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "full_name",
+        "birth_date",
+        "document_type",
+        "document_number",
+        "document_expires_on"
+      ],
+      "properties": {
+        "full_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "birth_date": {
+          "$ref": "#/$defs/Date"
+        },
+        "document_type": {
+          "$ref": "#/$defs/DocumentType"
+        },
+        "document_number": {
+          "type": "string",
+          "minLength": 1
+        },
+        "document_expires_on": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "document_type": {
+                "const": "international_passport"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "document_expires_on": {
+                "$ref": "#/$defs/Date"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Tourist": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "request_id",
+        "full_name",
+        "birth_date",
+        "document_type",
+        "document_number",
+        "document_expires_on",
+        "version"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "request_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "full_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "birth_date": {
+          "$ref": "#/$defs/Date"
+        },
+        "document_type": {
+          "$ref": "#/$defs/DocumentType"
+        },
+        "document_number": {
+          "type": "string",
+          "minLength": 1
+        },
+        "document_expires_on": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "document_type": {
+                "const": "international_passport"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "document_expires_on": {
+                "$ref": "#/$defs/Date"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "PublicTouristForm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tourist_count",
+        "request_version",
+        "expires_at",
+        "is_editable",
+        "closed_reason"
+      ],
+      "properties": {
+        "tourist_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "request_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "expires_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "is_editable": {
+          "type": "boolean"
+        },
+        "closed_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "TouristSubmissionItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "full_name",
+        "birth_date",
+        "document_type",
+        "document_number",
+        "document_expires_on"
+      ],
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "full_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "birth_date": {
+          "$ref": "#/$defs/Date"
+        },
+        "document_type": {
+          "$ref": "#/$defs/DocumentType"
+        },
+        "document_number": {
+          "type": "string",
+          "minLength": 1
+        },
+        "document_expires_on": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "document_type": {
+                "const": "international_passport"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "document_expires_on": {
+                "$ref": "#/$defs/Date"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "TouristSubmission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_version",
+        "tourists"
+      ],
+      "properties": {
+        "request_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tourists": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TouristSubmissionItem"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "TouristSubmissionResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accepted_count",
+        "request_version"
+      ],
+      "properties": {
+        "accepted_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "request_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "Booking": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "request_id",
+        "selection_item_id",
+        "offer_snapshot",
+        "total_amount",
+        "currency",
+        "status",
+        "supplier_booking_number",
+        "rejection_reason",
+        "cancellation_reason",
+        "cancellation_response",
+        "confirmed_at",
+        "cancelled_at",
+        "paid_amount",
+        "reserved_payment_amount",
+        "remaining_amount",
+        "available_payment_amount",
+        "refunded_amount",
+        "version",
+        "created_at",
+        "updated_at",
+        "tourists",
+        "allowed_actions"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "request_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "selection_item_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "offer_snapshot": {
+          "$ref": "#/$defs/OfferSnapshot"
+        },
+        "total_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "currency": {
+          "const": "RUB"
+        },
+        "status": {
+          "$ref": "#/$defs/BookingStatus"
+        },
+        "supplier_booking_number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rejection_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cancellation_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cancellation_response": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirmed_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cancelled_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "paid_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "reserved_payment_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "remaining_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "available_payment_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "refunded_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "created_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "updated_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "tourists": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BookingTourist"
+          },
+          "minItems": 0
+        },
+        "allowed_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BookingAction"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "Payment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "booking_id",
+        "amount",
+        "currency",
+        "status",
+        "external_operation_id",
+        "payment_url",
+        "failure_reason",
+        "succeeded_at",
+        "created_at",
+        "request_id",
+        "booking_status",
+        "pending_reason",
+        "refunded_amount",
+        "reserved_refund_amount",
+        "available_refund_amount",
+        "can_open_request",
+        "allowed_actions"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "booking_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "amount": {
+          "$ref": "#/$defs/PositiveMoney"
+        },
+        "currency": {
+          "const": "RUB"
+        },
+        "status": {
+          "$ref": "#/$defs/PaymentStatus"
+        },
+        "external_operation_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "payment_url": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uri"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "failure_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "succeeded_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "request_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "booking_status": {
+          "$ref": "#/$defs/BookingStatus"
+        },
+        "pending_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "refunded_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "reserved_refund_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "available_refund_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "can_open_request": {
+          "type": "boolean"
+        },
+        "allowed_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PaymentAction"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "Refund": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "payment_id",
+        "amount",
+        "currency",
+        "status",
+        "external_operation_id",
+        "failure_reason",
+        "succeeded_at",
+        "created_at",
+        "booking_id",
+        "request_id",
+        "pending_reason",
+        "can_open_request",
+        "allowed_actions"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "payment_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "amount": {
+          "$ref": "#/$defs/PositiveMoney"
+        },
+        "currency": {
+          "const": "RUB"
+        },
+        "status": {
+          "$ref": "#/$defs/RefundStatus"
+        },
+        "external_operation_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "failure_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "succeeded_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "booking_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "request_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "pending_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "can_open_request": {
+          "type": "boolean"
+        },
+        "allowed_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RefundAction"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "Communication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "client_id",
+        "request_id",
+        "author_id",
+        "channel",
+        "text",
+        "occurred_at",
+        "created_at",
+        "author"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "client_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "author_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "channel": {
+          "$ref": "#/$defs/CommunicationChannel"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "created_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "author": {
+          "$ref": "#/$defs/User"
+        }
+      }
+    },
+    "Notification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "recipient_id",
+        "payment_id",
+        "type",
+        "read_at",
+        "created_at",
+        "request_id",
+        "amount",
+        "currency",
+        "can_open_request"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "recipient_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "payment_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "type": {
+          "const": "payment_succeeded"
+        },
+        "read_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "currency": {
+          "const": "RUB"
+        },
+        "can_open_request": {
+          "type": "boolean"
+        }
+      }
+    },
+    "PublicLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "purpose",
+        "url",
+        "expires_at"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "purpose": {
+          "$ref": "#/$defs/PublicLinkPurpose"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      }
+    },
+    "Report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "date_from",
+        "date_to",
+        "timezone",
+        "currency",
+        "requests_created",
+        "bookings_confirmed",
+        "payments_succeeded_amount",
+        "refunds_succeeded_amount"
+      ],
+      "properties": {
+        "date_from": {
+          "$ref": "#/$defs/Date"
+        },
+        "date_to": {
+          "$ref": "#/$defs/Date"
+        },
+        "timezone": {
+          "const": "Europe/Moscow"
+        },
+        "currency": {
+          "const": "RUB"
+        },
+        "requests_created": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bookings_confirmed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "payments_succeeded_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "refunds_succeeded_amount": {
+          "$ref": "#/$defs/Money"
+        }
+      }
+    },
+    "ClientAction": {
+      "type": "string",
+      "enum": [
+        "update",
+        "create_request"
+      ]
+    },
+    "RequestAction": {
+      "type": "string",
+      "enum": [
+        "update",
+        "start_work",
+        "return_to_work",
+        "prepare_selection",
+        "select_tour",
+        "issue_tourist_link",
+        "edit_tourists",
+        "create_booking",
+        "reassign",
+        "cancel",
+        "complete",
+        "resume"
+      ]
+    },
+    "BookingAction": {
+      "type": "string",
+      "enum": [
+        "confirm",
+        "reject",
+        "request_cancellation",
+        "confirm_cancellation",
+        "reject_cancellation",
+        "create_payment"
+      ]
+    },
+    "PaymentAction": {
+      "type": "string",
+      "enum": [
+        "reconcile",
+        "create_refund"
+      ]
+    },
+    "RefundAction": {
+      "type": "string",
+      "enum": [
+        "reconcile"
+      ]
+    },
+    "ClientBrief": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "client_number",
+        "full_name"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "client_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "full_name": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "PublicLinkInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "purpose",
+        "expires_at",
+        "is_active"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "purpose": {
+          "$ref": "#/$defs/PublicLinkPurpose"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "is_active": {
+          "type": "boolean"
+        }
+      }
+    },
+    "BookingSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "status",
+        "total_amount",
+        "currency",
+        "paid_amount",
+        "remaining_amount"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "status": {
+          "$ref": "#/$defs/BookingStatus"
+        },
+        "total_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "currency": {
+          "const": "RUB"
+        },
+        "paid_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "remaining_amount": {
+          "$ref": "#/$defs/Money"
+        }
+      }
+    },
+    "BookingTourist": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tourist_id",
+        "tourist_snapshot"
+      ],
+      "properties": {
+        "tourist_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "tourist_snapshot": {
+          "$ref": "#/$defs/TouristSnapshot"
+        }
+      }
+    },
+    "FinancialBooking": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "request_id",
+        "status",
+        "total_amount",
+        "currency",
+        "paid_amount",
+        "reserved_payment_amount",
+        "remaining_amount",
+        "refunded_amount",
+        "can_open_request",
+        "confirmed_at",
+        "cancelled_at",
+        "created_at"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "request_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "status": {
+          "$ref": "#/$defs/BookingStatus"
+        },
+        "total_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "currency": {
+          "const": "RUB"
+        },
+        "paid_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "reserved_payment_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "remaining_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "refunded_amount": {
+          "$ref": "#/$defs/Money"
+        },
+        "can_open_request": {
+          "type": "boolean"
+        },
+        "confirmed_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cancelled_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      }
+    },
+    "DuplicateCheckResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "matches",
+        "requires_head_review"
+      ],
+      "properties": {
+        "matches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ClientBrief"
+          },
+          "minItems": 0
+        },
+        "requires_head_review": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ExpectedVersion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "ReasonCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "reason"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "LoginInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "email",
+        "password"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "ClientCreate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "full_name",
+        "phone",
+        "email",
+        "preferences",
+        "note",
+        "duplicate_acknowledged"
+      ],
+      "properties": {
+        "full_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "preferences": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "duplicate_acknowledged": {
+          "type": "boolean"
+        }
+      },
+      "anyOf": [
+        {
+          "properties": {
+            "phone": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "properties": {
+            "email": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "ClientUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "full_name",
+        "phone",
+        "email",
+        "preferences",
+        "note",
+        "duplicate_acknowledged"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "full_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "preferences": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "duplicate_acknowledged": {
+          "type": "boolean"
+        }
+      },
+      "anyOf": [
+        {
+          "properties": {
+            "phone": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "properties": {
+            "email": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "RequestCreate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "client_id",
+        "manager_id",
+        "destination",
+        "starts_on",
+        "ends_on",
+        "tourist_count",
+        "budget",
+        "wishes"
+      ],
+      "properties": {
+        "client_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "manager_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "destination": {
+          "type": "string",
+          "minLength": 1
+        },
+        "starts_on": {
+          "$ref": "#/$defs/Date"
+        },
+        "ends_on": {
+          "$ref": "#/$defs/Date"
+        },
+        "tourist_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "budget": {
+          "$ref": "#/$defs/Money"
+        },
+        "wishes": {
+          "type": "string"
+        }
+      }
+    },
+    "RequestUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "destination",
+        "starts_on",
+        "ends_on",
+        "tourist_count",
+        "budget",
+        "wishes"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "destination": {
+          "type": "string",
+          "minLength": 1
+        },
+        "starts_on": {
+          "$ref": "#/$defs/Date"
+        },
+        "ends_on": {
+          "$ref": "#/$defs/Date"
+        },
+        "tourist_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "budget": {
+          "$ref": "#/$defs/Money"
+        },
+        "wishes": {
+          "type": "string"
+        }
+      }
+    },
+    "AssignRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "manager_id"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "manager_id": {
+          "$ref": "#/$defs/Id"
+        }
+      }
+    },
+    "SelectTour": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "selection_item_id"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "selection_item_id": {
+          "$ref": "#/$defs/Id"
+        }
+      }
+    },
+    "SelectionCreate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "tour_offer_ids"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tour_offer_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Id"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "ConfirmBooking": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "supplier_booking_number"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "supplier_booking_number": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "ConfirmCancellation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "supplier_response"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "supplier_response": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "PaymentCreate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "amount",
+        "currency"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "amount": {
+          "$ref": "#/$defs/PositiveMoney"
+        },
+        "currency": {
+          "const": "RUB"
+        }
+      }
+    },
+    "RefundCreate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "properties": {
+        "amount": {
+          "$ref": "#/$defs/PositiveMoney"
+        },
+        "currency": {
+          "const": "RUB"
+        }
+      }
+    },
+    "CommunicationCreate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_id",
+        "channel",
+        "text",
+        "occurred_at"
+      ],
+      "properties": {
+        "request_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "channel": {
+          "$ref": "#/$defs/CommunicationChannel"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      }
+    },
+    "AuditChange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field",
+        "old_value",
+        "new_value"
+      ],
+      "properties": {
+        "field": {
+          "enum": [
+            "manager_id",
+            "request_status",
+            "booking_status",
+            "payment_status",
+            "refund_status",
+            "amount"
+          ]
+        },
+        "old_value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "new_value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "AuditRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "request_id",
+        "entity_id",
+        "entity_type",
+        "actor",
+        "source",
+        "action",
+        "changes",
+        "created_at"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "request_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "entity_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "entity_type": {
+          "enum": [
+            "request",
+            "booking",
+            "payment",
+            "refund"
+          ]
+        },
+        "actor": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/User"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "enum": [
+            "staff",
+            "payment_service",
+            "system"
+          ]
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AuditChange"
+          },
+          "minItems": 0
+        },
+        "created_at": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      }
+    },
+    "UserPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "page",
+        "page_size",
+        "total"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/User"
+          },
+          "minItems": 0
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "ClientPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "page",
+        "page_size",
+        "total"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Client"
+          },
+          "minItems": 0
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "RequestPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "page",
+        "page_size",
+        "total"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Request"
+          },
+          "minItems": 0
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "SelectionPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "page",
+        "page_size",
+        "total"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Selection"
+          },
+          "minItems": 0
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "TourOfferPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "page",
+        "page_size",
+        "total"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TourOffer"
+          },
+          "minItems": 0
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "BookingPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "page",
+        "page_size",
+        "total"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Booking"
+          },
+          "minItems": 0
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "PaymentPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "page",
+        "page_size",
+        "total"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Payment"
+          },
+          "minItems": 0
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "RefundPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "page",
+        "page_size",
+        "total"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Refund"
+          },
+          "minItems": 0
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "CommunicationPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "page",
+        "page_size",
+        "total"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Communication"
+          },
+          "minItems": 0
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "AuditRecordPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "page",
+        "page_size",
+        "total"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AuditRecord"
+          },
+          "minItems": 0
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "FinancialBookingPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "page",
+        "page_size",
+        "total"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FinancialBooking"
+          },
+          "minItems": 0
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "NotificationPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "page",
+        "page_size",
+        "total",
+        "unread_count"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Notification"
+          },
+          "minItems": 0
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unread_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "ErrorCode": {
+      "type": "string",
+      "enum": [
+        "validation_error",
+        "unauthorized",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "version_conflict",
+        "invalid_transition",
+        "idempotency_conflict",
+        "duplicate_contacts",
+        "duplicate_requires_head_review",
+        "payment_limit_exceeded",
+        "refund_limit_exceeded",
+        "tourist_form_closed",
+        "rate_limited",
+        "server_error",
+        "not_implemented"
+      ]
+    }
+  }
+}
