@@ -55,6 +55,10 @@ flowchart LR
 
 ## Запуск
 
+В основе по #9 текущий Compose содержит только db и backend: `python scripts/init_env.py`, затем `docker compose up --build`, API на localhost:8000. Нативный запуск и миграции описаны в backend/README.md. Реализованы auth/health; полная спецификация остальных модулей остаётся целевым контрактом.
+
+Целевой запуск полного стека в #24:
+
 - Ежедневная разработка: `docker compose up -d db stubs`, фронтенд через `npm run dev`, бэкенд через `uvicorn --reload`. Vite проксирует `/api` на локальный бэкенд.
 - Проверка сборки и демонстрация: `docker compose up --build`, приложение на `http://localhost:8080`.
 - Конфигурация задаётся переменными окружения; в репозитории хранится только `.env.example`.

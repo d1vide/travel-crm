@@ -47,7 +47,7 @@ def build():
         "servers": [{"url": "/"}],
         "security": [{"BearerAuth": []}],
         "x-contract-status": "baseline-fixed-after-source-review",
-        "x-implementation-status": "planned",
+        "x-implementation-status": "partial",
         "paths": {},
         "components": {
             "schemas": copy.deepcopy(domain["$defs"]),
@@ -84,6 +84,7 @@ def build():
         "429": "Слишком много запросов",
         "500": "Внутренняя ошибка сервера",
         "501": "Эндпоинт ещё не реализован в текущей сборке",
+        "503": "База данных или сервис недоступны",
     }
     for status, description in error_codes.items():
         code = {
@@ -95,6 +96,7 @@ def build():
             "429": "rate_limited",
             "500": "server_error",
             "501": "not_implemented",
+            "503": "server_error",
         }[status]
         document["components"]["responses"][f"Error{status}"] = {
             "description": description,
@@ -181,7 +183,10 @@ def build():
             if (
                 "public" in roles
                 and code in ("401", "403")
-                and not (operation_id == "login" and code == "401")
+                and not (
+                    (operation_id == "login" and code == "401")
+                    or (path.startswith("/auth/") and code == "403")
+                )
             ):
                 continue
             responses[code] = {"$ref": f"#/components/responses/Error{code}"}
@@ -198,6 +203,10 @@ def build():
             "tags": [path.split("/")[1]],
             "x-roles": list(roles),
             "x-requirements": list(requirements),
+            "x-implementation-status": "implemented"
+            if operation_id
+            in {"login", "refresh_session", "logout", "get_current_user"}
+            else "planned",
             "responses": responses,
             "description": description
             or "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
