@@ -16,7 +16,7 @@
     }
   ],
   "x-contract-status": "baseline-fixed-after-source-review",
-  "x-implementation-status": "planned",
+  "x-implementation-status": "partial",
   "paths": {
     "/api/auth/login": {
       "post": {
@@ -32,6 +32,7 @@
           "FR-01",
           "FR-09"
         ],
+        "x-implementation-status": "implemented",
         "responses": {
           "200": {
             "description": "Войти сотрудником",
@@ -62,6 +63,9 @@
           "401": {
             "$ref": "#/components/responses/Error401"
           },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
           "404": {
             "$ref": "#/components/responses/Error404"
           },
@@ -79,6 +83,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Проверить email/пароль, вернуть access и профиль; установить refresh-cookie. Демо-вход по роли не является частью API.",
@@ -114,6 +121,7 @@
         "x-requirements": [
           "FR-01"
         ],
+        "x-implementation-status": "implemented",
         "responses": {
           "200": {
             "description": "Обновить сессию",
@@ -164,6 +172,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Атомарно ротировать refresh-cookie; заменить access. Просроченный или отозванный refresh: 401. Не требует Bearer access.",
@@ -187,6 +198,7 @@
         "x-requirements": [
           "FR-01"
         ],
+        "x-implementation-status": "implemented",
         "responses": {
           "204": {
             "description": "Завершить сессию",
@@ -198,6 +210,9 @@
                 "description": "refresh_token; HttpOnly; SameSite=Strict; Path=/api/auth; Secure в HTTPS. Login/refresh ротируют cookie, logout очищает её. Сырой refresh отсутствует в JSON."
               }
             }
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
           },
           "404": {
             "$ref": "#/components/responses/Error404"
@@ -216,6 +231,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Отозвать текущую refresh-cookie и очистить её. Повторный выход или отсутствие cookie: 204. Access живёт до своего срока, около 15 минут.",
@@ -237,6 +255,7 @@
         "x-requirements": [
           "FR-01"
         ],
+        "x-implementation-status": "implemented",
         "responses": {
           "200": {
             "description": "Текущий сотрудник",
@@ -273,6 +292,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи."
@@ -293,6 +315,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Сотрудники для назначения ответственным",
@@ -336,6 +359,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Только активные manager/head, без email и технических полей учётной записи. Менеджер создаёт заявку на себя; руководитель выбирает ответственного.",
@@ -395,6 +421,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Найти доступных клиентов",
@@ -449,6 +476,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -518,6 +548,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "201": {
             "description": "Создать клиента",
@@ -568,6 +599,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "При совпадении и duplicate_acknowledged=false: 409 duplicate_contacts. Повтор после проверки менеджером: новый ключ и duplicate_acknowledged=true. Недоступные совпадения: 409 duplicate_requires_head_review до проверки руководителем.",
@@ -612,6 +646,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Проверить совпадения контактов",
@@ -653,6 +688,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Сервер требует хотя бы один контакт, проверяет доступ к exclude_client_id. Возвращает только доступные совпадения. Недоступные совпадения дают requires_head_review без персональных данных.",
@@ -704,6 +742,7 @@
           "FR-02",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Карточка клиента",
@@ -751,6 +790,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -780,6 +822,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Изменить клиента",
@@ -830,6 +873,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -884,6 +930,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Список заявок",
@@ -978,6 +1025,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -1064,6 +1114,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "201": {
             "description": "Создать заявку",
@@ -1154,6 +1205,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "manager_id=null означает текущего сотрудника; manager может назначить только себя, head — активного manager/head. Начальный статус new назначает сервер.",
@@ -1200,6 +1254,7 @@
           "FR-08",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Карточка заявки",
@@ -1287,6 +1342,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -1316,6 +1374,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Изменить пожелания заявки",
@@ -1406,6 +1465,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -1458,6 +1520,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Сменить ответственного",
@@ -1548,6 +1611,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -1597,6 +1663,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Действие заявки: start-work",
@@ -1687,6 +1754,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -1735,6 +1805,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Действие заявки: return-to-work",
@@ -1825,6 +1896,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -1873,6 +1947,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Действие заявки: cancel",
@@ -1963,6 +2038,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -2012,6 +2090,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Действие заявки: complete",
@@ -2102,6 +2181,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -2150,6 +2232,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Действие заявки: resume",
@@ -2240,6 +2323,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -2287,6 +2373,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Записать выбор клиента",
@@ -2377,6 +2464,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -2425,6 +2515,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Тестовый каталог туров",
@@ -2480,6 +2571,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Только активные предложения. Фильтры применяются совместно. Некорректный интервал дат: 422. Цена за всех туристов; отдельного экрана управления каталогом в MVP нет.",
@@ -2587,6 +2681,7 @@
           "FR-04",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Карточка предложения",
@@ -2635,6 +2730,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -2666,6 +2764,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "История подборок заявки",
@@ -2736,6 +2835,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -2801,6 +2903,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "201": {
             "description": "Опубликовать подборку",
@@ -2867,6 +2970,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "version относится к заявке; >=1 уникального тура. Снимки и статус offer_prepared создаются транзакционно; прежний выбор сбрасывается, ссылки старых подборок отзываются. Ссылку затем выдаёт отдельная команда.",
@@ -2916,6 +3022,7 @@
           "FR-04",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Подборка сотрудника",
@@ -2979,6 +3086,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -3009,6 +3119,7 @@
           "FR-04",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "201": {
             "description": "Выдать или перевыпустить ссылку подборки",
@@ -3049,6 +3160,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Выдаёт случайный токен на 7 дней, отзывает предыдущую ссылку этой подборки. В хранилище только хеш. Повтор создаёт новую ссылку; не повторять автоматически после сетевой ошибки. Скопировать url можно из ответа в текущей сессии интерфейса.",
@@ -3079,6 +3193,7 @@
           "FR-10",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "201": {
             "description": "Выдать или перевыпустить ссылку формы туристов",
@@ -3119,6 +3234,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Только при редактируемой форме. Срок 7 дней, предыдущая ссылка отзывается. При неопределённом результате сети использовать явный перевыпуск, не слепой повтор.",
@@ -3150,6 +3268,7 @@
           "FR-10",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "204": {
             "description": "Отозвать публичную ссылку"
@@ -3177,6 +3296,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -3205,6 +3327,7 @@
         "x-requirements": [
           "FR-04"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Открыть подборку без входа",
@@ -3266,6 +3389,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Только снимки туров одной подборки. Нет клиента, ответственного, токена в ответе и паспортов. Неверный/просроченный/отозванный токен: одинаковый 404.",
@@ -3296,6 +3422,7 @@
         "x-requirements": [
           "FR-10"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Открыть форму туристов без входа",
@@ -3342,6 +3469,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Только число туристов, версия заявки, срок и редактируемость. Ранее введённые персональные данные не возвращаются. При действующей брони форма закрыта, is_editable=false и closed_reason заполнен.",
@@ -3371,6 +3501,7 @@
           "FR-10",
           "FR-09"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Передать полный список туристов",
@@ -3417,6 +3548,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Атомарная замена полного списка, количество равно tourist_count. version проверяется по request_version. Новые туристы имеют id=null; переданный id обязан принадлежать этой заявке. После создания действующей брони: 409 tourist_form_closed.",
@@ -3483,6 +3617,7 @@
           "FR-10",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Данные туристов для сотрудника",
@@ -3529,6 +3664,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Массив Tourist, без пагинации, только ответственный и руководитель.",
@@ -3558,6 +3696,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Исправить список туристов сотрудником",
@@ -3596,6 +3735,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -3662,6 +3804,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Попытки бронирования",
@@ -3762,6 +3905,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -3827,6 +3973,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "201": {
             "description": "Создать попытку брони",
@@ -3923,6 +4070,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "version относится к заявке; выбранный элемент берётся из заявки. Полный корректный список туристов обязателен уже при создании, число совпадает с заявкой и туром: после создания форма блокируется. Сумма и снимок назначаются сервером. Не более одной действующей брони.",
@@ -3969,6 +4119,7 @@
           "FR-05",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Карточка брони со снимками туристов",
@@ -4062,6 +4213,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -4094,6 +4248,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Действие брони: confirm",
@@ -4190,6 +4345,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно.",
@@ -4239,6 +4397,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Действие брони: reject",
@@ -4335,6 +4494,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно.",
@@ -4384,6 +4546,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Действие брони: request-cancellation",
@@ -4480,6 +4643,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно.",
@@ -4529,6 +4695,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Действие брони: confirm-cancellation",
@@ -4625,6 +4792,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно.",
@@ -4674,6 +4844,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Действие брони: reject-cancellation",
@@ -4770,6 +4941,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно.",
@@ -4820,6 +4994,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Финансовая сводка броней",
@@ -4873,6 +5048,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Бухгалтер получает только суммы, статусы и идентификаторы, can_open_request=false. Полная Booking содержит туристов и бухгалтеру недоступна.",
@@ -4951,6 +5129,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Глобальный список оплат",
@@ -5009,6 +5188,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -5097,6 +5279,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Оплаты конкретной брони",
@@ -5155,6 +5338,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -5220,6 +5406,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "202": {
             "description": "Создать тестовый платёж",
@@ -5274,6 +5461,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "version относится к брони; amount <= available_payment_amount. Возвращает локальную pending-операцию; payment_url может быть null до ответа сервиса. Через GET или reconcile получить ссылку/результат. Сетевой тайм-аут сохраняет резерв и pending_reason.",
@@ -5324,6 +5514,7 @@
           "FR-12",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Платёж и доступный остаток возврата",
@@ -5375,6 +5566,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -5405,6 +5599,7 @@
           "FR-06",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "202": {
             "description": "Сверить платёж с сервисом",
@@ -5459,6 +5654,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Естественно повторяемая команда без ручного назначения успеха. Адаптер опрашивает известную операцию с тем же внешним ключом; терминальная операция возвращается без повторного зачисления. Бухгалтер имеет только GET.",
@@ -5490,6 +5688,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Глобальный список возвратов",
@@ -5546,6 +5745,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -5643,6 +5845,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Возвраты по платежу",
@@ -5699,6 +5902,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -5764,6 +5970,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "202": {
             "description": "Создать возврат",
@@ -5816,6 +6023,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Только по cancelled-брони и succeeded-платежу; amount <= available_refund_amount. Под блокировками резервируются processing суммы. Сотрудник не назначает статус сервиса.",
@@ -5864,6 +6074,7 @@
           "FR-12",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Состояние возврата",
@@ -5913,6 +6124,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -5943,6 +6157,7 @@
           "FR-12",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "202": {
             "description": "Сверить возврат с сервисом",
@@ -5995,6 +6210,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Естественно повторяемая команда. Только проверенный ответ сервиса завершает возврат; повтор не увеличивает возвращённую сумму.",
@@ -6026,6 +6244,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "История общения с клиентом",
@@ -6079,6 +6298,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "В карточке клиента выдаются записи без заявки и по доступным заявкам; записи чужих заявок исключены до пагинации и подсчёта total.",
@@ -6144,6 +6366,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "201": {
             "description": "Записать контакт с клиентом",
@@ -6193,6 +6416,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Автор и created_at назначаются сервером; occurred_at передаёт время контакта. request_id=null либо доступная заявка этого клиента. Фактическая отправка сообщений отсутствует.",
@@ -6244,6 +6470,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Общение по заявке",
@@ -6297,6 +6524,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
@@ -6364,6 +6594,7 @@
           "FR-08",
           "FR-09"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "История статусов и ответственных",
@@ -6419,6 +6650,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Только белый список изменений: ответственный и статусы/суммы. Нет паспортов, хешей, токенов и произвольного внутреннего JSON аудита.",
@@ -6486,6 +6720,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Свои уведомления",
@@ -6537,6 +6772,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Только уведомления текущего сотрудника; unread_count по всем его непрочитанным, независимо от страницы. После переназначения недоступной заявки request_id=null, can_open_request=false. Базовый способ обновления UI — опрос раз в 15 секунд при активной вкладке.",
@@ -6605,6 +6843,7 @@
           "FR-13",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Отметить своё уведомление прочитанным",
@@ -6651,6 +6890,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "Естественно идемпотентно: read_at первого прочтения сохраняется. Другому получателю: 404.",
@@ -6681,6 +6923,7 @@
           "FR-09",
           "FR-01"
         ],
+        "x-implementation-status": "planned",
         "responses": {
           "200": {
             "description": "Сводный отчёт за период",
@@ -6722,6 +6965,9 @@
           },
           "501": {
             "$ref": "#/components/responses/Error501"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
           }
         },
         "description": "date_to >= date_from. Интервал [начало date_from, начало дня после date_to) в Europe/Moscow. Заявки: created_at; брони: confirmed_at, включая позже отменённые; оплаты/возвраты: succeeded_at. Пустой период возвращает нули.",
@@ -10543,6 +10789,21 @@
             "example": {
               "code": "not_implemented",
               "message": "Эндпоинт ещё не реализован в текущей сборке",
+              "fields": []
+            }
+          }
+        }
+      },
+      "Error503": {
+        "description": "База данных или сервис недоступны",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "code": "server_error",
+              "message": "База данных или сервис недоступны",
               "fields": []
             }
           }

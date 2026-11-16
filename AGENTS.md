@@ -16,4 +16,8 @@
 
 ## Проверки
 
-Фронтенд: из `frontend/` выполнить `npm ci`, `npm run type-check`, `npm run test:unit -- --run`, `npm run build`. `npm run lint` исправляет файлы, поэтому проверять его diff. Правки только документации не требуют повторной сборки приложения, если модели исполняемого кода не менялись. Контракт: `uv run docs/api/validate_contract.py`; после правок реестра/схем сначала `uv run docs/api/build_openapi.py`. Команды бэкенда появятся с его каркасом в #9.
+Фронтенд: из `frontend/` выполнить `npm ci`, `npm run type-check`, `npm run test:unit -- --run`, `npm run build`. `npm run lint` исправляет файлы, поэтому проверять его diff. Правки только документации не требуют повторной сборки приложения, если модели исполняемого кода не менялись. Контракт: `uv run docs/api/validate_contract.py`; после правок реестра/схем сначала `uv run docs/api/build_openapi.py`.
+
+Бэкенд: `uv sync --directory backend --frozen`, `uv run --directory backend ruff check .`, `uv run --directory backend ruff format --check .`, `uv run --directory backend pytest -q`. Для pytest требуется TEST_DATABASE_URL PostgreSQL 16 с именем БД на _test: тесты создают и удаляют только свои случайные схемы. Не подменять PostgreSQL на SQLite и не пропускать интеграционные тесты из-за отсутствующей БД. Схема приложения изменяется только Alembic. Локальный .env создаётся `python scripts/init_env.py` и не попадает в Git; seed не перезаписывает существующие учётные записи. Правила запуска — в `backend/README.md`.
+
+Реализованы auth/health, остальные бизнес-маршруты пока отсутствуют. Runtime /openapi.json — поднабор, полная согласованная спецификация находится в docs/api/openapi.json; не заменять её неполным экспортом при подключении фронтенда.

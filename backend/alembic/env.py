@@ -1,0 +1,30 @@
+from alembic import context
+from app.core.config import get_settings
+from app.core.database import Base, Database
+from app.modules.auth import models  # noqa: F401
+
+configuration = context.config
+settings = configuration.attributes.get("settings") or get_settings()
+
+
+def configure(connection=None, url=None):
+    context.configure(
+        connection=connection,
+        url=url,
+        target_metadata=Base.metadata,
+        compare_type=True,
+        literal_binds=connection is None,
+    )
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+if context.is_offline_mode():
+    configure(url=settings.database_url.get_secret_value())
+else:
+    database = Database(settings)
+    try:
+        with database.engine.connect() as connection:
+            configure(connection=connection)
+    finally:
+        database.close()
