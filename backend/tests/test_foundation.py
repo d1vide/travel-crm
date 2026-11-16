@@ -122,7 +122,13 @@ def test_runtime_auth_operation_ids_match_contract(application):
         for operation in path.values()
         if operation.get("x-implementation-status") == "implemented"
     }
-    assert implemented == {"login", "refresh_session", "logout", "get_current_user"}
+    runtime_operations = {
+        operation["operationId"]
+        for path, methods in runtime["paths"].items()
+        if path in baseline["paths"]
+        for operation in methods.values()
+    }
+    assert implemented == runtime_operations
     for path in ("/api/auth/login", "/api/auth/refresh", "/api/auth/logout", "/api/auth/me"):
         method = "get" if path.endswith("/me") else "post"
         assert (

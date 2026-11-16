@@ -28,7 +28,7 @@ class Database:
             hide_parameters=True,
             connect_args={
                 "connect_timeout": 5,
-                "options": f"-csearch_path={settings.database_schema} -ctimezone=UTC",
+                "options": f"-csearch_path={settings.database_schema},public -ctimezone=UTC",
             },
         )
         self.sessions = sessionmaker(self.engine, expire_on_commit=False)

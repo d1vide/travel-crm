@@ -73,6 +73,14 @@ def register_errors(app: FastAPI):
     async def validation_error_handler(_request: Request, error: RequestValidationError):
         fields = []
         for item in error.errors():
+            if item["type"] == "contact_required":
+                fields.extend(
+                    [
+                        FieldError(field="phone", message="Укажите телефон или email"),
+                        FieldError(field="email", message="Укажите телефон или email"),
+                    ]
+                )
+                continue
             path = (
                 ".".join(
                     str(part)
@@ -86,9 +94,12 @@ def register_errors(app: FastAPI):
                 "extra_forbidden": "Неизвестное поле",
                 "string_type": "Ожидается строка",
                 "string_too_short": "Поле не должно быть пустым",
+                "blank_string": "Поле не должно быть пустым",
             }.get(item["type"], "Некорректное значение")
             if path == "email" and item["type"] != "missing":
                 message = "Введите корректный email"
+            if path == "phone" and item["type"] != "missing":
+                message = "Введите корректный телефон"
             fields.append(FieldError(field=path, message=message))
         return error_response(422, "validation_error", "Проверьте данные", fields)
 
