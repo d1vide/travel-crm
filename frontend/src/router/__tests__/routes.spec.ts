@@ -16,6 +16,20 @@ describe('маршруты приложения', () => {
     },
   )
 
+  it.each(['/clients/new', '/clients/00000000-0000-4000-8000-000000000001'])(
+    'вложенная страница %s доступна менеджеру и руководителю и подсвечивает «Клиенты»',
+    (path) => {
+      const resolved = router.resolve(path)
+
+      expect(resolved.meta.roles).toEqual(['manager', 'head'])
+      expect(resolved.meta.section).toBe('clients')
+    },
+  )
+
+  it('«new» не принимается за идентификатор клиента', () => {
+    expect(router.resolve('/clients/new').name).toBe('client-new')
+  })
+
   it('страница входа доступна только гостям', () => {
     const resolved = router.resolve('/login')
 

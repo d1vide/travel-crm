@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ApiError, apiErrorFromNetwork, apiErrorFromResponse } from '../errors'
+import { ApiError, apiErrorFromNetwork, apiErrorFromResponse, fieldMessages } from '../errors'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -73,5 +73,22 @@ describe('apiErrorFromNetwork', () => {
     expect(error.status).toBe(0)
     expect(error.code).toBe('network_error')
     expect(error.message).toBe('Нет связи с сервером, проверьте подключение')
+  })
+})
+
+describe('fieldMessages', () => {
+  it('собирает первое сообщение по каждому полю', () => {
+    const error = new ApiError(422, 'validation_error', 'Ошибка', [
+      { field: 'phone', message: 'Неверный телефон' },
+      { field: 'phone', message: 'Второе сообщение' },
+      { field: 'email', message: 'Неверный email' },
+    ])
+
+    expect(fieldMessages(error)).toEqual({ phone: 'Неверный телефон', email: 'Неверный email' })
+  })
+
+  it('возвращает пустой объект, если ошибки нет или это не ApiError', () => {
+    expect(fieldMessages(null)).toEqual({})
+    expect(fieldMessages(new Error('x'))).toEqual({})
   })
 })

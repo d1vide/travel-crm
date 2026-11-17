@@ -4,7 +4,7 @@ import { NAVIGATION } from '@/auth/navigation'
 
 const sectionViews: Record<string, () => Promise<{ default: Component }>> = {
   requests: () => import('@/views/RequestsView.vue'),
-  clients: () => import('@/views/ClientsView.vue'),
+  clients: () => import('@/views/clients/ClientsView.vue'),
   tours: () => import('@/views/ToursView.vue'),
   payments: () => import('@/views/PaymentsView.vue'),
   workspace: () => import('@/views/WorkspaceView.vue'),
@@ -37,6 +37,7 @@ export function createAppRouter(
           // С корня направляет защита маршрутов: она знает роль и выбирает раздел.
           { path: '', name: 'home', component: { render: () => null } },
           ...sections,
+          ...clientPages(),
           {
             path: '/forbidden',
             name: 'forbidden',
@@ -51,4 +52,23 @@ export function createAppRouter(
       },
     ],
   })
+}
+
+/** Вложенные страницы раздела «Клиенты»: доступны тем же ролям и подсвечивают тот же пункт меню. */
+function clientPages(): RouteRecordRaw[] {
+  const roles = NAVIGATION.find((item) => item.name === 'clients')?.roles ?? []
+  return [
+    {
+      path: '/clients/new',
+      name: 'client-new',
+      component: () => import('@/views/clients/ClientCreateView.vue'),
+      meta: { roles, section: 'clients' },
+    },
+    {
+      path: '/clients/:id',
+      name: 'client-detail',
+      component: () => import('@/views/clients/ClientDetailView.vue'),
+      meta: { roles, section: 'clients' },
+    },
+  ]
 }

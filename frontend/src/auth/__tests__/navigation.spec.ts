@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { homePathFor, navigationFor, NAVIGATION } from '../navigation'
+import { groupedNavigationFor, homePathFor, navigationFor, NAVIGATION } from '../navigation'
 
 const labels = (role: Parameters<typeof navigationFor>[0]) =>
   navigationFor(role).map((i) => i.label)
@@ -37,5 +37,23 @@ describe('homePathFor', () => {
     expect(homePathFor('manager')).toBe('/requests')
     expect(homePathFor('head')).toBe('/requests')
     expect(homePathFor('accountant')).toBe('/payments')
+  })
+})
+
+describe('groupedNavigationFor', () => {
+  const summary = (role: Parameters<typeof navigationFor>[0]) =>
+    groupedNavigationFor(role).map((g) => [g.label, g.items.map((i) => i.label)])
+
+  it('разбивает разделы руководителя на группы в порядке макета', () => {
+    expect(summary('head')).toEqual([
+      ['Операции', ['Заявки', 'Клиенты', 'Каталог туров']],
+      ['Финансы', ['Оплаты и возвраты']],
+      ['Управление', ['Рабочее место руководителя', 'Отчёт']],
+    ])
+  })
+
+  it('не показывает пустые группы', () => {
+    expect(summary('manager')).toEqual([['Операции', ['Заявки', 'Клиенты', 'Каталог туров']]])
+    expect(summary('accountant')).toEqual([['Финансы', ['Оплаты и возвраты']]])
   })
 })

@@ -1,3 +1,6 @@
+@import '@fontsource-variable/inter/wght.css';
+@import '../theme/tokens.css';
+
 html,
 body,
 #app {
@@ -7,11 +10,30 @@ body,
 
 body {
   font-family:
+    'Inter Variable',
+    Inter,
     system-ui,
     -apple-system,
     'Segoe UI',
     Roboto,
-    'Helvetica Neue',
-    Arial,
     sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--c-text-primary);
+  background: var(--c-surface-app);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Цифры в таблицах, суммах и датах выравниваются по разрядам. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+a {
+  color: var(--c-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--c-primary-hover);
 }
