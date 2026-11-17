@@ -95,8 +95,10 @@ async function logout() {
     <n-layout>
       <n-layout-header bordered class="header">
         <div class="user">
-          <n-avatar round :size="28" class="user__avatar">{{ initials }}</n-avatar>
-          <span v-if="session.user" class="user__name">{{ session.user.fullName }}</span>
+          <RouterLink to="/profile" class="user__profile" data-test="profile-link">
+            <n-avatar round :size="28" class="user__avatar">{{ initials }}</n-avatar>
+            <span v-if="session.user" class="user__name">{{ session.user.fullName }}</span>
+          </RouterLink>
           <n-tag v-if="session.role" size="small" :bordered="false">
             {{ ROLE_LABELS[session.role] }}
           </n-tag>
@@ -157,6 +159,21 @@ async function logout() {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.user__profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 8px 2px 2px;
+  border-radius: var(--radius-md);
+  color: inherit;
+  text-decoration: none;
+}
+
+.user__profile:hover,
+.user__profile.router-link-active {
+  background: var(--c-surface-subtle);
 }
 
 .user__avatar {

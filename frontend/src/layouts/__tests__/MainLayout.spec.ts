@@ -52,6 +52,15 @@ describe('MainLayout', () => {
     expect(text).not.toContain('Заявки')
   })
 
+  it('имя пользователя ведёт на страницу профиля', async () => {
+    const { wrapper, router } = await render('manager', 'Анна Смирнова')
+    const link = wrapper.find('[data-test="profile-link"]')
+
+    expect(link.attributes('href')).toBe('/profile')
+    expect(link.text()).toContain('Анна Смирнова')
+    expect(router.resolve('/profile').name).toBe('profile')
+  })
+
   it('показывает имя пользователя и его роль', async () => {
     const { wrapper } = await render('head', 'Иван Орлов')
 
