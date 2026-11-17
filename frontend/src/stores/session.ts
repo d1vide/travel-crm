@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { requestRefresh, type AuthResult } from '@/api/auth'
+import { requestLogin, requestLogout, requestRefresh, type AuthResult } from '@/api/auth'
 import type { SessionUser } from '@/auth/roles'
 
 export const useSessionStore = defineStore('session', () => {
@@ -20,6 +20,20 @@ export const useSessionStore = defineStore('session', () => {
   function clearSession() {
     accessToken.value = null
     user.value = null
+  }
+
+  /** Вход по email и паролю. Ошибку сервера (ApiError) пробрасывает вызывающему. */
+  async function login(email: string, password: string): Promise<void> {
+    setSession(await requestLogin(email, password))
+  }
+
+  /** Выход: отзывает refresh-токен на сервере и очищает сессию в любом случае. */
+  async function logout(): Promise<void> {
+    try {
+      await requestLogout()
+    } finally {
+      clearSession()
+    }
   }
 
   /** Обновляет токен по refresh-cookie. Возвращает новый токен или null, если сессии нет. */
@@ -47,6 +61,8 @@ export const useSessionStore = defineStore('session', () => {
     role,
     setSession,
     clearSession,
+    login,
+    logout,
     refresh,
     ensureRestored,
   }

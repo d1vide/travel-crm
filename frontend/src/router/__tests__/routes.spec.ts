@@ -16,11 +16,11 @@ describe('маршруты приложения', () => {
     },
   )
 
-  it('страница входа открыта без авторизации', () => {
+  it('страница входа доступна только гостям', () => {
     const resolved = router.resolve('/login')
 
     expect(resolved.name).toBe('login')
-    expect(resolved.meta.public).toBe(true)
+    expect(resolved.meta.guestOnly).toBe(true)
   })
 
   it('есть страница «нет доступа»', () => {

@@ -28,7 +28,7 @@ export function createAppRouter(
         path: '/login',
         name: 'login',
         component: () => import('@/views/LoginView.vue'),
-        meta: { public: true },
+        meta: { guestOnly: true },
       },
       {
         path: '/',

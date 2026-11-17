@@ -131,6 +131,37 @@ describe('createHttpClient', () => {
     expect(refreshAccessToken).toHaveBeenCalledTimes(1)
   })
 
+  it('передаёт ключ идемпотентности в заголовке Idempotency-Key', async () => {
+    const { client, calls } = setup(() => json(201, { id: 1 }))
+
+    await client.post('/clients', { full_name: 'Иван' }, { idempotencyKey: 'key-1' })
+
+    expect(new Headers(callAt(calls, 0).init.headers).get('Idempotency-Key')).toBe('key-1')
+  })
+
+  it('не добавляет Idempotency-Key, если ключ не задан', async () => {
+    const { client, calls } = setup(() => json(200, {}))
+
+    await client.post('/clients/duplicates-check', {})
+
+    expect(new Headers(callAt(calls, 0).init.headers).has('Idempotency-Key')).toBe(false)
+  })
+
+  it('при повторе после refresh сохраняет исходный ключ идемпотентности', async () => {
+    const { client, calls } = setup((_url, init) =>
+      new Headers(init.headers).get('Authorization') === 'Bearer new-token'
+        ? json(201, { id: 1 })
+        : json(401, {}),
+    )
+
+    await client.post('/clients', { full_name: 'Иван' }, { idempotencyKey: 'key-7' })
+
+    expect(calls).toHaveLength(2)
+    for (const call of calls) {
+      expect(new Headers(call.init.headers).get('Idempotency-Key')).toBe('key-7')
+    }
+  })
+
   it('если обновить токен не удалось, сообщает об этом и отклоняет запрос', async () => {
     const { client, onAuthFailure } = setup(() => json(401, {}), { refreshTo: null })
 

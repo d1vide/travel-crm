@@ -4,7 +4,10 @@ import type { Role } from '@/auth/roles'
 import { useSessionStore } from '@/stores/session'
 import { createAuthGuard } from '../guard'
 
-function route(path: string, meta: { public?: boolean; roles?: readonly Role[] } = {}) {
+function route(
+  path: string,
+  meta: { public?: boolean; guestOnly?: boolean; roles?: readonly Role[] } = {},
+) {
   return { path, fullPath: path, meta }
 }
 
@@ -54,17 +57,33 @@ describe('createAuthGuard', () => {
     expect(result).toBe(true)
   })
 
-  it('пропускает публичные страницы без входа', async () => {
+  it('пропускает гостя на страницу входа', async () => {
     const guard = createAuthGuard(useSessionStore())
 
-    expect(await guard(route('/login', { public: true }))).toBe(true)
+    expect(await guard(route('/login', { guestOnly: true }))).toBe(true)
   })
 
   it('уже вошедшего пользователя со страницы входа ведёт в его раздел', async () => {
     signIn('accountant')
     const guard = createAuthGuard(useSessionStore())
 
-    expect(await guard(route('/login', { public: true }))).toBe('/payments')
+    expect(await guard(route('/login', { guestOnly: true }))).toBe('/payments')
+  })
+
+  it('публичная страница открыта гостю и не пытается восстановить сессию', async () => {
+    const fetchMock = vi.fn<typeof fetch>()
+    vi.stubGlobal('fetch', fetchMock)
+    const guard = createAuthGuard(useSessionStore())
+
+    expect(await guard(route('/public/selections/abc', { public: true }))).toBe(true)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('публичная страница открыта и вошедшему сотруднику без перенаправления', async () => {
+    signIn('manager')
+    const guard = createAuthGuard(useSessionStore())
+
+    expect(await guard(route('/public/tourist-forms/abc', { public: true }))).toBe(true)
   })
 
   it('с корня ведёт в первый доступный роли раздел', async () => {

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory } from 'vue-router'
@@ -21,6 +21,10 @@ async function render(role: Role, fullName = 'Анна Смирнова') {
 }
 
 describe('MainLayout', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   beforeEach(() => {
     globalThis.ResizeObserver ??= class {
       observe() {}
@@ -55,13 +59,16 @@ describe('MainLayout', () => {
     expect(wrapper.text()).toContain('Руководитель')
   })
 
-  it('кнопка «Выйти» очищает сессию и открывает страницу входа', async () => {
+  it('кнопка «Выйти» вызывает сервер, очищает сессию и открывает страницу входа', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 204 }))
+    vi.stubGlobal('fetch', fetchMock)
     const { wrapper, router, session } = await render('manager')
 
     const logout = wrapper.findAll('button').find((b) => b.text() === 'Выйти')
     await logout!.trigger('click')
 
-    expect(session.isAuthenticated).toBe(false)
+    await vi.waitFor(() => expect(session.isAuthenticated).toBe(false))
+    expect(fetchMock).toHaveBeenCalledWith('/api/auth/logout', expect.anything())
     await vi.waitFor(() => expect(router.currentRoute.value.name).toBe('login'))
   })
 })
