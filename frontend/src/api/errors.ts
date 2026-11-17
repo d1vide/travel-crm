@@ -66,3 +66,13 @@ export function apiErrorFromNetwork(cause: unknown): ApiError {
   error.originalError = cause
   return error
 }
+
+/** Первое сообщение по каждому полю формы из ошибки сервера (для подсветки полей). */
+export function fieldMessages(error: unknown): Record<string, string> {
+  const messages: Record<string, string> = {}
+  if (!(error instanceof ApiError)) return messages
+  for (const { field, message } of error.fields) {
+    if (!(field in messages)) messages[field] = message
+  }
+  return messages
+}

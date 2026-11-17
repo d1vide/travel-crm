@@ -1,0 +1,40 @@
+/* Токены дизайн-системы «Travel CRM Workspace». Значения: docs/design (DESIGN.md). */
+:root {
+  --c-primary: #0e7490;
+  --c-primary-hover: #0369a1;
+  --c-primary-soft: #ecfeff;
+  --c-secondary: #0369a1;
+
+  --c-surface-app: #f8fafc;
+  --c-surface-card: #ffffff;
+  --c-surface-subtle: #f1f5f9;
+  --c-surface-active: #e2e8f0;
+
+  --c-text-primary: #0f172a;
+  --c-text-secondary: #475569;
+  --c-text-muted: #64748b;
+  --c-text-placeholder: #94a3b8;
+
+  --c-border: #e2e8f0;
+  --c-border-strong: #cbd5e1;
+
+  --c-danger: #b91c1c;
+  --c-danger-soft: #fef2f2;
+  --c-warning: #b45309;
+  --c-warning-soft: #fffbeb;
+  --c-success: #15803d;
+  --c-success-soft: #f0fdf4;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  --shadow-1: 0 1px 2px 0 rgb(15 23 42 / 4%);
+  --shadow-2: 0 4px 6px -1px rgb(15 23 42 / 8%), 0 2px 4px -2px rgb(15 23 42 / 4%);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+}
