@@ -27,6 +27,8 @@ python scripts/init_env.py
 docker compose up -d --build
 ```
 
+Команда выше поднимает и фронтенд: сборка Vue раздаётся через nginx на `http://localhost:8080` (порт задаётся `WEB_PORT`). nginx отдаёт `index.html` для любых адресов приложения, а `/api` проксирует на `backend`, поэтому refresh-cookie живёт на одном origin, как и в dev-режиме. Образ описан в `Dockerfile`, настройки — в `nginx.conf`; проверка работоспособности — `/healthz`. Только фронтенд пересобирается командой `docker compose up -d --build web`.
+
 Демо-пользователи (`manager@example.com`, `head@example.com`, `accountant@example.com`) создаются при `SEED_DEMO=true`, пароль берётся из `DEMO_PASSWORD` в корневом `.env`. Сессия хранится в памяти страницы: после перезагрузки приложение восстанавливает её через refresh-cookie, а выход отзывает токен на сервере.
 
 ### Типы контракта API
