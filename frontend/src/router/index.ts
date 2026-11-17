@@ -38,6 +38,12 @@ export function createAppRouter(
           { path: '', name: 'home', component: { render: () => null } },
           ...sections,
           ...clientPages(),
+          // Профиль доступен любой роли: защита требует только входа.
+          {
+            path: '/profile',
+            name: 'profile',
+            component: () => import('@/views/ProfileView.vue'),
+          },
           {
             path: '/forbidden',
             name: 'forbidden',
