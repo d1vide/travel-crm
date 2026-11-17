@@ -13,12 +13,25 @@ export interface HttpClientOptions {
 
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
+export interface RequestOptions {
+  /**
+   * Ключ идемпотентности команды (UUID). Новая команда получает новый ключ, повтор того же
+   * запроса — прежний. При повторе после обновления токена клиент сохраняет исходный ключ.
+   */
+  idempotencyKey?: string
+}
+
+/** Создаёт ключ идемпотентности для новой команды. */
+export function newIdempotencyKey(): string {
+  return crypto.randomUUID()
+}
+
 export interface HttpClient {
   get<T>(path: string): Promise<T>
-  post<T>(path: string, body?: unknown): Promise<T>
-  put<T>(path: string, body?: unknown): Promise<T>
-  patch<T>(path: string, body?: unknown): Promise<T>
-  delete<T = void>(path: string): Promise<T>
+  post<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T>
+  put<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T>
+  patch<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T>
+  delete<T = void>(path: string, options?: RequestOptions): Promise<T>
 }
 
 const AUTH_PREFIX = '/auth/'
@@ -39,10 +52,14 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
     method: Method,
     path: string,
     body: unknown,
+    requestOptions: RequestOptions,
   ): Promise<{ response: Response; sentWith: string | null }> {
     const headers = new Headers({ Accept: 'application/json' })
     const sentWith = options.getAccessToken()
     if (sentWith) headers.set('Authorization', `Bearer ${sentWith}`)
+    if (requestOptions.idempotencyKey) {
+      headers.set('Idempotency-Key', requestOptions.idempotencyKey)
+    }
     const init: RequestInit = { method, headers, credentials: 'same-origin' }
     if (body !== undefined) {
       headers.set('Content-Type', 'application/json')
@@ -55,8 +72,13 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
     }
   }
 
-  async function request<T>(method: Method, path: string, body?: unknown): Promise<T> {
-    const first = await send(method, path, body)
+  async function request<T>(
+    method: Method,
+    path: string,
+    body?: unknown,
+    requestOptions: RequestOptions = {},
+  ): Promise<T> {
+    const first = await send(method, path, body, requestOptions)
     let response = first.response
 
     if (response.status === 401 && !path.startsWith(AUTH_PREFIX)) {
@@ -67,7 +89,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
         options.onAuthFailure()
         throw await apiErrorFromResponse(response)
       }
-      response = (await send(method, path, body)).response
+      response = (await send(method, path, body, requestOptions)).response
       if (response.status === 401) {
         options.onAuthFailure()
         throw await apiErrorFromResponse(response)
@@ -81,9 +103,9 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 
   return {
     get: (path) => request('GET', path),
-    post: (path, body) => request('POST', path, body),
-    put: (path, body) => request('PUT', path, body),
-    patch: (path, body) => request('PATCH', path, body),
-    delete: (path) => request('DELETE', path),
+    post: (path, body, opts) => request('POST', path, body, opts),
+    put: (path, body, opts) => request('PUT', path, body, opts),
+    patch: (path, body, opts) => request('PATCH', path, body, opts),
+    delete: (path, opts) => request('DELETE', path, undefined, opts),
   }
 }

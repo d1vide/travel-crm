@@ -105,6 +105,50 @@ describe('session store', () => {
     expect(session.isAuthenticated).toBe(true)
   })
 
+  it('login сохраняет сессию из ответа сервера', async () => {
+    fetchMock.mockResolvedValue(json(200, managerResponse))
+    const session = useSessionStore()
+
+    await session.login('manager@example.com', 'secret')
+
+    expect(session.isAuthenticated).toBe(true)
+    expect(session.role).toBe('manager')
+    expect(fetchMock).toHaveBeenCalledWith('/api/auth/login', expect.anything())
+  })
+
+  it('login при отказе сервера пробрасывает ошибку и не создаёт сессию', async () => {
+    fetchMock.mockResolvedValue(
+      json(401, { code: 'unauthorized', message: 'Неверный пароль', fields: [] }),
+    )
+    const session = useSessionStore()
+
+    await expect(session.login('a@b.c', 'x')).rejects.toMatchObject({ message: 'Неверный пароль' })
+    expect(session.isAuthenticated).toBe(false)
+  })
+
+  it('logout вызывает сервер и очищает сессию', async () => {
+    fetchMock.mockResolvedValueOnce(json(200, managerResponse))
+    const session = useSessionStore()
+    await session.refresh()
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }))
+
+    await session.logout()
+
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/auth/logout', expect.anything())
+    expect(session.isAuthenticated).toBe(false)
+  })
+
+  it('logout очищает сессию, даже если сервер недоступен', async () => {
+    fetchMock.mockResolvedValueOnce(json(200, managerResponse))
+    const session = useSessionStore()
+    await session.refresh()
+    fetchMock.mockRejectedValueOnce(new TypeError('offline'))
+
+    await session.logout()
+
+    expect(session.isAuthenticated).toBe(false)
+  })
+
   it('clearSession сбрасывает токен и пользователя', async () => {
     fetchMock.mockResolvedValue(json(200, managerResponse))
     const session = useSessionStore()

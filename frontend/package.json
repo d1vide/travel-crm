@@ -13,7 +13,8 @@
     "lint": "run-s \"lint:*\"",
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
-    "format": "prettier --write --experimental-cli src/"
+    "format": "prettier --write --experimental-cli src/",
+    "gen:api": "npx --yes openapi-typescript@7.13.0 ../docs/api/openapi.json -o src/api/schema.d.ts"
   },
   "dependencies": {
     "naive-ui": "^2.45.3",

@@ -31,10 +31,9 @@ const menuOptions = computed<MenuOption[]>(() =>
 
 const activeKey = computed(() => (typeof route.name === 'string' ? route.name : null))
 
-function logout() {
-  // Запрос выхода на сервер (отзыв refresh-токена) подключается в задаче #11.
-  session.clearSession()
-  void router.push({ name: 'login' })
+async function logout() {
+  await session.logout()
+  await router.push({ name: 'login' })
 }
 </script>
 
