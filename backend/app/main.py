@@ -8,6 +8,7 @@ from app.core.database import Database, DbSession
 from app.core.errors import register_errors
 from app.modules.auth.models import User
 from app.modules.auth.router import router as auth_router
+from app.modules.clients.router import router as clients_router
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -26,6 +27,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.state.database = database
     register_errors(application)
     application.include_router(auth_router)
+    application.include_router(clients_router)
 
     @application.get("/api/health/live", tags=["health"])
     def live():

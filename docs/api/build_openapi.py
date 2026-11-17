@@ -144,7 +144,12 @@ def build():
                 [
                     query(
                         "page",
-                        {"type": "integer", "minimum": 1, "default": 1},
+                        {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2147483647,
+                            "default": 1,
+                        },
                         "Номер страницы с 1",
                     ),
                     query(
@@ -205,7 +210,17 @@ def build():
             "x-requirements": list(requirements),
             "x-implementation-status": "implemented"
             if operation_id
-            in {"login", "refresh_session", "logout", "get_current_user"}
+            in {
+                "login",
+                "refresh_session",
+                "logout",
+                "get_current_user",
+                "list_clients",
+                "check_duplicate_clients",
+                "create_client",
+                "get_client",
+                "update_client",
+            }
             else "planned",
             "responses": responses,
             "description": description

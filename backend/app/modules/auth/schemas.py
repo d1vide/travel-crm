@@ -1,12 +1,9 @@
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import EmailStr, Field, field_validator
 
+from app.core.schemas import Dto
 from app.modules.auth.models import Role
-
-
-class Dto(BaseModel):
-    model_config = ConfigDict(extra="forbid", from_attributes=True, hide_input_in_errors=True)
 
 
 class LoginInput(Dto):

@@ -52,12 +52,14 @@ erDiagram
 |---|---|---|
 | `users` | `id`, `full_name`, `email`, `password_hash`, `role`, `is_active`, даты | Уникальный нормализованный email; `role`: `manager`, `head`, `accountant`; хеш пароля никогда не входит в DTO |
 | `refresh_tokens` | `id`, `user_id`, `token_hash`, `family_id`, `expires_at`, `revoked_at`, `replaced_by_id`, `created_at` | Уникальный хеш; хранится только хеш. Ротация и отзыв транзакционны; повторное использование заменённого токена отзывает семейство. Access после logout может жить до истечения своих 15 минут, refresh отозван сразу |
-| `clients` | `id`, `client_number`, `created_by_id`, `full_name`, `phone`, `email`, `phone_normalized`, `email_normalized`, `preferences`, `note`, `version`, даты | `client_number` unique; CHECK контакта; имя непустое. Нормализованные контакты индексируются, но не unique |
+| `clients` | `id`, `client_number`, `created_by_id`, `full_name`, `full_name_normalized`, `phone`, `email`, `phone_normalized`, `email_normalized`, `preferences`, `note`, `version`, даты | `client_number` unique; CHECK контакта; имя непустое. Нормализованные контакты индексируются, но не unique; нормализованное имя используется только для поиска |
 | `requests` | `id`, `client_id`, `manager_id`, `destination`, `starts_on`, `ends_on`, `tourist_count`, `budget`, `wishes`, `status`, `selected_selection_item_id`, `cancellation_reason`, `completed_at`, `cancelled_at`, `version`, даты | Ответственный — активный manager или head; туристов > 0; бюджет >= 0; окончание >= начала. Выбранный элемент принадлежит подборке этой заявки |
 
 Менеджер видит заявку только при `manager_id = current_user.id`; руководитель — все; бухгалтер — финансовые представления. До первой заявки клиент доступен создавшему менеджеру; после появления заявок — менеджерам, ответственным хотя бы за одну его заявку, и руководителю. Доступ к клиенту не раскрывает чужие заявки, общение и туристов. После переназначения права пересчитываются по текущим ответственным.
 
 Поиск дублей возвращает только доступные карточки. Совпадение с недоступной карточкой даёт `requires_head_review` и не раскрывает её контакты или UUID. При записи сервер повторно проверяет совпадения: доступные требуют `duplicate_acknowledged=true`, недоступные — проверки руководителем. Другой клиент с теми же контактами допускается после этой проверки; автоматического объединения и запрета создания однофамильцев нет.
+
+В #12 реализованы clients, idempotency_records и базовая requests для прав доступа. selected_selection_item_id добавляется вместе с подборками; Request API ещё не реализован. При редактировании клиента подтверждение дублей требуется только для новых нормализованных контактов. Изменение примечания или оформления того же телефона повторного подтверждения не требует. Детали реализации и порядок блокировок для #13 — в [подключении клиентов](api/clients-integration.md).
 
 ## Каталог, подборки и туристы
 
