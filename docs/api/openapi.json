@@ -6255,7 +6255,7 @@
           "FR-09",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "200": {
             "description": "История общения с клиентом",
@@ -6378,7 +6378,7 @@
           "FR-09",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "201": {
             "description": "Записать контакт с клиентом",
@@ -6482,7 +6482,7 @@
           "FR-09",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "200": {
             "description": "Общение по заявке",

@@ -232,6 +232,9 @@ def build():
                 "list_request_history",
                 "list_tours",
                 "get_tour",
+                "list_client_communications",
+                "create_communication",
+                "list_request_communications",
             }
             else "planned",
             "responses": responses,

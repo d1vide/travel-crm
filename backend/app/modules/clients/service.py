@@ -30,7 +30,28 @@ def get_visible(session: Session, actor: User, client_id: UUID, *, lock=False) -
     client = session.scalar(query)
     if client is None:
         raise ApiError(404, "not_found", "Клиент не найден")
+    # A parent row lock does not refresh EXISTS subqueries evaluated before waiting.
+    if lock and not session.scalar(
+        select(
+            exists().where(
+                ClientRecord.id == client_id,
+                visible_clients(actor),
+            )
+        )
+    ):
+        raise ApiError(404, "not_found", "Клиент не найден")
     return client
+
+
+def client_is_visible(client_id, actor):
+    return exists(
+        select(ClientRecord.id)
+        .where(
+            ClientRecord.id == client_id,
+            visible_clients(actor),
+        )
+        .correlate_except(ClientRecord)
+    )
 
 
 def card(client: ClientRecord) -> Client:

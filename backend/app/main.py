@@ -10,6 +10,7 @@ from app.modules.auth.directory import router as users_router
 from app.modules.auth.models import User
 from app.modules.auth.router import router as auth_router
 from app.modules.clients.router import router as clients_router
+from app.modules.communications.router import router as communications_router
 from app.modules.requests.router import router as requests_router
 from app.modules.tours.router import router as tours_router
 
@@ -34,6 +35,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(users_router)
     application.include_router(requests_router)
     application.include_router(tours_router)
+    application.include_router(communications_router)
 
     @application.get("/api/health/live", tags=["health"])
     def live():

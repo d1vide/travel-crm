@@ -13,6 +13,7 @@ from sqlalchemy import (
     Integer,
     Numeric,
     Text,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.orm import Mapped, mapped_column
@@ -32,6 +33,7 @@ class RequestStatus(StrEnum):
 class TravelRequest(Base):
     __tablename__ = "requests"
     __table_args__ = (
+        UniqueConstraint("id", "client_id", name="uq_requests_id_client"),
         CheckConstraint("ends_on >= starts_on", name="valid_dates"),
         CheckConstraint("tourist_count > 0", name="positive_tourist_count"),
         CheckConstraint("budget >= 0", name="nonnegative_budget"),

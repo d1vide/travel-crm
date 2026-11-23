@@ -108,7 +108,7 @@ erDiagram
 
 | Таблица | Основные поля | Ограничения |
 |---|---|---|
-| `communications` | `id`, `client_id`, `request_id` nullable, `author_id`, `channel`, `text`, `occurred_at`, `created_at` | Заявка принадлежит этому клиенту; канал `phone`, `email`, `messenger`, `office`, `other`; текст непустой. `occurred_at` — время контакта, `created_at` — серверное время записи |
+| `communications` | `id`, `client_id`, `request_id` nullable, `author_id`, `channel`, `text`, `occurred_at`, `created_at` | Реализовано в #16. Составной FK `(request_id, client_id)` на уникальную пару `requests(id, client_id)` гарантирует принадлежность заявки клиенту; отдельные FK клиента и автора — RESTRICT. Канал `phone`, `email`, `messenger`, `office`, `other`; текст непустой. `occurred_at` — время контакта, `created_at` — серверное время записи |
 | `notifications` | `id`, `recipient_id`, `payment_id`, `type`, `read_at`, `created_at` | Тип `payment_succeeded`; UNIQUE `(recipient_id, payment_id, type)`. По одному уведомлению каждому получателю; читается только своё |
 | `audit_records` | `id`, `request_id`, `actor_id` nullable, `source`, `entity_type`, `entity_id`, `action`, `changes`, `created_at` | `source`: `staff`, `payment_service`, `system`; неизменяемые записи. changes — массив белого списка field/old_value/new_value, как в AuditChange; request_id индексируется с created_at. Автор nullable только для сервиса/системы; без паролей, токенов и паспортов в JSON |
 | `idempotency_records` | `id`, `actor_scope`, `operation`, `key`, `request_hash`, `resource_type`, `resource_id`, `result_metadata`, `created_at` | UNIQUE `(actor_scope, operation, key)`; операция включает HTTP-метод и путь; другой body — 409; тот же — исходный ресурс. result_metadata хранит только безопасный результат формы (счётчик/версия), без паспортов и токенов |
@@ -129,7 +129,7 @@ erDiagram
 - `selections(request_id, created_at)`, `selection_items(selection_id, position)`, `tourists(request_id)`;
 - `bookings(request_id, created_at)`, частичный unique действующей брони, индекс по `confirmed_at`;
 - `payments(booking_id, status)`, `payments(succeeded_at)` WHERE succeeded; аналогично для `refunds(payment_id, status)` и `refunds(succeeded_at)`;
-- `communications(client_id, occurred_at)`, `communications(request_id, occurred_at)`;
+- `communications(client_id, occurred_at, id)`, `communications(request_id, occurred_at, id)` для стабильного порядка ленты;
 - `notifications(recipient_id, created_at)` WHERE read_at IS NULL;
 - `audit_records(entity_type, entity_id, created_at)`, `refresh_tokens(user_id, family_id)` и индексы внешних ключей, не покрытых перечисленными индексами.
 
