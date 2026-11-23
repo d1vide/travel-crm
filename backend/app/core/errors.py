@@ -95,11 +95,17 @@ def register_errors(app: FastAPI):
                 "string_type": "Ожидается строка",
                 "string_too_short": "Поле не должно быть пустым",
                 "blank_string": "Поле не должно быть пустым",
+                "calendar_date": "Передайте корректную дату YYYY-MM-DD",
+                "date_order": "Дата окончания не может быть раньше начала",
             }.get(item["type"], "Некорректное значение")
             if path == "email" and item["type"] != "missing":
                 message = "Введите корректный email"
             if path == "phone" and item["type"] != "missing":
                 message = "Введите корректный телефон"
+            if path == "budget" and item["type"] != "missing":
+                message = "Передайте неотрицательную сумму строкой с двумя знаками после точки"
+            if path == "tourist_count" and item["type"] != "missing":
+                message = "Введите целое число туристов от 1 до 2147483647"
             fields.append(FieldError(field=path, message=message))
         return error_response(422, "validation_error", "Проверьте данные", fields)
 

@@ -49,6 +49,16 @@ def card(client: ClientRecord) -> Client:
     )
 
 
+def request_client_briefs(session: Session, identities) -> dict:
+    """Project clients for requests whose object access has already been checked."""
+    rows = session.execute(
+        select(ClientRecord.id, ClientRecord.client_number, ClientRecord.full_name).where(
+            ClientRecord.id.in_(identities)
+        )
+    )
+    return {row.id: ClientBrief(**row._mapping) for row in rows}
+
+
 def list_clients(session: Session, actor: User, query: ClientListQuery) -> ClientPage:
     conditions = [visible_clients(actor)]
     if query.q:
