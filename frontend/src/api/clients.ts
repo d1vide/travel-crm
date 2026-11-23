@@ -4,16 +4,11 @@ import type { components } from './schema'
 
 type Schemas = components['schemas']
 
-// В контракте правило «нужен хотя бы один контакт» записано через `anyOf`, и openapi-typescript
-// разворачивает такие схемы в объединение с «ветками» только с phone или email. Основная
-// ветка — та, что содержит full_name; выбираем её здесь, а не размазываем по экранам.
-type MainBranch<T> = Extract<T, { full_name: string }>
-
-export type Client = MainBranch<Schemas['Client']>
+export type Client = Schemas['Client']
 export type ClientBrief = Schemas['ClientBrief']
-export type ClientCreate = MainBranch<Schemas['ClientCreate']>
-export type ClientUpdate = MainBranch<Schemas['ClientUpdate']>
-export type ClientPage = Omit<Schemas['ClientPage'], 'items'> & { items: Client[] }
+export type ClientCreate = Schemas['ClientCreate']
+export type ClientUpdate = Schemas['ClientUpdate']
+export type ClientPage = Schemas['ClientPage']
 export type DuplicateCheckResult = Schemas['DuplicateCheckResult']
 
 export type ClientSort = '-created_at' | 'full_name' | 'client_number'

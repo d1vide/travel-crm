@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { NAlert, NButton, NForm, NFormItem, NInput } from 'naive-ui'
-import { useClientsApi, type Client, type ClientBrief, type ClientsApi } from '@/api/clients'
+import {
+  useClientsApi,
+  type Client,
+  type ClientBrief,
+  type ClientCreate,
+  type ClientsApi,
+} from '@/api/clients'
 import { ApiError, fieldMessages } from '@/api/errors'
 import { useCommandKey } from '@/composables/useCommandKey'
 import ClientDuplicateAlert from './ClientDuplicateAlert.vue'
@@ -72,8 +78,8 @@ async function runDuplicateCheck(): Promise<boolean> {
   return result.matches.length > 0 || result.requires_head_review
 }
 
-function body() {
-  return {
+function body(): ClientCreate {
+  const data = {
     full_name: form.fullName.trim(),
     phone: phone.value,
     email: email.value,
@@ -81,6 +87,11 @@ function body() {
     note: form.note,
     duplicate_acknowledged: acknowledged.value,
   }
+  if (data.phone !== null) return { ...data, phone: data.phone }
+  if (data.email !== null) return { ...data, email: data.email }
+  throw new ApiError(422, 'validation_error', 'Укажите телефон или email', [
+    { field: 'phone', message: 'Укажите телефон или email' },
+  ])
 }
 
 async function save(): Promise<Client> {

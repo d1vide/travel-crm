@@ -58,6 +58,17 @@ def main() -> None:
     examples_by_name = {
         example["schema"]: example["value"] for example in examples["examples"]
     }
+    # Contact composition must preserve the same rule for cards and both commands.
+    for name in ("Client", "ClientCreate", "ClientUpdate"):
+        validator = Draft202012Validator(
+            {"$ref": f"#/$defs/{name}", "$defs": schema["$defs"]},
+            format_checker=checker,
+        )
+        for phone in (None, "", "+79990000001"):
+            for email in (None, "", "contact@example.com"):
+                value = {**examples_by_name[name], "phone": phone, "email": email}
+                if validator.is_valid(value) != bool(phone or email):
+                    raise ValueError(f"Contact rule differs for {name}")
     invalid_examples = [
         ("Money", 100.0),
         ("Money", "-1.00"),

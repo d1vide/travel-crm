@@ -19,4 +19,13 @@ describe('соответствие контракту API (docs/api/openapi.json
     expectTypeOf<Schemas['AuthResult']['access_token']>().toEqualTypeOf<string>()
     expectTypeOf<Schemas['AuthResult']['user']['role']>().toEqualTypeOf<Role>()
   })
+
+  it('схемы контактов сохраняют общие поля карточки и команд', () => {
+    expectTypeOf<Schemas['Client']['full_name']>().toEqualTypeOf<string>()
+    expectTypeOf<Schemas['ClientCreate']['full_name']>().toEqualTypeOf<string>()
+    expectTypeOf<Schemas['ClientUpdate']['version']>().toEqualTypeOf<number>()
+    expectTypeOf<Schemas['ClientPage']['items'][number]>().toEqualTypeOf<Schemas['Client']>()
+    expectTypeOf<Schemas['Client']['phone']>().toEqualTypeOf<string | null>()
+    expectTypeOf<Schemas['Client']['email']>().toEqualTypeOf<string | null>()
+  })
 })

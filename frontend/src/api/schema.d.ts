@@ -1140,11 +1140,11 @@ export interface components {
             created_at: components["schemas"]["Timestamp"];
             updated_at: components["schemas"]["Timestamp"];
             allowed_actions: components["schemas"]["ClientAction"][];
-        } | {
+        } & ({
             phone?: string;
         } | {
             email?: string;
-        };
+        });
         /**
          * @example {
          *       "title": "Учебный тур",
@@ -1952,11 +1952,11 @@ export interface components {
             preferences: string;
             note: string;
             duplicate_acknowledged: boolean;
-        } | {
+        } & ({
             phone?: string;
         } | {
             email?: string;
-        };
+        });
         /**
          * @example {
          *       "full_name": "Тестовый Клиент",
@@ -1976,11 +1976,11 @@ export interface components {
             preferences: string;
             note: string;
             duplicate_acknowledged: boolean;
-        } | {
+        } & ({
             phone?: string;
         } | {
             email?: string;
-        };
+        });
         /**
          * @example {
          *       "client_id": "00000000-0000-4000-8000-000000000002",

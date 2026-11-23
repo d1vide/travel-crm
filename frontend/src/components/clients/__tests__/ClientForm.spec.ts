@@ -134,6 +134,23 @@ describe('ClientForm', () => {
     expect(wrapper.emitted('saved')?.[0]).toEqual([saved])
   })
 
+  it('создаёт клиента с email без телефона', async () => {
+    const emailOnly: Client = { ...saved, phone: null, email: 'ivan@example.com' }
+    const { api, calls } = setup((url) =>
+      isDuplicates(url) ? json(200, noDuplicates) : json(201, emailOnly),
+    )
+    const wrapper = await render(api)
+
+    await fill(wrapper, { full_name: 'Иван Петров', email: 'ivan@example.com' })
+    await save(wrapper)
+
+    expect(JSON.parse(postCalls(calls)[0]!.init.body as string)).toMatchObject({
+      phone: null,
+      email: 'ivan@example.com',
+    })
+    expect(wrapper.emitted('saved')?.[0]).toEqual([emailOnly])
+  })
+
   it('при совпадениях показывает их и ждёт подтверждения вместо отправки', async () => {
     const { api, calls } = setup((url) =>
       isDuplicates(url)
