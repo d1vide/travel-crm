@@ -355,22 +355,26 @@
           "minItems": 0
         }
       },
-      "anyOf": [
+      "allOf": [
         {
-          "properties": {
-            "phone": {
-              "type": "string",
-              "minLength": 1
+          "anyOf": [
+            {
+              "properties": {
+                "phone": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            {
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
             }
-          }
-        },
-        {
-          "properties": {
-            "email": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
+          ]
         }
       ]
     },
@@ -1855,22 +1859,26 @@
           "type": "boolean"
         }
       },
-      "anyOf": [
+      "allOf": [
         {
-          "properties": {
-            "phone": {
-              "type": "string",
-              "minLength": 1
+          "anyOf": [
+            {
+              "properties": {
+                "phone": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            {
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
             }
-          }
-        },
-        {
-          "properties": {
-            "email": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
+          ]
         }
       ]
     },
@@ -1917,22 +1925,26 @@
           "type": "boolean"
         }
       },
-      "anyOf": [
+      "allOf": [
         {
-          "properties": {
-            "phone": {
-              "type": "string",
-              "minLength": 1
+          "anyOf": [
+            {
+              "properties": {
+                "phone": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            {
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
             }
-          }
-        },
-        {
-          "properties": {
-            "email": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
+          ]
         }
       ]
     },
