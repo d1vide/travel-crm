@@ -2518,7 +2518,7 @@
           "FR-09",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "200": {
             "description": "Тестовый каталог туров",
@@ -2685,7 +2685,7 @@
           "FR-04",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "200": {
             "description": "Карточка предложения",
@@ -2739,7 +2739,7 @@
             "$ref": "#/components/responses/Error503"
           }
         },
-        "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+        "description": "Активное предложение общего каталога доступно manager/head независимо от наличия заявок. Неактивный и отсутствующий тур дают одинаковый 404.",
         "parameters": [
           {
             "name": "tour_id",

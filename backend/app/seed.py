@@ -4,6 +4,7 @@ from app.core.config import Settings, get_settings
 from app.core.database import Database
 from app.modules.auth.models import Role, User
 from app.modules.auth.security import password_hasher
+from app.modules.tours.seed import seed_tours
 
 DEMO_USERS = (
     ("manager@example.com", "Тестовый менеджер", Role.MANAGER),
@@ -29,6 +30,7 @@ def seed_demo(settings: Settings, database: Database):
                         ),
                     )
                 )
+        seed_tours(session)
 
 
 def main():

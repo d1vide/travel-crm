@@ -8,6 +8,7 @@ from app.core.database import Base, Database
 from app.modules.auth import models  # noqa: F401
 from app.modules.clients import models as client_models  # noqa: F401
 from app.modules.requests import models as request_models  # noqa: F401
+from app.modules.tours import models as tour_models  # noqa: F401
 
 configuration = context.config
 settings = configuration.attributes.get("settings") or get_settings()
