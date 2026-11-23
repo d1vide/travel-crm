@@ -55,7 +55,7 @@ flowchart LR
 
 ## Запуск
 
-Текущий Compose содержит db, backend и web: `python scripts/init_env.py`, затем `docker compose up --build`, приложение на localhost:8080, API напрямую на localhost:8000. В PR #47 добавлены Dockerfile фронтенда, nginx и сервис web; stubs ещё отсутствует и добавляется в #15. Нативный запуск и миграции описаны в backend/README.md. Реализованы auth/health и clients по #12, вход и клиенты подключены к интерфейсу; полная спецификация остальных модулей остаётся целевым контрактом. Подключение клиентов описано в docs/api/clients-integration.md, HTTP API заявок — следующая задача #13.
+Текущий Compose содержит db, backend и web: `python scripts/init_env.py`, затем `docker compose up --build`, приложение на localhost:8080, API напрямую на localhost:8000. В PR #47 добавлены Dockerfile фронтенда, nginx и сервис web; stubs ещё отсутствует и добавляется в #15. Нативный запуск и миграции описаны в backend/README.md. Реализованы auth/health, clients и десять операций requests/users/history; вход и клиенты подключены к интерфейсу. Подключение API заявок описано в docs/api/requests-integration.md. Остальные операции остаются целевым контрактом; следующий модуль — каталог #30.
 
 Целевой запуск полного стека в #24:
 

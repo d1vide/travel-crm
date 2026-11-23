@@ -7,7 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from jsonschema import Draft202012Validator, FormatChecker
 from pydantic import SecretStr, ValidationError
-from sqlalchemy import func, select
+from sqlalchemy import func, inspect, select
 from sqlalchemy.exc import IntegrityError
 
 from alembic import command
@@ -31,6 +31,9 @@ def validate(name, value):
 
 
 def test_migrations_reapply_and_seed_preserves_existing_users(settings, database):
+    inspector = inspect(database.engine)
+    assert inspector.has_table("users", schema=settings.database_schema)
+    assert inspector.has_table("alembic_version", schema=settings.database_schema)
     with database.sessions() as session:
         before = {
             user.email: (user.id, user.password_hash) for user in session.scalars(select(User))
