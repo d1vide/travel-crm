@@ -1,32 +1,17 @@
 from datetime import date, datetime
-from typing import Annotated, Literal
+from typing import Literal
 from uuid import UUID
 
-from pydantic import BeforeValidator, Field, StrictStr, ValidationInfo, field_validator
+from pydantic import Field, StrictStr, ValidationInfo, field_validator
 from pydantic_core import PydanticCustomError
 
 from app.core.pagination import PageQuery
 from app.core.schemas import Dto
+from app.core.validation import CalendarDate, Money
 from app.modules.auth.schemas import UserDto
 from app.modules.clients.normalization import checked_text
 from app.modules.clients.schemas import ClientBrief
 from app.modules.requests.models import RequestStatus
-
-
-def calendar_date(value):
-    if not isinstance(value, str) or len(value) != 10:
-        raise PydanticCustomError("calendar_date", "Передайте дату YYYY-MM-DD")
-    try:
-        parsed = date.fromisoformat(value)
-    except ValueError as error:
-        raise PydanticCustomError("calendar_date", "Передайте дату YYYY-MM-DD") from error
-    if parsed.isoformat() != value:
-        raise PydanticCustomError("calendar_date", "Передайте дату YYYY-MM-DD")
-    return value
-
-
-CalendarDate = Annotated[date, BeforeValidator(calendar_date)]
-Money = Annotated[StrictStr, Field(pattern=r"^(0|[1-9][0-9]{0,11})\.[0-9]{2}$")]
 
 
 class ExpectedVersion(Dto):

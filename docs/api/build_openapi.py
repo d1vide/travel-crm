@@ -230,6 +230,8 @@ def build():
                 "cancel_request",
                 "resume_request",
                 "list_request_history",
+                "list_tours",
+                "get_tour",
             }
             else "planned",
             "responses": responses,
@@ -513,6 +515,7 @@ def build():
         "Карточка предложения",
         "TourOffer",
         requirements=["FR-04"],
+        description="Активное предложение общего каталога доступно manager/head независимо от наличия заявок. Неактивный и отсутствующий тур дают одинаковый 404.",
     )
     operation(
         "get",

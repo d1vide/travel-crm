@@ -102,7 +102,7 @@ def register_errors(app: FastAPI):
                 message = "Введите корректный email"
             if path == "phone" and item["type"] != "missing":
                 message = "Введите корректный телефон"
-            if path == "budget" and item["type"] != "missing":
+            if path in {"budget", "max_price"} and item["type"] != "missing":
                 message = "Передайте неотрицательную сумму строкой с двумя знаками после точки"
             if path == "tourist_count" and item["type"] != "missing":
                 message = "Введите целое число туристов от 1 до 2147483647"

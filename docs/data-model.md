@@ -65,7 +65,7 @@ erDiagram
 
 | Таблица | Основные поля | Ограничения |
 |---|---|---|
-| `tour_offers` | `id`, `title`, `destination`, `starts_on`, `ends_on`, `tourist_count`, `supplier`, `services`, `price`, `currency`, `is_active`, `version`, даты | Цена >= 0; число туристов > 0; даты корректны; цена за всех указанных туристов |
+| `tour_offers` | `id`, `title`, `destination`, `destination_normalized`, `starts_on`, `ends_on`, `tourist_count`, `supplier`, `services`, `price`, `currency`, `is_active`, `version`, даты | Реализовано в #30. Цена >= 0; число туристов > 0; даты корректны; currency=RUB; цена за всех туристов. services — одномерный text[] без NULL/пустых элементов; нормализованное направление используется только для поиска |
 | `selections` | `id`, `request_id`, `created_by_id`, `created_at` | Создаётся атомарно с >= 1 элементом; после публикации состав и снимки неизменяемы. Повторный подбор создаёт новую подборку |
 | `selection_items` | `id`, `selection_id`, `tour_offer_id`, `position`, `offer_snapshot` | UNIQUE `(selection_id, tour_offer_id)` и `(selection_id, position)`; `offer_snapshot` содержит заголовок, направление, даты, число туристов, поставщика, услуги, цену и валюту |
 | `tourists` | `id`, `request_id`, `full_name`, `birth_date`, `document_type`, `document_number`, `document_expires_on`, `version`, даты | ФИО, дата рождения и номер документа обязательны; `document_type`: `passport` или `international_passport`; срок действия nullable, для загранпаспорта обязателен. Дата рождения не в будущем |
@@ -125,7 +125,7 @@ erDiagram
 
 - `requests(manager_id, status, created_at)`, `requests(client_id)`, `requests(created_at)`;
 - `clients(phone_normalized)`, `clients(email_normalized)`, `clients(created_by_id)`; поиск по части имени через `pg_trgm` и GIN по нормализованному имени;
-- `tour_offers(destination, starts_on, tourist_count, price)` для активного каталога; окончательный состав уточняется по EXPLAIN;
+- Для активного `tour_offers`: частичный индекс `(tourist_count, starts_on, price)` и GIN/pg_trgm по `destination_normalized` для поиска подстроки; окончательный состав уточняется по EXPLAIN;
 - `selections(request_id, created_at)`, `selection_items(selection_id, position)`, `tourists(request_id)`;
 - `bookings(request_id, created_at)`, частичный unique действующей брони, индекс по `confirmed_at`;
 - `payments(booking_id, status)`, `payments(succeeded_at)` WHERE succeeded; аналогично для `refunds(payment_id, status)` и `refunds(succeeded_at)`;
