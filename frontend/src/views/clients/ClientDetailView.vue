@@ -94,6 +94,12 @@ const dash = (value: string | null | undefined) => value || '—'
       :description="`№${client.client_number} · создан ${formatDate(client.created_at)}`"
     >
       <template #actions>
+        <n-button
+          v-if="client.allowed_actions.includes('create_request')"
+          @click="router.push({ name: 'request-new', query: { client: client.id } })"
+        >
+          Создать заявку
+        </n-button>
         <n-button quaternary @click="router.push('/clients')">К списку</n-button>
         <n-button v-if="canUpdate && !editing" type="primary" @click="startEditing">
           Изменить

@@ -38,6 +38,7 @@ export function createAppRouter(
           { path: '', name: 'home', component: { render: () => null } },
           ...sections,
           ...clientPages(),
+          ...requestPages(),
           // Профиль доступен любой роли: защита требует только входа.
           {
             path: '/profile',
@@ -58,6 +59,20 @@ export function createAppRouter(
       },
     ],
   })
+}
+
+function requestPages(): RouteRecordRaw[] {
+  const roles = NAVIGATION.find((item) => item.name === 'requests')?.roles ?? []
+  const component = () => import('@/views/RequestDetailView.vue')
+  return [
+    { path: '/requests/new', name: 'request-new', component, meta: { roles, section: 'requests' } },
+    {
+      path: '/requests/:id',
+      name: 'request-detail',
+      component,
+      meta: { roles, section: 'requests' },
+    },
+  ]
 }
 
 /** Вложенные страницы раздела «Клиенты»: доступны тем же ролям и подсвечивают тот же пункт меню. */
