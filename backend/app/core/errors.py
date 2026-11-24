@@ -96,6 +96,7 @@ def register_errors(app: FastAPI):
                 "string_too_short": "Поле не должно быть пустым",
                 "blank_string": "Поле не должно быть пустым",
                 "calendar_date": "Передайте корректную дату YYYY-MM-DD",
+                "utc_timestamp": "Передайте корректные дату и время UTC с Z",
                 "date_order": "Дата окончания не может быть раньше начала",
             }.get(item["type"], "Некорректное значение")
             if path == "email" and item["type"] != "missing":
