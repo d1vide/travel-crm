@@ -6,12 +6,14 @@ from app.modules.requests.models import RequestStatus
 from app.modules.tourists.models import Tourist
 
 
-def is_editable(request):
-    # The active-booking guard is added together with booking creation in #14.
-    return request.status in (RequestStatus.IN_PROGRESS, RequestStatus.OFFER_PREPARED)
+def is_editable(request, has_active_booking):
+    return not has_active_booking and request.status in (
+        RequestStatus.IN_PROGRESS,
+        RequestStatus.OFFER_PREPARED,
+    )
 
 
-def request_details(session, rows):
+def request_details(session, rows, active_bookings):
     identities = [row.id for row in rows if row.status != RequestStatus.NEW]
     counts, links = {}, {}
     if identities:
@@ -41,7 +43,7 @@ def request_details(session, rows):
     return {
         row.id: {
             "tourists_received": counts.get(row.id, 0),
-            "tourist_form_editable": is_editable(row),
+            "tourist_form_editable": is_editable(row, row.id in active_bookings),
             "tourist_link": links.get(row.id),
         }
         for row in rows

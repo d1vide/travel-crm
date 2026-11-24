@@ -6,6 +6,7 @@ from app.core.errors import ApiError, FieldError
 from app.core.idempotency import check_payload, find_previous, remember
 from app.core.link_schemas import PublicLink as LinkDto
 from app.core.public_links import PublicLink, new_token, token_hash
+from app.modules.bookings.access import active_condition
 from app.modules.clients.models import Client
 from app.modules.requests import service as requests
 from app.modules.requests.access import request_is_visible
@@ -34,14 +35,14 @@ def list_tourists(session, actor, identity):
     ]
 
 
-def ensure_editable(request):
-    if not views.is_editable(request):
+def ensure_editable(session, request):
+    if not views.is_editable(request, session.scalar(select(active_condition(request.id)))):
         raise ApiError(409, "tourist_form_closed", "Изменение данных туристов сейчас недоступно")
 
 
 def issue_link(session, actor, identity, base_url):
     request = requests.locked_request(session, actor, identity)
-    ensure_editable(request)
+    ensure_editable(session, request)
     now = session.scalar(select(func.clock_timestamp()))
     session.execute(
         update(PublicLink)
@@ -93,7 +94,9 @@ def public_form(session, token):
     digest = token_hash(token)
     found = (
         session.execute(
-            select(PublicLink, TravelRequest)
+            select(
+                PublicLink, TravelRequest, active_condition(TravelRequest.id).label("has_booking")
+            )
             .join(TravelRequest, TravelRequest.id == PublicLink.request_id)
             .where(
                 PublicLink.token_hash == digest,
@@ -107,8 +110,8 @@ def public_form(session, token):
     )
     if found is None:
         raise ApiError(404, "not_found", "Форма недоступна")
-    link, request = found
-    editable = views.is_editable(request)
+    link, request, has_booking = found
+    editable = views.is_editable(request, has_booking)
     return PublicTouristForm(
         tourist_count=request.tourist_count,
         request_version=request.version,
@@ -119,7 +122,7 @@ def public_form(session, token):
 
 
 def replace(session, request, body):
-    ensure_editable(request)
+    ensure_editable(session, request)
     requests.expect_version(request, body.request_version)
     if len(body.tourists) != request.tourist_count:
         raise ApiError(

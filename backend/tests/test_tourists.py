@@ -456,7 +456,7 @@ def test_batched_request_projection(client, actors, context, application):
     event.listen(engine, "before_cursor_execute", capture)
     try:
         response = client.get("/api/requests", headers=actors["manager"]["headers"])
-        assert response.status_code == 200 and len(statements) <= 8
+        assert response.status_code == 200 and len(statements) <= 9
         row = response.json()["items"][0]
         assert row["tourists_received"] == 2 and row["tourist_link"]["is_active"]
     finally:

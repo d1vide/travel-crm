@@ -176,16 +176,51 @@ def build():
             parameters.append({"$ref": "#/components/parameters/IdempotencyKey"})
         responses = {str(status): {"description": summary}}
         if response:
+            example = copy.deepcopy(examples[response])
+            if operation_id == "issue_tourist_link":
+                example.update(
+                    purpose="tourists",
+                    url="http://localhost:8080/public/tourist-forms/" + "A" * 43,
+                )
+            if operation_id in {
+                "list_request_bookings",
+                "create_booking",
+                "get_booking",
+                "confirm_booking",
+                "reject_booking",
+            }:
+                bookings = example["items"] if response == "BookingPage" else [example]
+                for booking in bookings:
+                    booking.update(
+                        version=2,
+                        paid_amount="0.00",
+                        reserved_payment_amount="0.00",
+                        refunded_amount="0.00",
+                        remaining_amount=booking["total_amount"],
+                        available_payment_amount=booking["total_amount"],
+                        allowed_actions=[],
+                    )
+                    if operation_id in {"create_booking", "reject_booking"}:
+                        booking.update(
+                            status="pending_confirmation"
+                            if operation_id == "create_booking"
+                            else "rejected",
+                            version=1 if operation_id == "create_booking" else 2,
+                            supplier_booking_number=None,
+                            confirmed_at=None,
+                            tourists=[],
+                            available_payment_amount="0.00",
+                            rejection_reason=None
+                            if operation_id == "create_booking"
+                            else "Учебный отказ поставщика",
+                            allowed_actions=["confirm", "reject"]
+                            if operation_id == "create_booking"
+                            else [],
+                        )
             responses[str(status)]["content"] = {
                 "application/json": {
                     "schema": ref(response),
-                    "example": {
-                        **examples[response],
-                        "purpose": "tourists",
-                        "url": "http://localhost:8080/public/tourist-forms/" + "A" * 43,
-                    }
-                    if operation_id == "issue_tourist_link"
-                    else examples[response],
+                    "example": example,
                 },
             }
         for code in error_codes:
@@ -254,6 +289,11 @@ def build():
                 "submit_public_tourists",
                 "get_request_tourists",
                 "replace_request_tourists",
+                "list_request_bookings",
+                "create_booking",
+                "get_booking",
+                "confirm_booking",
+                "reject_booking",
             }
             else "planned",
             "responses": responses,
