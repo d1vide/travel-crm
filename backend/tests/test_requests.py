@@ -336,9 +336,7 @@ def test_status_commands_and_history(client, actors, client_id):
     assert "Изменились планы" not in str(history)
 
 
-@pytest.mark.parametrize(
-    "status", [RequestStatus.OFFER_PREPARED, RequestStatus.BOOKED, RequestStatus.COMPLETED]
-)
+@pytest.mark.parametrize("status", [RequestStatus.BOOKED, RequestStatus.COMPLETED])
 def test_future_states_are_not_editable_without_their_modules(
     client, actors, client_id, database, status
 ):

@@ -13,6 +13,7 @@ from app.modules.clients import service as clients
 from app.modules.requests.models import RequestStatus as Status
 from app.modules.requests.models import TravelRequest
 from app.modules.requests.schemas import AuditRecord, AuditRecordPage, Request, RequestPage
+from app.modules.tours import selection_views
 
 
 def visible_requests(actor):
@@ -36,7 +37,7 @@ def locked_request(session, actor, identity):
     return get_visible(session, actor, identity, lock=True)
 
 
-def allowed_actions(row, actor):
+def allowed_actions(row, actor, latest_selection_id=None):
     actions = ["reassign"] if actor.role == Role.HEAD else []
     if row.status in (Status.NEW, Status.IN_PROGRESS):
         actions += ["update", "cancel"]
@@ -44,12 +45,19 @@ def allowed_actions(row, actor):
         actions.append("start_work")
     if row.status == Status.CANCELLED:
         actions.append("resume")
+    if row.status in (Status.IN_PROGRESS, Status.OFFER_PREPARED):
+        actions.append("prepare_selection")
+    if row.status == Status.OFFER_PREPARED:
+        actions += ["return_to_work", "cancel"]
+        if latest_selection_id is not None:
+            actions.append("select_tour")
     return actions
 
 
 def project(session, actor, rows):
     client_map = clients.request_client_briefs(session, {row.client_id for row in rows})
     manager_map = user_briefs(session, {row.manager_id for row in rows})
+    details = selection_views.request_details(session, rows)
     return [
         Request(
             id=row.id,
@@ -70,14 +78,14 @@ def project(session, actor, rows):
             cancellation_reason=row.cancellation_reason,
             client=client_map[row.client_id],
             manager=manager_map[row.manager_id],
-            selected_selection_item_id=None,
-            selected_selection_id=None,
-            selected_offer=None,
+            selected_selection_item_id=row.selected_selection_item_id,
+            selected_selection_id=details[row.id]["selected_selection_id"],
+            selected_offer=details[row.id]["selected_offer"],
             active_booking=None,
             tourists_received=0,
             tourist_form_editable=False,
             tourist_link=None,
-            allowed_actions=allowed_actions(row, actor),
+            allowed_actions=allowed_actions(row, actor, details[row.id]["latest_selection_id"]),
         )
         for row in rows
     ]
@@ -176,10 +184,7 @@ def mutate_request(session, actor, identity: UUID, body, command, action):
     if previous is not None:
         return replay(session, actor, previous, command)
     row = locked_request(session, actor, identity)
-    if row.version != body.version:
-        raise ApiError(409, "version_conflict", "Заявка уже изменена. Обновите данные")
-    if row.version >= 2_147_483_647:
-        raise ApiError(409, "conflict", "Достигнут предел версии заявки")
+    expect_version(row, body.version)
     if action == "assign":
         if actor.role != Role.HEAD:
             raise ApiError(403, "forbidden", "Смена ответственного доступна руководителю")
@@ -204,12 +209,18 @@ def mutate_request(session, actor, identity: UUID, body, command, action):
     else:
         transitions = {
             "start-work": ({Status.NEW}, Status.IN_PROGRESS),
-            "cancel": ({Status.NEW, Status.IN_PROGRESS}, Status.CANCELLED),
+            "cancel": ({Status.NEW, Status.IN_PROGRESS, Status.OFFER_PREPARED}, Status.CANCELLED),
             "resume": ({Status.CANCELLED}, Status.IN_PROGRESS),
+            "return-to-work": ({Status.OFFER_PREPARED}, Status.IN_PROGRESS),
         }
         allowed, target = transitions[action]
         if row.status not in allowed:
             invalid_transition()
+        if action in ("cancel", "resume", "return-to-work"):
+            from app.modules.tours.selection_service import invalidate_request
+
+            invalidate_request(session, row.id)
+            row.selected_selection_item_id = None
         record_request_change(session, row, actor, "request_status", row.status, target, action)
         row.status = target
         row.version += 1
@@ -220,6 +231,13 @@ def mutate_request(session, actor, identity: UUID, body, command, action):
             row.cancellation_reason = None
             row.cancelled_at = None
     return finish(session, actor, row, operation, command)
+
+
+def expect_version(row, version):
+    if row.version != version:
+        raise ApiError(409, "version_conflict", "Заявка уже изменена. Обновите данные")
+    if row.version >= 2_147_483_647:
+        raise ApiError(409, "conflict", "Достигнут предел версии заявки")
 
 
 def invalid_transition():

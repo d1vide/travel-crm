@@ -49,7 +49,7 @@ def error_response(status: int, code: str, message: str, fields=None):
     return JSONResponse(
         status_code=status,
         content=Error(code=code, message=message, fields=fields or []).model_dump(mode="json"),
-        headers={"Cache-Control": "no-store"},
+        headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"},
     )
 
 

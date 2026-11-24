@@ -20,6 +20,7 @@ def main():
         "SEED_DEMO": "true",
         "DEMO_PASSWORD": secrets.token_urlsafe(18),
         "BACKEND_PORT": "8000",
+        "PUBLIC_APP_URL": "http://localhost:8080",
     }
     # Exclusive creation prevents accidental replacement by concurrent setup commands.
     with destination.open("x", encoding="utf-8", newline="\n") as output:
