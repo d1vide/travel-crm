@@ -80,6 +80,7 @@ def remember(
     *,
     resource_type: str,
     resource_id: UUID,
+    result_metadata: dict | None = None,
 ):
     session.add(
         IdempotencyRecord(
@@ -89,5 +90,6 @@ def remember(
             request_hash=command.payload_hash,
             resource_type=resource_type,
             resource_id=resource_id,
+            result_metadata=result_metadata,
         )
     )

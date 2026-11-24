@@ -41,8 +41,9 @@ class Error(BaseModel):
 
 
 class ApiError(Exception):
-    def __init__(self, status: int, code: str, message: str):
+    def __init__(self, status: int, code: str, message: str, fields=None):
         self.status, self.code, self.message = status, code, message
+        self.fields = fields
 
 
 def error_response(status: int, code: str, message: str, fields=None):
@@ -56,7 +57,7 @@ def error_response(status: int, code: str, message: str, fields=None):
 def register_errors(app: FastAPI):
     @app.exception_handler(ApiError)
     async def api_error_handler(request: Request, error: ApiError):
-        response = error_response(error.status, error.code, error.message)
+        response = error_response(error.status, error.code, error.message, error.fields)
         if error.status == 401:
             response.headers["WWW-Authenticate"] = "Bearer"
             if request.url.path == "/api/auth/refresh":
@@ -98,6 +99,8 @@ def register_errors(app: FastAPI):
                 "calendar_date": "Передайте корректную дату YYYY-MM-DD",
                 "utc_timestamp": "Передайте корректные дату и время UTC с Z",
                 "date_order": "Дата окончания не может быть раньше начала",
+                "birth_not_future": "Дата рождения не может быть в будущем",
+                "passport_expiry": "Укажите срок действия загранпаспорта",
             }.get(item["type"], "Некорректное значение")
             if path == "email" and item["type"] != "missing":
                 message = "Введите корректный email"

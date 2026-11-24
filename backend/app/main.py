@@ -13,6 +13,8 @@ from app.modules.auth.router import router as auth_router
 from app.modules.clients.router import router as clients_router
 from app.modules.communications.router import router as communications_router
 from app.modules.requests.router import router as requests_router
+from app.modules.tourists.router import public_router as public_tourists_router
+from app.modules.tourists.router import router as tourists_router
 from app.modules.tours.router import router as tours_router
 from app.modules.tours.selection_router import public_router as public_selections_router
 from app.modules.tours.selection_router import router as selections_router
@@ -42,6 +44,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(communications_router)
     application.include_router(selections_router)
     application.include_router(public_selections_router)
+    application.include_router(tourists_router)
+    application.include_router(public_tourists_router)
 
     @application.get("/api/health/live", tags=["health"])
     def live():

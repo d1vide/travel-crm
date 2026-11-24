@@ -41,7 +41,7 @@ GET /api/requests/{request_id}/history возвращает AuditRecordPage; д�
 
 ## Следующие модули
 
-Подборки #31 подключены: selected_selection_item_id, selected_selection_id и selected_offer содержат выбранный снимок; prepare_selection, select_tour и return_to_work доступны по состоянию дочерних данных. Правила публикации, выбора и ссылок — в [подключении подборок](selections-integration.md). После этих команд перечитать Request. active_booking и tourist_link пока null, tourists_received=0, tourist_form_editable=false; их подключат #14/#32.
+Подборки #31 подключены: selected_selection_item_id, selected_selection_id и selected_offer содержат выбранный снимок; prepare_selection, select_tour и return_to_work доступны по состоянию дочерних данных. Правила публикации, выбора и ссылок — в [подключении подборок](selections-integration.md). После этих команд перечитать Request. Туристы #32 подключают tourists_received, tourist_form_editable и tourist_link, а также edit_tourists/issue_tourist_link. Правила — в [подключении туристов](tourists-integration.md). active_booking пока null до #14.
 
 complete остаётся planned до #14/#33 с проверкой брони, полной оплаты и даты окончания по Москве. При подключении брони публикация/выбор, return-to-work, cancel/resume и allowed_actions должны учитывать действующую бронь, ожидающие платежи и возвраты. Сейчас брони ещё не создаются; отмена разрешена в new/in_progress/offer_prepared, редактирование пожеланий — только в new/in_progress.
 
