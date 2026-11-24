@@ -13,6 +13,7 @@ from app.modules.clients import service as clients
 from app.modules.requests.models import RequestStatus as Status
 from app.modules.requests.models import TravelRequest
 from app.modules.requests.schemas import AuditRecord, AuditRecordPage, Request, RequestPage
+from app.modules.tourists import views as tourist_views
 from app.modules.tours import selection_views
 
 
@@ -47,6 +48,8 @@ def allowed_actions(row, actor, latest_selection_id=None):
         actions.append("resume")
     if row.status in (Status.IN_PROGRESS, Status.OFFER_PREPARED):
         actions.append("prepare_selection")
+    if tourist_views.is_editable(row):
+        actions += ["issue_tourist_link", "edit_tourists"]
     if row.status == Status.OFFER_PREPARED:
         actions += ["return_to_work", "cancel"]
         if latest_selection_id is not None:
@@ -58,6 +61,7 @@ def project(session, actor, rows):
     client_map = clients.request_client_briefs(session, {row.client_id for row in rows})
     manager_map = user_briefs(session, {row.manager_id for row in rows})
     details = selection_views.request_details(session, rows)
+    tourists = tourist_views.request_details(session, rows)
     return [
         Request(
             id=row.id,
@@ -82,9 +86,9 @@ def project(session, actor, rows):
             selected_selection_id=details[row.id]["selected_selection_id"],
             selected_offer=details[row.id]["selected_offer"],
             active_booking=None,
-            tourists_received=0,
-            tourist_form_editable=False,
-            tourist_link=None,
+            tourists_received=tourists[row.id]["tourists_received"],
+            tourist_form_editable=tourists[row.id]["tourist_form_editable"],
+            tourist_link=tourists[row.id]["tourist_link"],
             allowed_actions=allowed_actions(row, actor, details[row.id]["latest_selection_id"]),
         )
         for row in rows

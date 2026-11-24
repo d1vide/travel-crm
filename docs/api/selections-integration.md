@@ -28,6 +28,6 @@ Frontend-маршрут — /public/selections/:token; API — GET /api/public/s
 
 ## Следующие модули
 
-Туристы и их форма остаются в #32, бронь — в #14. Сейчас active_booking и tourist_link равны null, tourists_received=0, tourist_form_editable=false. Общая PublicLinkInfo использует purpose=selection/tourists. В #14 необходимо одновременно добавить проверку действующей брони к публикации/выбору, return-to-work, cancel/resume и allowed_actions: pending_confirmation уже блокирует эти операции, хотя статус заявки ещё offer_prepared. complete остаётся planned до бронирования и оплаты.
+Туристы и их форма реализованы в #32: [подключение](tourists-integration.md). Бронь остаётся в #14; active_booking пока null. Общая PublicLinkInfo использует purpose=selection/tourists. В #14 необходимо одновременно добавить проверку действующей брони к публикации/выбору, return-to-work, cancel/resume и allowed_actions: pending_confirmation уже блокирует эти операции, хотя статус заявки ещё offer_prepared. complete остаётся planned до бронирования и оплаты.
 
 Запись сериализуется в порядке ключ повтора → Client → Request → строки каталога (по UUID); права перепроверяются после блокировки. SelectionItem.request_id — внутреннее поле для составных FK, запрещающих выбор элемента чужой заявки; оно не добавляется в DTO. Создание снимков, смена статуса, аудит и запись повтора коммитятся вместе. Миграция 0006 добавляет selections, selection_items, public_links и выбранный элемент в requests.

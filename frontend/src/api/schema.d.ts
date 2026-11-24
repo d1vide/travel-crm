@@ -4794,8 +4794,8 @@ export interface operations {
                     /**
                      * @example {
                      *       "id": "00000000-0000-4000-8000-000000000013",
-                     *       "purpose": "selection",
-                     *       "url": "http://localhost:8080/public/selections/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                     *       "purpose": "tourists",
+                     *       "url": "http://localhost:8080/public/tourist-forms/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
                      *       "expires_at": "2026-11-22T09:00:00Z"
                      *     }
                      */

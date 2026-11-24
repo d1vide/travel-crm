@@ -179,7 +179,13 @@ def build():
             responses[str(status)]["content"] = {
                 "application/json": {
                     "schema": ref(response),
-                    "example": examples[response],
+                    "example": {
+                        **examples[response],
+                        "purpose": "tourists",
+                        "url": "http://localhost:8080/public/tourist-forms/" + "A" * 43,
+                    }
+                    if operation_id == "issue_tourist_link"
+                    else examples[response],
                 },
             }
         for code in error_codes:
@@ -243,6 +249,11 @@ def build():
                 "issue_selection_link",
                 "revoke_public_link",
                 "get_public_selection",
+                "issue_tourist_link",
+                "get_public_tourist_form",
+                "submit_public_tourists",
+                "get_request_tourists",
+                "replace_request_tourists",
             }
             else "planned",
             "responses": responses,
