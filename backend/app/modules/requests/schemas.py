@@ -5,6 +5,7 @@ from uuid import UUID
 from pydantic import Field, StrictStr, ValidationInfo, field_validator
 from pydantic_core import PydanticCustomError
 
+from app.core.link_schemas import PublicLinkInfo
 from app.core.pagination import PageQuery
 from app.core.schemas import Dto
 from app.core.validation import CalendarDate, Money
@@ -105,13 +106,6 @@ class BookingSummary(Dto):
     currency: Literal["RUB"]
     paid_amount: Money
     remaining_amount: Money
-
-
-class PublicLinkInfo(Dto):
-    id: UUID
-    purpose: Literal["selection", "tourist_form"]
-    expires_at: datetime
-    is_active: bool
 
 
 class Request(Dto):

@@ -62,3 +62,23 @@ def get_tour(session, identity):
     if row is None:
         raise ApiError(404, "not_found", "Предложение не найдено")
     return card(row)
+
+
+def snapshots_for_selection(session, identities):
+    from app.modules.requests.schemas import OfferSnapshot
+
+    rows = session.scalars(
+        select(Offer)
+        .where(Offer.id.in_(identities), Offer.is_active.is_(True))
+        .order_by(Offer.id)
+        .with_for_update(read=True)
+        .execution_options(populate_existing=True)
+    ).all()
+    if len(rows) != len(identities):
+        raise ApiError(404, "not_found", "Предложение не найдено")
+    return {
+        row.id: OfferSnapshot.model_validate(
+            card(row).model_dump(exclude={"id", "version", "is_active"})
+        ).model_dump(mode="json")
+        for row in rows
+    }

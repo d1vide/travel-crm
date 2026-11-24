@@ -2,6 +2,7 @@ from alembic import context
 from app.core import (
     audit,  # noqa: F401
     idempotency,  # noqa: F401
+    public_links,  # noqa: F401
 )
 from app.core.config import get_settings
 from app.core.database import Base, Database
@@ -10,6 +11,7 @@ from app.modules.clients import models as client_models  # noqa: F401
 from app.modules.communications import models as communication_models  # noqa: F401
 from app.modules.requests import models as request_models  # noqa: F401
 from app.modules.tours import models as tour_models  # noqa: F401
+from app.modules.tours import selection_models  # noqa: F401
 
 configuration = context.config
 settings = configuration.attributes.get("settings") or get_settings()

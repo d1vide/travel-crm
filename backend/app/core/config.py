@@ -3,7 +3,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Literal
 
-from pydantic import Field, SecretStr, field_validator, model_validator
+from pydantic import AnyHttpUrl, Field, SecretStr, TypeAdapter, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 from sqlalchemy.engine import make_url
 
@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     demo_password: SecretStr | None = None
     backend_port: int = Field(default=8000, ge=1, le=65535)
     backend_host: str = "127.0.0.1"
+    public_app_url: str = "http://localhost:8080"
     allowed_origins: Annotated[list[str], NoDecode] = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
@@ -56,6 +57,28 @@ class Settings(BaseSettings):
         if not re.fullmatch(r"[a-z_][a-z0-9_]{0,62}", value):
             raise ValueError("database_schema must be a PostgreSQL identifier")
         return value
+
+    @field_validator("public_app_url")
+    @classmethod
+    def public_origin(cls, value):
+        from urllib.parse import urlsplit
+
+        value = str(TypeAdapter(AnyHttpUrl).validate_python(value))
+        parsed = urlsplit(value)
+        if (
+            parsed.scheme not in ("http", "https")
+            or not parsed.hostname
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.path not in ("", "/")
+            or parsed.query
+            or parsed.fragment
+        ):
+            raise ValueError(
+                "PUBLIC_APP_URL must be an HTTP(S) origin without credentials or a path"
+            )
+        _ = parsed.port
+        return value.rstrip("/")
 
     @field_validator("database_url")
     @classmethod

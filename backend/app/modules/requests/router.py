@@ -105,6 +105,21 @@ def resume(
     return service.mutate_request(session, actor, request_id, body, command, "resume")
 
 
+@router.post(
+    "/{request_id}/actions/return-to-work",
+    response_model=Request,
+    operation_id="return_to_work_request",
+)
+def return_to_work(
+    request_id: UUID,
+    actor: Staff,
+    body: ExpectedVersion,
+    session: DbSession,
+    command: IdempotentCommand,
+):
+    return service.mutate_request(session, actor, request_id, body, command, "return-to-work")
+
+
 @router.get(
     "/{request_id}/history", response_model=AuditRecordPage, operation_id="list_request_history"
 )

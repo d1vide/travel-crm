@@ -9,6 +9,7 @@ from sqlalchemy import (
     DateTime,
     Enum,
     ForeignKey,
+    ForeignKeyConstraint,
     Index,
     Integer,
     Numeric,
@@ -34,6 +35,13 @@ class TravelRequest(Base):
     __tablename__ = "requests"
     __table_args__ = (
         UniqueConstraint("id", "client_id", name="uq_requests_id_client"),
+        ForeignKeyConstraint(
+            ["selected_selection_item_id", "id"],
+            ["selection_items.id", "selection_items.request_id"],
+            name="fk_requests_selected_item_request",
+            use_alter=True,
+            ondelete="RESTRICT",
+        ),
         CheckConstraint("ends_on >= starts_on", name="valid_dates"),
         CheckConstraint("tourist_count > 0", name="positive_tourist_count"),
         CheckConstraint("budget >= 0", name="nonnegative_budget"),
@@ -46,6 +54,7 @@ class TravelRequest(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     client_id: Mapped[UUID] = mapped_column(ForeignKey("clients.id", ondelete="RESTRICT"))
     manager_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    selected_selection_item_id: Mapped[UUID | None] = mapped_column()
     destination: Mapped[str] = mapped_column(Text)
     starts_on: Mapped[date] = mapped_column(Date)
     ends_on: Mapped[date] = mapped_column(Date)

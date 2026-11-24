@@ -1808,7 +1808,7 @@
           "FR-09",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "200": {
             "description": "Действие заявки: return-to-work",
@@ -2376,7 +2376,7 @@
           "FR-09",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "200": {
             "description": "Записать выбор клиента",
@@ -2768,7 +2768,7 @@
           "FR-09",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "200": {
             "description": "История подборок заявки",
@@ -2908,7 +2908,7 @@
           "FR-09",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "201": {
             "description": "Опубликовать подборку",
@@ -3027,7 +3027,7 @@
           "FR-04",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "200": {
             "description": "Подборка сотрудника",
@@ -3124,7 +3124,7 @@
           "FR-04",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "201": {
             "description": "Выдать или перевыпустить ссылку подборки",
@@ -3273,7 +3273,7 @@
           "FR-10",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "204": {
             "description": "Отозвать публичную ссылку"
@@ -3332,7 +3332,7 @@
         "x-requirements": [
           "FR-04"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "200": {
             "description": "Открыть подборку без входа",

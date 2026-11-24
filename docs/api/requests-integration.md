@@ -29,7 +29,8 @@ PATCH /api/requests/{request_id}/assignee принимает AssignRequest (vers
 | Маршрут после /api/requests/{request_id}/actions/ | Тело | Переход |
 |---|---|---|
 | start-work | ExpectedVersion | new → in_progress |
-| cancel | ReasonCommand | new/in_progress → cancelled; обязательная непустая причина |
+| cancel | ReasonCommand | new/in_progress/offer_prepared → cancelled; обязательная непустая причина |
+| return-to-work | ExpectedVersion | offer_prepared → in_progress; выбор очищается, ссылки отзываются |
 | resume | ExpectedVersion | cancelled → in_progress; причина и время отмены очищаются, аудит остаётся |
 
 Недопустимый переход — 409 invalid_transition. Удаления нет. allowed_actions содержит только доступные сейчас реализованные действия, включая reassign для руководителя; поля проверяются сервером повторно.
@@ -40,8 +41,8 @@ GET /api/requests/{request_id}/history возвращает AuditRecordPage; д�
 
 ## Следующие модули
 
-Поля selected_selection_item_id, selected_selection_id, selected_offer, active_booking, tourist_link сейчас null, tourists_received=0, tourist_form_editable=false. Подборки #31, туристы #32 и брони #14 подключат настоящие проекции и соответствующие allowed_actions. Не рисовать доступность этих операций из одного статуса заявки.
+Подборки #31 подключены: selected_selection_item_id, selected_selection_id и selected_offer содержат выбранный снимок; prepare_selection, select_tour и return_to_work доступны по состоянию дочерних данных. Правила публикации, выбора и ссылок — в [подключении подборок](selections-integration.md). После этих команд перечитать Request. active_booking и tourist_link пока null, tourists_received=0, tourist_form_editable=false; их подключат #14/#32.
 
-return-to-work, выбор тура и публикация подборки остаются planned до #31; complete — до #14/#33 с проверкой брони, полной оплаты и даты окончания по Москве. Они не являются универсальным ручным переключением статуса. Отмена offer_prepared, а также resume после отмены брони дополняются проверками действующей брони, ссылок, ожидающих платежей и возвратов в этих модулях. Сейчас cancelled получается только отменой new/in_progress; изменение пожеланий и отмена offer_prepared/booked/completed отклоняются.
+complete остаётся planned до #14/#33 с проверкой брони, полной оплаты и даты окончания по Москве. При подключении брони публикация/выбор, return-to-work, cancel/resume и allowed_actions должны учитывать действующую бронь, ожидающие платежи и возвраты. Сейчас брони ещё не создаются; отмена разрешена в new/in_progress/offer_prepared, редактирование пожеланий — только в new/in_progress.
 
 При подключении дочерних модулей обязательно обновить requests.service.project, allowed_actions и проверки команд вместе с записью дочерних данных. Любая команда изменения заявки блокирует родительскую строку Client перед Request. Общий порядок: ключ повтора → Client → Request → проверяемый ответственный (при назначении). Создание заявки блокирует Client до назначения, чтобы права клиента и его изменение оставались согласованными. Аудит и запись повтора коммитятся с бизнес-операцией.
