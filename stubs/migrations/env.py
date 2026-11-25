@@ -1,6 +1,6 @@
-from stubs.store import Base, database
-
 from alembic import context
+
+from stubs.store import Base, database
 
 settings = context.config.attributes["settings"]
 

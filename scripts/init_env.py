@@ -23,6 +23,8 @@ def main(argv=None):
                 "PAYMENT_STUB_URL": "http://127.0.0.1:8010",
                 "PAYMENT_STUB_KEY": secrets.token_urlsafe(48),
                 "PAYMENT_TIMEOUT_SECONDS": "1",
+                "PAYMENT_RECONCILIATION_ENABLED": "true",
+                "PAYMENT_CALLBACK_URL": "http://127.0.0.1:8000/internal/payment-events",
             }
             missing = {key: value for key, value in additions.items() if key not in keys}
             if missing:
@@ -51,6 +53,8 @@ def main(argv=None):
         "PAYMENT_STUB_URL": "http://127.0.0.1:8010",
         "PAYMENT_STUB_KEY": secrets.token_urlsafe(48),
         "PAYMENT_TIMEOUT_SECONDS": "1",
+        "PAYMENT_RECONCILIATION_ENABLED": "true",
+        "PAYMENT_CALLBACK_URL": "http://127.0.0.1:8000/internal/payment-events",
     }
     # Exclusive creation prevents accidental replacement by concurrent setup commands.
     with destination.open("x", encoding="utf-8", newline="\n") as output:

@@ -13,6 +13,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -27,6 +28,12 @@ class Payment(Base):
         ),
         Index("ix_payments_booking_status", "booking_id", "status"),
         Index("ix_payments_created", "created_at", "id"),
+        Index(
+            "ix_payments_pending_reconcile",
+            "next_reconcile_at",
+            "id",
+            postgresql_where=text("status = 'pending'"),
+        ),
         CheckConstraint("amount > 0", name="positive_amount"),
         CheckConstraint("currency = 'RUB'", name="currency"),
         CheckConstraint("status IN ('pending','succeeded','failed')", name="status"),
@@ -45,6 +52,9 @@ class Payment(Base):
     currency: Mapped[str] = mapped_column(String(3), default="RUB")
     status: Mapped[str] = mapped_column(String(16), default="pending")
     provider: Mapped[str] = mapped_column(String(32), default="demo_stub")
+    next_reconcile_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.clock_timestamp()
+    )
     external_operation_id: Mapped[str | None] = mapped_column(String(64))
     payment_url: Mapped[str | None] = mapped_column(Text)
     failure_reason: Mapped[str | None] = mapped_column(Text)

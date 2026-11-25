@@ -40,7 +40,9 @@ def locked_request(session, actor, identity):
     return get_visible(session, actor, identity, lock=True)
 
 
-def allowed_actions(row, actor, latest_selection_id=None, has_booking=False, can_book=False):
+def allowed_actions(
+    row, actor, latest_selection_id=None, has_booking=False, can_book=False, can_complete=False
+):
     actions = ["reassign"] if actor.role == Role.HEAD else []
     if not has_booking and row.status in (Status.NEW, Status.IN_PROGRESS):
         actions += ["update", "cancel"]
@@ -58,6 +60,8 @@ def allowed_actions(row, actor, latest_selection_id=None, has_booking=False, can
             actions.append("select_tour")
     if can_book:
         actions.append("create_booking")
+    if row.status == Status.BOOKED and can_complete:
+        actions.append("complete")
     return actions
 
 
@@ -66,7 +70,9 @@ def project(session, actor, rows):
     manager_map = user_briefs(session, {row.manager_id for row in rows})
     details = selection_views.request_details(session, rows)
     bookings = active_bookings(session, rows)
-    booking_summaries = booking_views.summaries(session, bookings)
+    booking_summaries, can_complete = booking_views.summaries(
+        session, bookings, with_completion=True
+    )
     tourists = tourist_views.request_details(session, rows, bookings)
     return [
         Request(
@@ -100,6 +106,7 @@ def project(session, actor, rows):
                 actor,
                 details[row.id]["latest_selection_id"],
                 row.id in bookings,
+                can_complete=row.id in can_complete,
                 can_book=(
                     row.status == Status.OFFER_PREPARED
                     and row.id not in bookings

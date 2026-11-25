@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     payment_stub_url: str = "http://127.0.0.1:8010"
     payment_stub_key: SecretStr | None = None
     payment_timeout_seconds: float = Field(default=1.0, gt=0, le=30)
+    payment_reconciliation_enabled: bool = False
+    payment_reconciliation_interval_seconds: float = Field(default=5.0, ge=0.05, le=300)
+    payment_reconciliation_batch_size: int = Field(default=20, ge=1, le=100)
     allowed_origins: Annotated[list[str], NoDecode] = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",

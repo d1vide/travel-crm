@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -10,10 +11,14 @@ from app.core.public_privacy import PublicResponsePrivacy
 from app.modules.auth.directory import router as users_router
 from app.modules.auth.models import User
 from app.modules.auth.router import router as auth_router
+from app.modules.bookings.financial import router as financial_router
 from app.modules.bookings.router import router as bookings_router
 from app.modules.clients.router import router as clients_router
 from app.modules.communications.router import router as communications_router
+from app.modules.notifications.router import router as notifications_router
 from app.modules.payments.adapter import StubAdapter
+from app.modules.payments.events import router as payment_events_router
+from app.modules.payments.reconciliation import Reconciler
 from app.modules.payments.router import router as payments_router
 from app.modules.requests.router import router as requests_router
 from app.modules.tourists.router import public_router as public_tourists_router
@@ -29,10 +34,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(_app):
+        worker = (
+            Reconciler(database, _app.state.payment_adapter)
+            if configuration.payment_reconciliation_enabled
+            and _app.state.payment_adapter.configured()
+            else None
+        )
+        task = asyncio.create_task(worker.run()) if worker else None
         try:
             yield
         finally:
-            database.close()
+            try:
+                if worker:
+                    worker.stop.set()
+                    await task
+            finally:
+                database.close()
 
     application = FastAPI(title="TravelCRM backend", version="0.1.0", lifespan=lifespan)
     application.state.settings = configuration
@@ -52,6 +69,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(public_tourists_router)
     application.include_router(bookings_router)
     application.include_router(payments_router)
+    application.include_router(payment_events_router)
+    application.include_router(notifications_router)
+    application.include_router(financial_router)
 
     @application.get("/api/health/live", tags=["health"])
     def live():

@@ -261,6 +261,14 @@ def synchronize(session, actor, identity, adapter):
     row = get_visible(session, actor, identity)
     if row.status != "pending":
         return result(session, actor, identity)
+    synchronize_system(session, identity, adapter)
+    return result(session, actor, identity)
+
+
+def synchronize_system(session, identity, adapter):
+    row = session.get(Payment, identity)
+    if row is None or row.status != "pending":
+        return
     values = (row.id, row.external_operation_id, row.amount, row.currency)
     session.commit()
     data, error = None, None
@@ -269,4 +277,3 @@ def synchronize(session, actor, identity, adapter):
     except ProviderError as caught:
         error = caught
     apply_result(session, identity, data, error, adapter)
-    return result(session, actor, identity)
