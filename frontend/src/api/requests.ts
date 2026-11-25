@@ -7,7 +7,7 @@ export type TravelRequest = Schemas['Request']
 export type RequestStatus = Schemas['RequestStatus']
 export type RequestCreate = Schemas['RequestCreate']
 export type RequestUpdate = Schemas['RequestUpdate']
-export type RequestCommand = 'start-work' | 'cancel' | 'resume'
+export type RequestCommand = 'start-work' | 'cancel' | 'resume' | 'return-to-work' | 'complete'
 
 interface RequestFilters {
   status?: RequestStatus

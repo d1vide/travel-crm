@@ -95,6 +95,11 @@ async function logout() {
     <n-layout>
       <n-layout-header bordered class="header">
         <div class="user">
+          <RouterLink
+            v-if="session.role === 'head' || session.role === 'manager'"
+            :to="{ name: 'notifications' }"
+            >Уведомления</RouterLink
+          >
           <RouterLink to="/profile" class="user__profile" data-test="profile-link">
             <n-avatar round :size="28" class="user__avatar">{{ initials }}</n-avatar>
             <span v-if="session.user" class="user__name">{{ session.user.fullName }}</span>

@@ -30,7 +30,12 @@ type Handler = (url: string, init: RequestInit) => Response
 async function render(component: object, path: string, handler: Handler) {
   const pinia = createPinia()
   setActivePinia(pinia)
-  const fetchMock = vi.fn<typeof fetch>(async (input, init = {}) => handler(String(input), init))
+  const fetchMock = vi.fn<typeof fetch>(async (input, init = {}) => {
+    const url = String(input)
+    if (url.includes('/communications?'))
+      return jsonResponse(200, { items: [], page: 1, page_size: 20, total: 0 })
+    return handler(url, init)
+  })
   vi.stubGlobal('fetch', fetchMock)
   const router = createAppRouter(createMemoryHistory())
   await router.push(path)
