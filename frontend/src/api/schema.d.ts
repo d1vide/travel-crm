@@ -667,7 +667,7 @@ export interface paths {
         put?: never;
         /**
          * Действие брони: request-cancellation
-         * @description version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно.
+         * @description version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно. Только confirmed при booked-заявке; причина обязательна. Pending-платёж не мешает запросить отмену, новые платежи блокируются.
          */
         post: operations["request_cancellation_booking"];
         delete?: never;
@@ -687,7 +687,7 @@ export interface paths {
         put?: never;
         /**
          * Действие брони: confirm-cancellation
-         * @description version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно.
+         * @description version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно. Только cancellation_requested при booked-заявке; ответ поставщика обязателен, pending-платежей нет. Без успешных оплат заявка становится in_progress, с оплатами — cancelled; деньги остаются у старой брони, возврат отдельный.
          */
         post: operations["confirm_cancellation_booking"];
         delete?: never;
@@ -707,7 +707,7 @@ export interface paths {
         put?: never;
         /**
          * Действие брони: reject-cancellation
-         * @description version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно.
+         * @description version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно. Только cancellation_requested при booked-заявке; причина отказа поставщика обязательна. Бронь снова confirmed, заявка остаётся booked.
          */
         post: operations["reject_cancellation_booking"];
         delete?: never;
@@ -5204,6 +5204,7 @@ export interface operations {
                      *             }
                      *           ],
                      *           "allowed_actions": [
+                     *             "request_cancellation",
                      *             "create_payment"
                      *           ]
                      *         }
@@ -5388,6 +5389,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "allowed_actions": [
+                     *         "request_cancellation",
                      *         "create_payment"
                      *       ]
                      *     }
@@ -5494,6 +5496,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "allowed_actions": [
+                     *         "request_cancellation",
                      *         "create_payment"
                      *       ]
                      *     }
@@ -5647,21 +5650,21 @@ export interface operations {
                      *       },
                      *       "total_amount": "100000.00",
                      *       "currency": "RUB",
-                     *       "status": "confirmed",
+                     *       "status": "cancellation_requested",
                      *       "supplier_booking_number": "DEMO-001",
                      *       "rejection_reason": null,
-                     *       "cancellation_reason": null,
+                     *       "cancellation_reason": "Просьба клиента об отмене",
                      *       "cancellation_response": null,
                      *       "confirmed_at": "2026-11-15T09:00:00Z",
                      *       "cancelled_at": null,
-                     *       "paid_amount": "30000.00",
-                     *       "reserved_payment_amount": "20000.00",
-                     *       "remaining_amount": "70000.00",
-                     *       "available_payment_amount": "50000.00",
+                     *       "paid_amount": "0.00",
+                     *       "reserved_payment_amount": "0.00",
+                     *       "remaining_amount": "100000.00",
+                     *       "available_payment_amount": "0.00",
                      *       "refunded_amount": "0.00",
                      *       "version": 3,
                      *       "created_at": "2026-11-15T09:00:00Z",
-                     *       "updated_at": "2026-11-15T09:00:00Z",
+                     *       "updated_at": "2026-11-25T09:00:00Z",
                      *       "tourists": [
                      *         {
                      *           "tourist_id": "00000000-0000-4000-8000-000000000007",
@@ -5685,8 +5688,8 @@ export interface operations {
                      *         }
                      *       ],
                      *       "allowed_actions": [
-                     *         "create_payment",
-                     *         "request_cancellation"
+                     *         "confirm_cancellation",
+                     *         "reject_cancellation"
                      *       ]
                      *     }
                      */
@@ -5755,21 +5758,21 @@ export interface operations {
                      *       },
                      *       "total_amount": "100000.00",
                      *       "currency": "RUB",
-                     *       "status": "confirmed",
+                     *       "status": "cancelled",
                      *       "supplier_booking_number": "DEMO-001",
                      *       "rejection_reason": null,
-                     *       "cancellation_reason": null,
-                     *       "cancellation_response": null,
+                     *       "cancellation_reason": "Просьба клиента об отмене",
+                     *       "cancellation_response": "Поставщик подтвердил отмену",
                      *       "confirmed_at": "2026-11-15T09:00:00Z",
-                     *       "cancelled_at": null,
-                     *       "paid_amount": "30000.00",
-                     *       "reserved_payment_amount": "20000.00",
-                     *       "remaining_amount": "70000.00",
-                     *       "available_payment_amount": "50000.00",
+                     *       "cancelled_at": "2026-11-25T09:00:00Z",
+                     *       "paid_amount": "0.00",
+                     *       "reserved_payment_amount": "0.00",
+                     *       "remaining_amount": "100000.00",
+                     *       "available_payment_amount": "0.00",
                      *       "refunded_amount": "0.00",
-                     *       "version": 3,
+                     *       "version": 4,
                      *       "created_at": "2026-11-15T09:00:00Z",
-                     *       "updated_at": "2026-11-15T09:00:00Z",
+                     *       "updated_at": "2026-11-25T09:00:00Z",
                      *       "tourists": [
                      *         {
                      *           "tourist_id": "00000000-0000-4000-8000-000000000007",
@@ -5792,10 +5795,7 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
-                     *       "allowed_actions": [
-                     *         "create_payment",
-                     *         "request_cancellation"
-                     *       ]
+                     *       "allowed_actions": []
                      *     }
                      */
                     "application/json": components["schemas"]["Booking"];
@@ -5866,18 +5866,18 @@ export interface operations {
                      *       "status": "confirmed",
                      *       "supplier_booking_number": "DEMO-001",
                      *       "rejection_reason": null,
-                     *       "cancellation_reason": null,
-                     *       "cancellation_response": null,
+                     *       "cancellation_reason": "Просьба клиента об отмене",
+                     *       "cancellation_response": "Поставщик отказал в отмене",
                      *       "confirmed_at": "2026-11-15T09:00:00Z",
                      *       "cancelled_at": null,
-                     *       "paid_amount": "30000.00",
-                     *       "reserved_payment_amount": "20000.00",
-                     *       "remaining_amount": "70000.00",
-                     *       "available_payment_amount": "50000.00",
+                     *       "paid_amount": "0.00",
+                     *       "reserved_payment_amount": "0.00",
+                     *       "remaining_amount": "100000.00",
+                     *       "available_payment_amount": "100000.00",
                      *       "refunded_amount": "0.00",
-                     *       "version": 3,
+                     *       "version": 4,
                      *       "created_at": "2026-11-15T09:00:00Z",
-                     *       "updated_at": "2026-11-15T09:00:00Z",
+                     *       "updated_at": "2026-11-25T09:00:00Z",
                      *       "tourists": [
                      *         {
                      *           "tourist_id": "00000000-0000-4000-8000-000000000007",
@@ -5901,8 +5901,8 @@ export interface operations {
                      *         }
                      *       ],
                      *       "allowed_actions": [
-                     *         "create_payment",
-                     *         "request_cancellation"
+                     *         "request_cancellation",
+                     *         "create_payment"
                      *       ]
                      *     }
                      */

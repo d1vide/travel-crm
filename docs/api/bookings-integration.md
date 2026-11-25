@@ -1,6 +1,6 @@
 # Подключение бронирований — #14
 
-Реализованы пять операций OpenAPI: список попыток заявки, создание брони, карточка, подтверждение и отказ поставщика. Использовать Booking, BookingPage, BookingTourist, ExpectedVersion, ConfirmBooking и ReasonCommand. Финансовая сводка и complete реализованы в [#33](payment-notifications-integration.md). Отмена брони пока planned.
+Реализованы пять операций OpenAPI: список попыток заявки, создание брони, карточка, подтверждение и отказ поставщика. Использовать Booking, BookingPage, BookingTourist, ExpectedVersion, ConfirmBooking и ReasonCommand. Финансовая сводка и complete реализованы в [#33](payment-notifications-integration.md). Три команды отмены брони реализованы в [#34](booking-cancellation-integration.md).
 
 ## Создание и список попыток
 
@@ -38,6 +38,6 @@ Request.active_booking содержит безопасную краткую де
 
 Создание/подтверждение/отказ записывают booking_status в аудит, подтверждение дополнительно записывает request_status. Снимки документов, номер поставщика и свободный текст отказа в историю не копируются. В идемпотентности только хеш команды и ID брони, без копии Booking с паспортами.
 
-Оплата #15 подключена: [правила](payments-integration.md). paid_amount, reserved_payment_amount и remaining_amount рассчитываются по реальным succeeded/pending-платежам; available_payment_amount учитывает резерв и доступен только для confirmed. create_payment предлагается при положительном доступном остатке. Возвратов пока нет, refunded_amount="0.00". API уведомлений и complete реализованы в [#33](payment-notifications-integration.md), отмена/возврат — в #34/#35. Pending-попытка не отменяется обычным cancel заявки.
+Оплата #15 подключена: [правила](payments-integration.md). paid_amount, reserved_payment_amount и remaining_amount рассчитываются по реальным succeeded/pending-платежам; available_payment_amount учитывает резерв и доступен только для confirmed. create_payment предлагается при положительном доступном остатке. Возвратов пока нет, refunded_amount="0.00". API уведомлений и complete реализованы в [#33](payment-notifications-integration.md), отмена реализована в [#34](booking-cancellation-integration.md), возврат остаётся в #35. Pending-попытка не отменяется обычным cancel заявки.
 
 Миграция 0008_bookings добавляет bookings и booking_tourists. Частичный unique по request_id запрещает две действующие брони; составные FK не позволяют связать бронь с элементом другой заявки или снимок с чужим туристом. Сумма проверяется против снимка на уровне БД. Порядок записи: ключ повтора → Client → Request → Booking. Проверки, снимки, версии, аудит и запись повтора фиксируются одной транзакцией; внешнего HTTP-вызова под блокировкой нет.
