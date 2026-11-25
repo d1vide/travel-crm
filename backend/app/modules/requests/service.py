@@ -9,6 +9,8 @@ from app.core.errors import ApiError
 from app.core.idempotency import check_payload, find_previous, remember
 from app.modules.auth.directory import active_assignee, user_briefs
 from app.modules.auth.models import Role
+from app.modules.bookings import views as booking_views
+from app.modules.bookings.access import active_bookings, ensure_no_active
 from app.modules.clients import service as clients
 from app.modules.requests.models import RequestStatus as Status
 from app.modules.requests.models import TravelRequest
@@ -38,22 +40,24 @@ def locked_request(session, actor, identity):
     return get_visible(session, actor, identity, lock=True)
 
 
-def allowed_actions(row, actor, latest_selection_id=None):
+def allowed_actions(row, actor, latest_selection_id=None, has_booking=False, can_book=False):
     actions = ["reassign"] if actor.role == Role.HEAD else []
-    if row.status in (Status.NEW, Status.IN_PROGRESS):
+    if not has_booking and row.status in (Status.NEW, Status.IN_PROGRESS):
         actions += ["update", "cancel"]
-    if row.status == Status.NEW:
+    if not has_booking and row.status == Status.NEW:
         actions.append("start_work")
-    if row.status == Status.CANCELLED:
+    if not has_booking and row.status == Status.CANCELLED:
         actions.append("resume")
-    if row.status in (Status.IN_PROGRESS, Status.OFFER_PREPARED):
+    if not has_booking and row.status in (Status.IN_PROGRESS, Status.OFFER_PREPARED):
         actions.append("prepare_selection")
-    if tourist_views.is_editable(row):
+    if tourist_views.is_editable(row, has_booking):
         actions += ["issue_tourist_link", "edit_tourists"]
-    if row.status == Status.OFFER_PREPARED:
+    if not has_booking and row.status == Status.OFFER_PREPARED:
         actions += ["return_to_work", "cancel"]
         if latest_selection_id is not None:
             actions.append("select_tour")
+    if can_book:
+        actions.append("create_booking")
     return actions
 
 
@@ -61,7 +65,8 @@ def project(session, actor, rows):
     client_map = clients.request_client_briefs(session, {row.client_id for row in rows})
     manager_map = user_briefs(session, {row.manager_id for row in rows})
     details = selection_views.request_details(session, rows)
-    tourists = tourist_views.request_details(session, rows)
+    bookings = active_bookings(session, rows)
+    tourists = tourist_views.request_details(session, rows, bookings)
     return [
         Request(
             id=row.id,
@@ -85,11 +90,25 @@ def project(session, actor, rows):
             selected_selection_item_id=row.selected_selection_item_id,
             selected_selection_id=details[row.id]["selected_selection_id"],
             selected_offer=details[row.id]["selected_offer"],
-            active_booking=None,
+            active_booking=booking_views.summary(bookings[row.id]) if row.id in bookings else None,
             tourists_received=tourists[row.id]["tourists_received"],
             tourist_form_editable=tourists[row.id]["tourist_form_editable"],
             tourist_link=tourists[row.id]["tourist_link"],
-            allowed_actions=allowed_actions(row, actor, details[row.id]["latest_selection_id"]),
+            allowed_actions=allowed_actions(
+                row,
+                actor,
+                details[row.id]["latest_selection_id"],
+                row.id in bookings,
+                can_book=(
+                    row.status == Status.OFFER_PREPARED
+                    and row.id not in bookings
+                    and details[row.id]["selected_offer"] is not None
+                    and details[row.id]["selected_selection_id"]
+                    == details[row.id]["latest_selection_id"]
+                    and tourists[row.id]["tourists_received"] == row.tourist_count
+                    and details[row.id]["selected_offer"].tourist_count == row.tourist_count
+                ),
+            ),
         )
         for row in rows
     ]
@@ -189,6 +208,8 @@ def mutate_request(session, actor, identity: UUID, body, command, action):
         return replay(session, actor, previous, command)
     row = locked_request(session, actor, identity)
     expect_version(row, body.version)
+    if action != "assign":
+        ensure_no_active(session, row.id)
     if action == "assign":
         if actor.role != Role.HEAD:
             raise ApiError(403, "forbidden", "Смена ответственного доступна руководителю")

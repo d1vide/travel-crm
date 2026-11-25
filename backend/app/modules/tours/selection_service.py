@@ -7,6 +7,7 @@ from app.core.errors import ApiError
 from app.core.idempotency import check_payload, find_previous, remember
 from app.core.link_schemas import PublicLink as PublicLinkDto
 from app.core.public_links import PublicLink, new_token, token_hash
+from app.modules.bookings.access import ensure_no_active
 from app.modules.requests import service as requests
 from app.modules.requests.access import request_is_visible
 from app.modules.requests.models import RequestStatus as Status
@@ -83,6 +84,7 @@ def create_selection(session, actor, request_id, body, command):
         session.commit()
         return result
     requests.expect_version(request, body.version)
+    ensure_no_active(session, request.id)
     if request.status not in (Status.IN_PROGRESS, Status.OFFER_PREPARED):
         requests.invalid_transition()
     snapshots = catalogue.snapshots_for_selection(session, body.tour_offer_ids)
@@ -121,6 +123,7 @@ def create_selection(session, actor, request_id, body, command):
 
 
 def current_selection(session, request, identity):
+    ensure_no_active(session, request.id)
     if (
         request.status != Status.OFFER_PREPARED
         or selection_views.latest_ids(session, [request.id]).get(request.id) != identity

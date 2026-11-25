@@ -10,6 +10,7 @@ from app.core.public_privacy import PublicResponsePrivacy
 from app.modules.auth.directory import router as users_router
 from app.modules.auth.models import User
 from app.modules.auth.router import router as auth_router
+from app.modules.bookings.router import router as bookings_router
 from app.modules.clients.router import router as clients_router
 from app.modules.communications.router import router as communications_router
 from app.modules.requests.router import router as requests_router
@@ -46,6 +47,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(public_selections_router)
     application.include_router(tourists_router)
     application.include_router(public_tourists_router)
+    application.include_router(bookings_router)
 
     @application.get("/api/health/live", tags=["health"])
     def live():

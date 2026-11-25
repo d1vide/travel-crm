@@ -5173,12 +5173,12 @@ export interface operations {
                      *           "cancellation_response": null,
                      *           "confirmed_at": "2026-11-15T09:00:00Z",
                      *           "cancelled_at": null,
-                     *           "paid_amount": "30000.00",
-                     *           "reserved_payment_amount": "20000.00",
-                     *           "remaining_amount": "70000.00",
-                     *           "available_payment_amount": "50000.00",
+                     *           "paid_amount": "0.00",
+                     *           "reserved_payment_amount": "0.00",
+                     *           "remaining_amount": "100000.00",
+                     *           "available_payment_amount": "100000.00",
                      *           "refunded_amount": "0.00",
-                     *           "version": 3,
+                     *           "version": 2,
                      *           "created_at": "2026-11-15T09:00:00Z",
                      *           "updated_at": "2026-11-15T09:00:00Z",
                      *           "tourists": [
@@ -5203,10 +5203,7 @@ export interface operations {
                      *               }
                      *             }
                      *           ],
-                     *           "allowed_actions": [
-                     *             "create_payment",
-                     *             "request_cancellation"
-                     *           ]
+                     *           "allowed_actions": []
                      *         }
                      *       ],
                      *       "page": 1,
@@ -5277,46 +5274,25 @@ export interface operations {
                      *       },
                      *       "total_amount": "100000.00",
                      *       "currency": "RUB",
-                     *       "status": "confirmed",
-                     *       "supplier_booking_number": "DEMO-001",
+                     *       "status": "pending_confirmation",
+                     *       "supplier_booking_number": null,
                      *       "rejection_reason": null,
                      *       "cancellation_reason": null,
                      *       "cancellation_response": null,
-                     *       "confirmed_at": "2026-11-15T09:00:00Z",
+                     *       "confirmed_at": null,
                      *       "cancelled_at": null,
-                     *       "paid_amount": "30000.00",
-                     *       "reserved_payment_amount": "20000.00",
-                     *       "remaining_amount": "70000.00",
-                     *       "available_payment_amount": "50000.00",
+                     *       "paid_amount": "0.00",
+                     *       "reserved_payment_amount": "0.00",
+                     *       "remaining_amount": "100000.00",
+                     *       "available_payment_amount": "0.00",
                      *       "refunded_amount": "0.00",
-                     *       "version": 3,
+                     *       "version": 1,
                      *       "created_at": "2026-11-15T09:00:00Z",
                      *       "updated_at": "2026-11-15T09:00:00Z",
-                     *       "tourists": [
-                     *         {
-                     *           "tourist_id": "00000000-0000-4000-8000-000000000007",
-                     *           "tourist_snapshot": {
-                     *             "full_name": "Тестовый Турист",
-                     *             "birth_date": "1995-05-20",
-                     *             "document_type": "passport",
-                     *             "document_number": "TEST-000001",
-                     *             "document_expires_on": null
-                     *           }
-                     *         },
-                     *         {
-                     *           "tourist_id": "00000000-0000-4000-8000-000000000014",
-                     *           "tourist_snapshot": {
-                     *             "full_name": "Второй Тестовый Турист",
-                     *             "birth_date": "1995-05-20",
-                     *             "document_type": "passport",
-                     *             "document_number": "TEST-000002",
-                     *             "document_expires_on": null
-                     *           }
-                     *         }
-                     *       ],
+                     *       "tourists": [],
                      *       "allowed_actions": [
-                     *         "create_payment",
-                     *         "request_cancellation"
+                     *         "confirm",
+                     *         "reject"
                      *       ]
                      *     }
                      */
@@ -5379,12 +5355,12 @@ export interface operations {
                      *       "cancellation_response": null,
                      *       "confirmed_at": "2026-11-15T09:00:00Z",
                      *       "cancelled_at": null,
-                     *       "paid_amount": "30000.00",
-                     *       "reserved_payment_amount": "20000.00",
-                     *       "remaining_amount": "70000.00",
-                     *       "available_payment_amount": "50000.00",
+                     *       "paid_amount": "0.00",
+                     *       "reserved_payment_amount": "0.00",
+                     *       "remaining_amount": "100000.00",
+                     *       "available_payment_amount": "100000.00",
                      *       "refunded_amount": "0.00",
-                     *       "version": 3,
+                     *       "version": 2,
                      *       "created_at": "2026-11-15T09:00:00Z",
                      *       "updated_at": "2026-11-15T09:00:00Z",
                      *       "tourists": [
@@ -5409,10 +5385,7 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
-                     *       "allowed_actions": [
-                     *         "create_payment",
-                     *         "request_cancellation"
-                     *       ]
+                     *       "allowed_actions": []
                      *     }
                      */
                     "application/json": components["schemas"]["Booking"];
@@ -5486,12 +5459,12 @@ export interface operations {
                      *       "cancellation_response": null,
                      *       "confirmed_at": "2026-11-15T09:00:00Z",
                      *       "cancelled_at": null,
-                     *       "paid_amount": "30000.00",
-                     *       "reserved_payment_amount": "20000.00",
-                     *       "remaining_amount": "70000.00",
-                     *       "available_payment_amount": "50000.00",
+                     *       "paid_amount": "0.00",
+                     *       "reserved_payment_amount": "0.00",
+                     *       "remaining_amount": "100000.00",
+                     *       "available_payment_amount": "100000.00",
                      *       "refunded_amount": "0.00",
-                     *       "version": 3,
+                     *       "version": 2,
                      *       "created_at": "2026-11-15T09:00:00Z",
                      *       "updated_at": "2026-11-15T09:00:00Z",
                      *       "tourists": [
@@ -5516,10 +5489,7 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
-                     *       "allowed_actions": [
-                     *         "create_payment",
-                     *         "request_cancellation"
-                     *       ]
+                     *       "allowed_actions": []
                      *     }
                      */
                     "application/json": components["schemas"]["Booking"];
@@ -5587,47 +5557,23 @@ export interface operations {
                      *       },
                      *       "total_amount": "100000.00",
                      *       "currency": "RUB",
-                     *       "status": "confirmed",
-                     *       "supplier_booking_number": "DEMO-001",
-                     *       "rejection_reason": null,
+                     *       "status": "rejected",
+                     *       "supplier_booking_number": null,
+                     *       "rejection_reason": "Учебный отказ поставщика",
                      *       "cancellation_reason": null,
                      *       "cancellation_response": null,
-                     *       "confirmed_at": "2026-11-15T09:00:00Z",
+                     *       "confirmed_at": null,
                      *       "cancelled_at": null,
-                     *       "paid_amount": "30000.00",
-                     *       "reserved_payment_amount": "20000.00",
-                     *       "remaining_amount": "70000.00",
-                     *       "available_payment_amount": "50000.00",
+                     *       "paid_amount": "0.00",
+                     *       "reserved_payment_amount": "0.00",
+                     *       "remaining_amount": "100000.00",
+                     *       "available_payment_amount": "0.00",
                      *       "refunded_amount": "0.00",
-                     *       "version": 3,
+                     *       "version": 2,
                      *       "created_at": "2026-11-15T09:00:00Z",
                      *       "updated_at": "2026-11-15T09:00:00Z",
-                     *       "tourists": [
-                     *         {
-                     *           "tourist_id": "00000000-0000-4000-8000-000000000007",
-                     *           "tourist_snapshot": {
-                     *             "full_name": "Тестовый Турист",
-                     *             "birth_date": "1995-05-20",
-                     *             "document_type": "passport",
-                     *             "document_number": "TEST-000001",
-                     *             "document_expires_on": null
-                     *           }
-                     *         },
-                     *         {
-                     *           "tourist_id": "00000000-0000-4000-8000-000000000014",
-                     *           "tourist_snapshot": {
-                     *             "full_name": "Второй Тестовый Турист",
-                     *             "birth_date": "1995-05-20",
-                     *             "document_type": "passport",
-                     *             "document_number": "TEST-000002",
-                     *             "document_expires_on": null
-                     *           }
-                     *         }
-                     *       ],
-                     *       "allowed_actions": [
-                     *         "create_payment",
-                     *         "request_cancellation"
-                     *       ]
+                     *       "tourists": [],
+                     *       "allowed_actions": []
                      *     }
                      */
                     "application/json": components["schemas"]["Booking"];

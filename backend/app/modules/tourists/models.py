@@ -1,7 +1,17 @@
 from datetime import date, datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import CheckConstraint, Date, DateTime, ForeignKey, Index, Integer, Text, func
+from sqlalchemy import (
+    CheckConstraint,
+    Date,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -10,6 +20,7 @@ from app.core.database import Base
 class Tourist(Base):
     __tablename__ = "tourists"
     __table_args__ = (
+        UniqueConstraint("id", "request_id", name="uq_tourists_id_request"),
         Index("ix_tourists_request_position", "request_id", "position"),
         CheckConstraint("btrim(full_name) <> ''", name="nonblank_name"),
         CheckConstraint("btrim(document_number) <> ''", name="nonblank_document"),
