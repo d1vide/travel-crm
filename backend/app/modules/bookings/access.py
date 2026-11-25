@@ -2,6 +2,7 @@ from sqlalchemy import select
 
 from app.core.errors import ApiError
 from app.modules.bookings.models import ACTIVE_STATUSES, Booking
+from app.modules.payments.models import Payment
 
 
 def active_condition(request_id):
@@ -30,4 +31,17 @@ def active_bookings(session, rows):
         }
         if ids
         else {}
+    )
+
+
+def pending_request_ids(session, identities):
+    if not identities:
+        return set()
+    return set(
+        session.scalars(
+            select(Booking.request_id)
+            .join(Payment, Payment.booking_id == Booking.id)
+            .where(Booking.request_id.in_(identities), Payment.status == "pending")
+            .distinct()
+        )
     )
