@@ -55,7 +55,7 @@ flowchart LR
 
 ## Запуск
 
-Текущий Compose содержит db, backend и web: `python scripts/init_env.py`, затем `docker compose up --build`, приложение на localhost:8080, API напрямую на localhost:8000. В PR #47 добавлены Dockerfile фронтенда, nginx и сервис web; stubs ещё отсутствует и добавляется в #15. Нативный запуск и миграции описаны в backend/README.md. Реализованы auth/health, clients, десять операций requests/users/history, чтение каталога tours и три операции communications; вход и клиенты подключены к интерфейсу. Правила подключения серверных модулей — в docs/api/*-integration.md. Остальные операции остаются целевым контрактом.
+Compose содержит db, stubs, backend и web: python scripts/init_env.py, затем docker compose up --build. Приложение — localhost:8080; API — localhost:8000; прямой порт заглушки доступен только с localhost:8010. У stubs собственная схема PostgreSQL и миграции, операции сохраняются при перезапуске. Протокол, резервирование сумм и нативный запуск — в [подключении оплаты](api/payments-integration.md). Серверные операции отмечены x-implementation-status в OpenAPI; правила подключения модулей — docs/api/*-integration.md. Интерфейс модулей подключается отдельно.
 
 Целевой запуск полного стека в #24:
 

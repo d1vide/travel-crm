@@ -28,11 +28,16 @@ services:
       BACKEND_PORT: 8000
       BACKEND_HOST: 0.0.0.0
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:8080}
+      PAYMENT_STUB_URL: http://stubs:8010
+      PAYMENT_STUB_KEY: ${PAYMENT_STUB_KEY:?Run scripts/init_env.py --add-payment-settings}
+      PAYMENT_TIMEOUT_SECONDS: ${PAYMENT_TIMEOUT_SECONDS:-1}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173,http://localhost:8000,http://127.0.0.1:8000,http://localhost:8080,http://127.0.0.1:8080}
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
     depends_on:
       db:
+        condition: service_healthy
+      stubs:
         condition: service_healthy
     healthcheck:
       test: ["CMD", ".venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/ready', timeout=2)"]
@@ -40,6 +45,27 @@ services:
       timeout: 3s
       retries: 20
       start_period: 15s
+
+  stubs:
+    build:
+      context: .
+      dockerfile: stubs/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://travelcrm:${POSTGRES_PASSWORD:?Run scripts/init_env.py first}@db:5432/travelcrm
+      PAYMENT_STUB_KEY: ${PAYMENT_STUB_KEY:?Run scripts/init_env.py --add-payment-settings}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:8080}
+      STUB_SCHEMA: payment_stub
+    ports:
+      - "127.0.0.1:${PAYMENT_STUB_PORT:-8010}:8010"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", ".venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8010/healthz', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
 
   web:
     build: ./frontend

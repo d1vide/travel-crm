@@ -122,7 +122,7 @@ def test_create_confirm_contract_and_frozen_snapshots(client, actors, context, d
     assert confirmed["supplier_booking_number"] == "DEMO-BOOK-14" and confirmed[
         "confirmed_at"
     ].endswith("Z")
-    assert confirmed["allowed_actions"] == []
+    assert confirmed["allowed_actions"] == ["create_payment"]
     assert confirmed["available_payment_amount"] == confirmed["total_amount"]
     assert [tourist["tourist_id"] for tourist in confirmed["tourists"]] == [
         tourist["id"] for tourist in original_tourists

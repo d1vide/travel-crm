@@ -5203,7 +5203,9 @@ export interface operations {
                      *               }
                      *             }
                      *           ],
-                     *           "allowed_actions": []
+                     *           "allowed_actions": [
+                     *             "create_payment"
+                     *           ]
                      *         }
                      *       ],
                      *       "page": 1,
@@ -5385,7 +5387,9 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
-                     *       "allowed_actions": []
+                     *       "allowed_actions": [
+                     *         "create_payment"
+                     *       ]
                      *     }
                      */
                     "application/json": components["schemas"]["Booking"];
@@ -5489,7 +5493,9 @@ export interface operations {
                      *           }
                      *         }
                      *       ],
-                     *       "allowed_actions": []
+                     *       "allowed_actions": [
+                     *         "create_payment"
+                     *       ]
                      *     }
                      */
                     "application/json": components["schemas"]["Booking"];
@@ -6014,8 +6020,8 @@ export interface operations {
                      *           "amount": "30000.00",
                      *           "currency": "RUB",
                      *           "status": "succeeded",
-                     *           "external_operation_id": "DEMO-PAY-1",
-                     *           "payment_url": "http://localhost:8080/demo-payments/DEMO-PAY-1",
+                     *           "external_operation_id": "00000000-0000-4000-8000-000000000015",
+                     *           "payment_url": "http://localhost:8080/payment-stub/pay/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
                      *           "failure_reason": null,
                      *           "succeeded_at": "2026-11-15T09:00:00Z",
                      *           "created_at": "2026-11-15T09:00:00Z",
@@ -6080,8 +6086,8 @@ export interface operations {
                      *           "amount": "30000.00",
                      *           "currency": "RUB",
                      *           "status": "succeeded",
-                     *           "external_operation_id": "DEMO-PAY-1",
-                     *           "payment_url": "http://localhost:8080/demo-payments/DEMO-PAY-1",
+                     *           "external_operation_id": "00000000-0000-4000-8000-000000000015",
+                     *           "payment_url": "http://localhost:8080/payment-stub/pay/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
                      *           "failure_reason": null,
                      *           "succeeded_at": "2026-11-15T09:00:00Z",
                      *           "created_at": "2026-11-15T09:00:00Z",
@@ -6150,20 +6156,22 @@ export interface operations {
                      *       "booking_id": "00000000-0000-4000-8000-000000000008",
                      *       "amount": "30000.00",
                      *       "currency": "RUB",
-                     *       "status": "succeeded",
-                     *       "external_operation_id": "DEMO-PAY-1",
-                     *       "payment_url": "http://localhost:8080/demo-payments/DEMO-PAY-1",
+                     *       "status": "pending",
+                     *       "external_operation_id": "00000000-0000-4000-8000-000000000015",
+                     *       "payment_url": "http://localhost:8080/payment-stub/pay/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
                      *       "failure_reason": null,
-                     *       "succeeded_at": "2026-11-15T09:00:00Z",
+                     *       "succeeded_at": null,
                      *       "created_at": "2026-11-15T09:00:00Z",
                      *       "request_id": "00000000-0000-4000-8000-000000000004",
                      *       "booking_status": "confirmed",
-                     *       "pending_reason": null,
+                     *       "pending_reason": "Ожидает тестовой оплаты",
                      *       "refunded_amount": "0.00",
                      *       "reserved_refund_amount": "0.00",
                      *       "available_refund_amount": "0.00",
                      *       "can_open_request": true,
-                     *       "allowed_actions": []
+                     *       "allowed_actions": [
+                     *         "reconcile"
+                     *       ]
                      *     }
                      */
                     "application/json": components["schemas"]["Payment"];
@@ -6204,8 +6212,8 @@ export interface operations {
                      *       "amount": "30000.00",
                      *       "currency": "RUB",
                      *       "status": "succeeded",
-                     *       "external_operation_id": "DEMO-PAY-1",
-                     *       "payment_url": "http://localhost:8080/demo-payments/DEMO-PAY-1",
+                     *       "external_operation_id": "00000000-0000-4000-8000-000000000015",
+                     *       "payment_url": "http://localhost:8080/payment-stub/pay/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
                      *       "failure_reason": null,
                      *       "succeeded_at": "2026-11-15T09:00:00Z",
                      *       "created_at": "2026-11-15T09:00:00Z",
@@ -6255,20 +6263,22 @@ export interface operations {
                      *       "booking_id": "00000000-0000-4000-8000-000000000008",
                      *       "amount": "30000.00",
                      *       "currency": "RUB",
-                     *       "status": "succeeded",
-                     *       "external_operation_id": "DEMO-PAY-1",
-                     *       "payment_url": "http://localhost:8080/demo-payments/DEMO-PAY-1",
+                     *       "status": "pending",
+                     *       "external_operation_id": "00000000-0000-4000-8000-000000000015",
+                     *       "payment_url": "http://localhost:8080/payment-stub/pay/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
                      *       "failure_reason": null,
-                     *       "succeeded_at": "2026-11-15T09:00:00Z",
+                     *       "succeeded_at": null,
                      *       "created_at": "2026-11-15T09:00:00Z",
                      *       "request_id": "00000000-0000-4000-8000-000000000004",
                      *       "booking_status": "confirmed",
-                     *       "pending_reason": null,
+                     *       "pending_reason": "Ожидает тестовой оплаты",
                      *       "refunded_amount": "0.00",
                      *       "reserved_refund_amount": "0.00",
                      *       "available_refund_amount": "0.00",
                      *       "can_open_request": true,
-                     *       "allowed_actions": []
+                     *       "allowed_actions": [
+                     *         "reconcile"
+                     *       ]
                      *     }
                      */
                     "application/json": components["schemas"]["Payment"];

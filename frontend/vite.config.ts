@@ -20,6 +20,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': { target: apiTarget, changeOrigin: false },
+      '/payment-stub': { target: process.env.VITE_PAYMENT_STUB_TARGET ?? 'http://localhost:8010', changeOrigin: false },
     },
   },
 })

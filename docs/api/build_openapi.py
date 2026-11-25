@@ -198,7 +198,9 @@ def build():
                         refunded_amount="0.00",
                         remaining_amount=booking["total_amount"],
                         available_payment_amount=booking["total_amount"],
-                        allowed_actions=[],
+                        allowed_actions=["create_payment"]
+                        if booking["total_amount"] != "0.00"
+                        else [],
                     )
                     if operation_id in {"create_booking", "reject_booking"}:
                         booking.update(
@@ -217,6 +219,30 @@ def build():
                             if operation_id == "create_booking"
                             else [],
                         )
+            if operation_id in {
+                "list_payments",
+                "list_booking_payments",
+                "create_payment",
+                "get_payment",
+                "reconcile_payment",
+            }:
+                payments = example["items"] if response == "PaymentPage" else [example]
+                for payment in payments:
+                    waiting = operation_id in {"create_payment", "reconcile_payment"}
+                    payment.update(
+                        status="pending" if waiting else "succeeded",
+                        external_operation_id="00000000-0000-4000-8000-000000000015",
+                        payment_url="http://localhost:8080/payment-stub/pay/"
+                        + "A" * 43,
+                        booking_status="confirmed",
+                        failure_reason=None,
+                        pending_reason="Ожидает тестовой оплаты" if waiting else None,
+                        succeeded_at=None if waiting else "2026-11-15T09:00:00Z",
+                        refunded_amount="0.00",
+                        reserved_refund_amount="0.00",
+                        available_refund_amount="0.00",
+                        allowed_actions=["reconcile"] if waiting else [],
+                    )
             responses[str(status)]["content"] = {
                 "application/json": {
                     "schema": ref(response),
@@ -294,6 +320,11 @@ def build():
                 "get_booking",
                 "confirm_booking",
                 "reject_booking",
+                "list_payments",
+                "list_booking_payments",
+                "create_payment",
+                "get_payment",
+                "reconcile_payment",
             }
             else "planned",
             "responses": responses,

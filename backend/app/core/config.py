@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     backend_port: int = Field(default=8000, ge=1, le=65535)
     backend_host: str = "127.0.0.1"
     public_app_url: str = "http://localhost:8080"
+    payment_stub_url: str = "http://127.0.0.1:8010"
+    payment_stub_key: SecretStr | None = None
+    payment_timeout_seconds: float = Field(default=1.0, gt=0, le=30)
     allowed_origins: Annotated[list[str], NoDecode] = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
@@ -58,7 +61,17 @@ class Settings(BaseSettings):
             raise ValueError("database_schema must be a PostgreSQL identifier")
         return value
 
-    @field_validator("public_app_url")
+    @field_validator("payment_stub_key")
+    @classmethod
+    def valid_payment_key(cls, value):
+        if value is not None and (
+            len(value.get_secret_value()) < 32
+            or value.get_secret_value().lower().startswith(("replace", "change", "example"))
+        ):
+            raise ValueError("Generate a payment shared key of at least 32 characters")
+        return value
+
+    @field_validator("public_app_url", "payment_stub_url")
     @classmethod
     def public_origin(cls, value):
         from urllib.parse import urlsplit
