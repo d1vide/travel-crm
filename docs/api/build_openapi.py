@@ -282,6 +282,28 @@ def build():
                     )
             if operation_id == "read_notification":
                 example["read_at"] = "2026-11-25T09:00:00Z"
+            if operation_id in {
+                "list_refunds",
+                "list_payment_refunds",
+                "create_refund",
+                "get_refund",
+                "reconcile_refund",
+            }:
+                refunds = example["items"] if response == "RefundPage" else [example]
+                for refund in refunds:
+                    waiting = operation_id in {"create_refund", "reconcile_refund"}
+                    refund.update(
+                        status="processing" if waiting else "succeeded",
+                        external_operation_id=None
+                        if waiting
+                        else "00000000-0000-4000-8000-000000000016",
+                        pending_reason="Ожидает результата возврата"
+                        if waiting
+                        else None,
+                        failure_reason=None,
+                        succeeded_at=None if waiting else "2026-11-25T09:00:00Z",
+                        allowed_actions=["reconcile"] if waiting else [],
+                    )
             if operation_id == "complete_request":
                 end = date.fromisoformat(
                     examples["Booking"]["offer_snapshot"]["ends_on"]
@@ -375,6 +397,11 @@ def build():
                 "get_request_tourists",
                 "replace_request_tourists",
                 "complete_request",
+                "list_refunds",
+                "list_payment_refunds",
+                "create_refund",
+                "get_refund",
+                "reconcile_refund",
                 "request_cancellation_booking",
                 "confirm_cancellation_booking",
                 "reject_cancellation_booking",
@@ -968,7 +995,7 @@ def build():
         requirements=["FR-12"],
         status=202,
         idempotent=True,
-        description="Только по cancelled-брони и succeeded-платежу; amount <= available_refund_amount. Под блокировками резервируются processing суммы. Сотрудник не назначает статус сервиса.",
+        description="Только по cancelled-брони и succeeded-платежу; amount <= available_refund_amount с учётом processing. Команда без version, с Idempotency-Key. Резерв фиксируется до HTTP. Ответ 202 с текущим состоянием, а не обещание успеха; статус назначается проверенным ответом сервиса. Тайм-аут сохраняет processing и pending_reason. Повтор использует тот же внешний ключ.",
     )
     operation(
         "get",
@@ -978,6 +1005,7 @@ def build():
         "Refund",
         roles=ALL_STAFF,
         requirements=["FR-12"],
+        description="Для processing выполняет сверку через адаптер. Бухгалтер читает безопасное представление, can_open_request=false, allowed_actions=[]. Фоновая сверка работает независимо от открытой карточки.",
     )
     operation(
         "post",

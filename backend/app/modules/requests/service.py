@@ -260,9 +260,7 @@ def mutate_request(session, actor, identity: UUID, body, command, action):
         if row.status not in allowed:
             invalid_transition()
         if action == "resume" and pending_request_ids(session, [row.id]):
-            raise ApiError(
-                409, "invalid_transition", "Дождитесь окончательного результата платежей"
-            )
+            raise ApiError(409, "invalid_transition", "Дождитесь завершения оплат и возвратов")
         if action in ("cancel", "resume", "return-to-work"):
             from app.modules.tours.selection_service import invalidate_request
 

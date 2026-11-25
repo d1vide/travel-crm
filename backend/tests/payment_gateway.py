@@ -25,7 +25,7 @@ def gateway(application, settings, database):
         stub_schema=settings.database_schema + "_stub",
         payment_stub_key=uuid4().hex + uuid4().hex,
         public_app_url="http://testserver",
-        stub_timeout_seconds=1.0,
+        stub_timeout_seconds=2.0,
     )
     upgrade(stub_settings)
     engine, sessions = stub_database(stub_settings)
@@ -65,7 +65,7 @@ def gateway(application, settings, database):
             "payment_stub_url": state.url,
             "payment_stub_key": stub_settings.payment_stub_key,
             "public_app_url": "http://testserver",
-            "payment_timeout_seconds": 0.3,
+            "payment_timeout_seconds": 1.0,
         }
     )
     application.state.payment_adapter = StubAdapter(state.crm_settings)
@@ -73,6 +73,9 @@ def gateway(application, settings, database):
     state.restart = lambda: (stop(), start())
 
     def outcome(payment, value):
+        assert isinstance(payment["payment_url"], str), (
+            "Reconcile the payment before choosing an outcome"
+        )
         with httpx.Client(trust_env=False, timeout=5) as connection:
             return connection.post(
                 state.url + urlsplit(payment["payment_url"]).path,

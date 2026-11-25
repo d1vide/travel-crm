@@ -15,6 +15,7 @@ from app.core.validation import Money
 from app.modules.auth.dependencies import require_roles
 from app.modules.auth.models import Role, User
 from app.modules.bookings.models import Booking, BookingStatus
+from app.modules.payments.refund_views import booking_totals
 from app.modules.payments.views import totals
 from app.modules.requests.models import TravelRequest
 
@@ -81,6 +82,7 @@ def list_financial(
         .limit(query.page_size)
     ).all()
     money = totals(session, [row.id for row in rows])
+    refunds = booking_totals(session, [row.id for row in rows])
     return FinancialBookingPage(
         items=[
             FinancialBooking(
@@ -92,7 +94,7 @@ def list_financial(
                 paid_amount=f"{money.get(row.id, (Decimal(0), Decimal(0)))[0]:.2f}",
                 reserved_payment_amount=f"{money.get(row.id, (Decimal(0), Decimal(0)))[1]:.2f}",
                 remaining_amount=f"{row.total_amount - money.get(row.id, (Decimal(0), Decimal(0)))[0]:.2f}",
-                refunded_amount="0.00",
+                refunded_amount=f"{refunds.get(row.id, (Decimal(0), Decimal(0)))[0]:.2f}",
                 can_open_request=actor.role == Role.HEAD,
                 confirmed_at=row.confirmed_at,
                 cancelled_at=row.cancelled_at,

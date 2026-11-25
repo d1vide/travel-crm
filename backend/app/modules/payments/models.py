@@ -68,6 +68,51 @@ class Payment(Base):
     )
 
 
+class Refund(Base):
+    __tablename__ = "refunds"
+    __table_args__ = (
+        UniqueConstraint("provider", "external_operation_id", name="uq_refunds_provider_operation"),
+        Index("ix_refunds_payment_status", "payment_id", "status"),
+        Index("ix_refunds_created", "created_at", "id"),
+        Index(
+            "ix_refunds_processing_reconcile",
+            "next_reconcile_at",
+            "id",
+            postgresql_where=text("status = 'processing'"),
+        ),
+        CheckConstraint("amount > 0", name="positive_amount"),
+        CheckConstraint("currency = 'RUB'", name="currency"),
+        CheckConstraint("status IN ('processing','succeeded','failed')", name="status"),
+        CheckConstraint("(status = 'succeeded') = (succeeded_at IS NOT NULL)", name="success_time"),
+        CheckConstraint(
+            "(status = 'failed') = (failure_reason IS NOT NULL)", name="failure_reason"
+        ),
+        CheckConstraint("status = 'processing' OR pending_reason IS NULL", name="pending_reason"),
+        CheckConstraint(
+            "status = 'processing' OR external_operation_id IS NOT NULL", name="terminal_operation"
+        ),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    payment_id: Mapped[UUID] = mapped_column(ForeignKey("payments.id", ondelete="RESTRICT"))
+    amount: Mapped[Decimal] = mapped_column(Numeric(14, 2))
+    currency: Mapped[str] = mapped_column(String(3), default="RUB")
+    status: Mapped[str] = mapped_column(String(16), default="processing")
+    provider: Mapped[str] = mapped_column(String(32), default="demo_stub")
+    next_reconcile_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.clock_timestamp()
+    )
+    external_operation_id: Mapped[str | None] = mapped_column(String(64))
+    failure_reason: Mapped[str | None] = mapped_column(Text)
+    pending_reason: Mapped[str | None] = mapped_column(
+        Text, default="Создание возврата в платёжном сервисе"
+    )
+    succeeded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    provider_conflict: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.clock_timestamp()
+    )
+
+
 class PaymentNotification(Base):
     __tablename__ = "notifications"
     __table_args__ = (

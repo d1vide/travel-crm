@@ -1,8 +1,8 @@
-from sqlalchemy import select
+from sqlalchemy import or_, select
 
 from app.core.errors import ApiError
 from app.modules.bookings.models import ACTIVE_STATUSES, Booking
-from app.modules.payments.models import Payment
+from app.modules.payments.models import Payment, Refund
 
 
 def active_condition(request_id):
@@ -41,7 +41,11 @@ def pending_request_ids(session, identities):
         session.scalars(
             select(Booking.request_id)
             .join(Payment, Payment.booking_id == Booking.id)
-            .where(Booking.request_id.in_(identities), Payment.status == "pending")
+            .outerjoin(Refund, Refund.payment_id == Payment.id)
+            .where(
+                Booking.request_id.in_(identities),
+                or_(Payment.status == "pending", Refund.status == "processing"),
+            )
             .distinct()
         )
     )

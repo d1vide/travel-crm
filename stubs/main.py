@@ -16,6 +16,7 @@ from sqlalchemy import func, select
 
 from stubs.delivery import Delivery
 from stubs.protocol import dto, token
+from stubs.refunds import register as register_refunds
 from stubs.store import Operation, Settings, database
 
 HEADERS = {
@@ -194,4 +195,5 @@ def create_app(settings=None):
                 row.next_delivery_at = session.scalar(select(func.clock_timestamp()))
             return page(row)
 
+    register_refunds(app, settings, sessions, authorize, CreateOperation)
     return app
