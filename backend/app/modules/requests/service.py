@@ -66,6 +66,7 @@ def project(session, actor, rows):
     manager_map = user_briefs(session, {row.manager_id for row in rows})
     details = selection_views.request_details(session, rows)
     bookings = active_bookings(session, rows)
+    booking_summaries = booking_views.summaries(session, bookings)
     tourists = tourist_views.request_details(session, rows, bookings)
     return [
         Request(
@@ -90,7 +91,7 @@ def project(session, actor, rows):
             selected_selection_item_id=row.selected_selection_item_id,
             selected_selection_id=details[row.id]["selected_selection_id"],
             selected_offer=details[row.id]["selected_offer"],
-            active_booking=booking_views.summary(bookings[row.id]) if row.id in bookings else None,
+            active_booking=booking_summaries.get(row.id),
             tourists_received=tourists[row.id]["tourists_received"],
             tourist_form_editable=tourists[row.id]["tourist_form_editable"],
             tourist_link=tourists[row.id]["tourist_link"],

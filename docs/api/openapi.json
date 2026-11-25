@@ -3877,7 +3877,9 @@
                           }
                         }
                       ],
-                      "allowed_actions": []
+                      "allowed_actions": [
+                        "create_payment"
+                      ]
                     }
                   ],
                   "page": 1,
@@ -4167,7 +4169,9 @@
                       }
                     }
                   ],
-                  "allowed_actions": []
+                  "allowed_actions": [
+                    "create_payment"
+                  ]
                 }
               }
             }
@@ -4293,7 +4297,9 @@
                       }
                     }
                   ],
-                  "allowed_actions": []
+                  "allowed_actions": [
+                    "create_payment"
+                  ]
                 }
               }
             }
@@ -5082,7 +5088,7 @@
           "FR-09",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "200": {
             "description": "Глобальный список оплат",
@@ -5099,8 +5105,8 @@
                       "amount": "30000.00",
                       "currency": "RUB",
                       "status": "succeeded",
-                      "external_operation_id": "DEMO-PAY-1",
-                      "payment_url": "http://localhost:8080/demo-payments/DEMO-PAY-1",
+                      "external_operation_id": "00000000-0000-4000-8000-000000000015",
+                      "payment_url": "http://localhost:8080/payment-stub/pay/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
                       "failure_reason": null,
                       "succeeded_at": "2026-11-15T09:00:00Z",
                       "created_at": "2026-11-15T09:00:00Z",
@@ -5233,7 +5239,7 @@
           "FR-09",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "200": {
             "description": "Оплаты конкретной брони",
@@ -5250,8 +5256,8 @@
                       "amount": "30000.00",
                       "currency": "RUB",
                       "status": "succeeded",
-                      "external_operation_id": "DEMO-PAY-1",
-                      "payment_url": "http://localhost:8080/demo-payments/DEMO-PAY-1",
+                      "external_operation_id": "00000000-0000-4000-8000-000000000015",
+                      "payment_url": "http://localhost:8080/payment-stub/pay/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
                       "failure_reason": null,
                       "succeeded_at": "2026-11-15T09:00:00Z",
                       "created_at": "2026-11-15T09:00:00Z",
@@ -5361,7 +5367,7 @@
           "FR-09",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "202": {
             "description": "Создать тестовый платёж",
@@ -5375,20 +5381,22 @@
                   "booking_id": "00000000-0000-4000-8000-000000000008",
                   "amount": "30000.00",
                   "currency": "RUB",
-                  "status": "succeeded",
-                  "external_operation_id": "DEMO-PAY-1",
-                  "payment_url": "http://localhost:8080/demo-payments/DEMO-PAY-1",
+                  "status": "pending",
+                  "external_operation_id": "00000000-0000-4000-8000-000000000015",
+                  "payment_url": "http://localhost:8080/payment-stub/pay/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
                   "failure_reason": null,
-                  "succeeded_at": "2026-11-15T09:00:00Z",
+                  "succeeded_at": null,
                   "created_at": "2026-11-15T09:00:00Z",
                   "request_id": "00000000-0000-4000-8000-000000000004",
                   "booking_status": "confirmed",
-                  "pending_reason": null,
+                  "pending_reason": "Ожидает тестовой оплаты",
                   "refunded_amount": "0.00",
                   "reserved_refund_amount": "0.00",
                   "available_refund_amount": "0.00",
                   "can_open_request": true,
-                  "allowed_actions": []
+                  "allowed_actions": [
+                    "reconcile"
+                  ]
                 }
               }
             }
@@ -5469,7 +5477,7 @@
           "FR-12",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "200": {
             "description": "Платёж и доступный остаток возврата",
@@ -5484,8 +5492,8 @@
                   "amount": "30000.00",
                   "currency": "RUB",
                   "status": "succeeded",
-                  "external_operation_id": "DEMO-PAY-1",
-                  "payment_url": "http://localhost:8080/demo-payments/DEMO-PAY-1",
+                  "external_operation_id": "00000000-0000-4000-8000-000000000015",
+                  "payment_url": "http://localhost:8080/payment-stub/pay/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
                   "failure_reason": null,
                   "succeeded_at": "2026-11-15T09:00:00Z",
                   "created_at": "2026-11-15T09:00:00Z",
@@ -5554,7 +5562,7 @@
           "FR-06",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "202": {
             "description": "Сверить платёж с сервисом",
@@ -5568,20 +5576,22 @@
                   "booking_id": "00000000-0000-4000-8000-000000000008",
                   "amount": "30000.00",
                   "currency": "RUB",
-                  "status": "succeeded",
-                  "external_operation_id": "DEMO-PAY-1",
-                  "payment_url": "http://localhost:8080/demo-payments/DEMO-PAY-1",
+                  "status": "pending",
+                  "external_operation_id": "00000000-0000-4000-8000-000000000015",
+                  "payment_url": "http://localhost:8080/payment-stub/pay/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
                   "failure_reason": null,
-                  "succeeded_at": "2026-11-15T09:00:00Z",
+                  "succeeded_at": null,
                   "created_at": "2026-11-15T09:00:00Z",
                   "request_id": "00000000-0000-4000-8000-000000000004",
                   "booking_status": "confirmed",
-                  "pending_reason": null,
+                  "pending_reason": "Ожидает тестовой оплаты",
                   "refunded_amount": "0.00",
                   "reserved_refund_amount": "0.00",
                   "available_refund_amount": "0.00",
                   "can_open_request": true,
-                  "allowed_actions": []
+                  "allowed_actions": [
+                    "reconcile"
+                  ]
                 }
               }
             }

@@ -13,6 +13,8 @@ from app.modules.auth.router import router as auth_router
 from app.modules.bookings.router import router as bookings_router
 from app.modules.clients.router import router as clients_router
 from app.modules.communications.router import router as communications_router
+from app.modules.payments.adapter import StubAdapter
+from app.modules.payments.router import router as payments_router
 from app.modules.requests.router import router as requests_router
 from app.modules.tourists.router import public_router as public_tourists_router
 from app.modules.tourists.router import router as tourists_router
@@ -35,6 +37,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application = FastAPI(title="TravelCRM backend", version="0.1.0", lifespan=lifespan)
     application.state.settings = configuration
     application.state.database = database
+    application.state.payment_adapter = StubAdapter(configuration)
     register_errors(application)
     application.add_middleware(PublicResponsePrivacy)
     application.include_router(auth_router)
@@ -48,6 +51,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(tourists_router)
     application.include_router(public_tourists_router)
     application.include_router(bookings_router)
+    application.include_router(payments_router)
 
     @application.get("/api/health/live", tags=["health"])
     def live():

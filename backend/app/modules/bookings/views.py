@@ -1,26 +1,52 @@
+from decimal import Decimal
+
 from sqlalchemy import select
 
 from app.modules.bookings.models import BookingStatus, BookingTourist
 from app.modules.bookings.schemas import Booking as BookingDto
 from app.modules.bookings.schemas import BookingTourist as TouristDto
+from app.modules.payments.views import totals
 from app.modules.requests.schemas import BookingSummary, OfferSnapshot
 
 
-def summary(row):
+def summary(row, paid=Decimal(0)):
     return BookingSummary(
         id=row.id,
         status=row.status,
         total_amount=f"{row.total_amount:.2f}",
         currency=row.currency,
-        paid_amount="0.00",
-        remaining_amount=f"{row.total_amount:.2f}",
+        paid_amount=f"{paid:.2f}",
+        remaining_amount=f"{row.total_amount - paid:.2f}",
     )
+
+
+def summaries(session, rows):
+    amounts = totals(
+        session,
+        [
+            row.id
+            for row in rows.values()
+            if row.status not in (BookingStatus.PENDING, BookingStatus.REJECTED)
+        ],
+    )
+    return {
+        identity: summary(row, amounts.get(row.id, (Decimal(0), Decimal(0)))[0])
+        for identity, row in rows.items()
+    }
 
 
 def project(session, rows):
     ids = [row.id for row in rows]
     if not ids:
         return []
+    amounts = totals(
+        session,
+        [
+            row.id
+            for row in rows
+            if row.status not in (BookingStatus.PENDING, BookingStatus.REJECTED)
+        ],
+    )
     tourists = {identity: [] for identity in ids}
     for item in session.scalars(
         select(BookingTourist)
@@ -45,10 +71,10 @@ def project(session, rows):
             cancellation_response=row.cancellation_response,
             confirmed_at=row.confirmed_at,
             cancelled_at=row.cancelled_at,
-            paid_amount="0.00",
-            reserved_payment_amount="0.00",
-            remaining_amount=f"{row.total_amount:.2f}",
-            available_payment_amount=f"{row.total_amount:.2f}"
+            paid_amount=f"{amounts.get(row.id, (Decimal(0), Decimal(0)))[0]:.2f}",
+            reserved_payment_amount=f"{amounts.get(row.id, (Decimal(0), Decimal(0)))[1]:.2f}",
+            remaining_amount=f"{row.total_amount - amounts.get(row.id, (Decimal(0), Decimal(0)))[0]:.2f}",
+            available_payment_amount=f"{row.total_amount - sum(amounts.get(row.id, (Decimal(0), Decimal(0)))):.2f}"
             if row.status == BookingStatus.CONFIRMED
             else "0.00",
             refunded_amount="0.00",
@@ -56,7 +82,12 @@ def project(session, rows):
             created_at=row.created_at,
             updated_at=row.updated_at,
             tourists=tourists[row.id],
-            allowed_actions=["confirm", "reject"] if row.status == BookingStatus.PENDING else [],
+            allowed_actions=["confirm", "reject"]
+            if row.status == BookingStatus.PENDING
+            else ["create_payment"]
+            if row.status == BookingStatus.CONFIRMED
+            and row.total_amount > sum(amounts.get(row.id, (Decimal(0), Decimal(0))))
+            else [],
         )
         for row in rows
     ]
