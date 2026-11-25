@@ -25,6 +25,18 @@ export function createAppRouter(
     history,
     routes: [
       {
+        path: '/public/selections/:token',
+        name: 'public-selection',
+        component: () => import('@/views/PublicWorkflowView.vue'),
+        meta: { public: true },
+      },
+      {
+        path: '/public/tourist-forms/:token',
+        name: 'public-tourists',
+        component: () => import('@/views/PublicWorkflowView.vue'),
+        meta: { public: true },
+      },
+      {
         path: '/login',
         name: 'login',
         component: () => import('@/views/LoginView.vue'),
@@ -37,6 +49,12 @@ export function createAppRouter(
           // С корня направляет защита маршрутов: она знает роль и выбирает раздел.
           { path: '', name: 'home', component: { render: () => null } },
           ...sections,
+          {
+            path: '/notifications',
+            name: 'notifications',
+            component: () => import('@/components/PaymentNotifications.vue'),
+            meta: { roles: ['manager', 'head'] },
+          },
           ...clientPages(),
           ...requestPages(),
           // Профиль доступен любой роли: защита требует только входа.

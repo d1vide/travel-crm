@@ -7,6 +7,8 @@ import { useClientsApi } from '@/api/clients'
 import { useRequestsApi, type RequestUpdate, type TravelRequest } from '@/api/requests'
 import { useCommandKey } from '@/composables/useCommandKey'
 import { useSessionStore } from '@/stores/session'
+import RequestWorkflow from '@/components/RequestWorkflow.vue'
+import CommunicationLog from '@/components/CommunicationLog.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import SearchInput from '@/components/SearchInput.vue'
 import { formatDate, formatDateTime } from '@/utils/format'
@@ -40,6 +42,16 @@ const historyLabels: Record<string, string> = {
   created: 'Создание заявки',
   assignee_changed: 'Смена ответственного',
   'start-work': 'Взята в работу',
+  'return-to-work': 'Возврат к подбору',
+  selection_prepared: 'Подборка опубликована',
+  booking_created: 'Бронь создана',
+  booking_confirmed: 'Бронь подтверждена',
+  booking_rejected: 'Получен отказ поставщика',
+  payment_created: 'Платёж создан',
+  payment_succeeded: 'Оплата зачислена',
+  payment_failed: 'Платёж отклонён',
+  complete: 'Заявка завершена',
+  completed: 'Заявка завершена',
   cancel: 'Отмена заявки',
   resume: 'Возобновление заявки',
 }
@@ -83,6 +95,19 @@ async function loadHistory() {
     if (seq === historySequence) history.value = result
   } catch (cause) {
     if (seq === historySequence) historyError.value = message(cause)
+  }
+}
+
+async function refreshRequest() {
+  const current = generation
+  if (!item.value) return
+  try {
+    const result = await api.get(item.value.id)
+    if (current !== generation) return
+    item.value = result
+    void loadHistory()
+  } catch (cause) {
+    if (current === generation) error.value = message(cause)
   }
 }
 
@@ -240,7 +265,7 @@ function assign() {
   void run(() => api.assign(current.id, body, commandKey.keyFor(['assign', current.id, body])))
 }
 
-function changeStatus(action: 'start-work' | 'cancel' | 'resume') {
+function changeStatus(action: 'start-work' | 'cancel' | 'resume' | 'return-to-work' | 'complete') {
   const current = item.value
   if (!current) return
   if (action === 'cancel' && !reason.value.trim()) {
@@ -306,6 +331,19 @@ function changeStatus(action: 'start-work' | 'cancel' | 'resume') {
         </div>
       </dl>
       <div class="actions">
+        <n-button
+          v-if="item.allowed_actions.includes('return_to_work')"
+          :disabled="busy"
+          @click="changeStatus('return-to-work')"
+          >Вернуть к подбору</n-button
+        >
+        <n-button
+          v-if="item.allowed_actions.includes('complete')"
+          type="primary"
+          :disabled="busy"
+          @click="changeStatus('complete')"
+          >Завершить заявку</n-button
+        >
         <n-button
           v-if="item.allowed_actions.includes('start_work')"
           type="primary"
@@ -436,6 +474,20 @@ function changeStatus(action: 'start-work' | 'cancel' | 'resume') {
         </div>
       </form>
     </n-card>
+    <RequestWorkflow
+      v-if="item"
+      :key="item.id"
+      :request="item"
+      class="block"
+      @changed="refreshRequest"
+    />
+    <CommunicationLog
+      v-if="item"
+      :key="'communication-' + item.id"
+      :client-id="item.client_id"
+      :request-id="item.id"
+      class="block"
+    />
     <n-card v-if="item" title="История изменений" class="block">
       <n-alert v-if="historyError" type="error"
         >{{ historyError }} <n-button @click="loadHistory">Повторить</n-button></n-alert

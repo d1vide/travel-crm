@@ -14,6 +14,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useClientsApi, type Client } from '@/api/clients'
 import { ApiError } from '@/api/errors'
 import ClientForm from '@/components/clients/ClientForm.vue'
+import CommunicationLog from '@/components/CommunicationLog.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { formatDate, formatDateTime } from '@/utils/format'
 
@@ -138,6 +139,7 @@ const dash = (value: string | null | undefined) => value || '—'
         </n-descriptions-item>
       </n-descriptions>
     </n-card>
+    <CommunicationLog :key="client.id" :client-id="client.id" class="card" />
   </template>
 </template>
 
