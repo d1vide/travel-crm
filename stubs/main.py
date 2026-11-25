@@ -1,4 +1,4 @@
-import base64
+import asyncio
 import hashlib
 import hmac
 import re
@@ -14,6 +14,8 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
 from sqlalchemy import func, select
 
+from stubs.delivery import Delivery
+from stubs.protocol import dto, token
 from stubs.store import Operation, Settings, database
 
 HEADERS = {
@@ -37,38 +39,23 @@ class CreateOperation(BaseModel):
         return value
 
 
-def token(settings, identity):
-    digest = hmac.digest(
-        settings.payment_stub_key.get_secret_value().encode(),
-        b"checkout-v1:" + identity.bytes,
-        "sha256",
-    )
-    return base64.urlsafe_b64encode(digest).decode().rstrip("=")
-
-
-def dto(settings, row):
-    return {
-        "id": str(row.id),
-        "client_operation_id": str(row.client_operation_id),
-        "amount": f"{row.amount:.2f}",
-        "currency": row.currency,
-        "status": row.status,
-        "checkout_token": token(settings, row.client_operation_id),
-        "failure_reason": "Тестовый отказ платёжного сервиса" if row.status == "failed" else None,
-        "succeeded_at": row.succeeded_at,
-    }
-
-
 def create_app(settings=None):
     settings = settings or Settings()
     engine, sessions = database(settings)
 
     @asynccontextmanager
     async def lifespan(_app):
+        worker = Delivery(settings, sessions) if settings.payment_callback_url else None
+        task = asyncio.create_task(worker.run()) if worker else None
         try:
             yield
         finally:
-            engine.dispose()
+            try:
+                if worker:
+                    worker.stop.set()
+                    await task
+            finally:
+                engine.dispose()
 
     app = FastAPI(
         title="Payment simulator",
@@ -102,7 +89,9 @@ def create_app(settings=None):
     def create(body: CreateOperation):
         with sessions.begin() as session:
             key = int.from_bytes(
-                hashlib.sha256(body.client_operation_id.bytes).digest()[:8], "big", signed=True
+                hashlib.sha256(body.client_operation_id.bytes).digest()[:8],
+                "big",
+                signed=True,
             )
             session.scalar(select(func.pg_advisory_xact_lock(key)))
             row = session.scalar(
@@ -200,6 +189,9 @@ def create_app(settings=None):
                     row.status = outcome
                     if outcome == "succeeded":
                         row.succeeded_at = session.scalar(select(func.clock_timestamp()))
+            if outcome in ("succeeded", "failed"):
+                row.delivery_pending = True
+                row.next_delivery_at = session.scalar(select(func.clock_timestamp()))
             return page(row)
 
     return app

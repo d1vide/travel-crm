@@ -2,11 +2,22 @@ import re
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
+from urllib.parse import urlsplit
 from uuid import UUID, uuid4
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import AnyHttpUrl, Field, SecretStr, TypeAdapter, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from sqlalchemy import Boolean, CheckConstraint, DateTime, Numeric, String, create_engine
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    Index,
+    Numeric,
+    String,
+    create_engine,
+    func,
+    text,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 
@@ -21,6 +32,27 @@ class Settings(BaseSettings):
     payment_stub_key: SecretStr = Field(min_length=32)
     public_app_url: str = "http://localhost:8080"
     stub_timeout_seconds: float = Field(default=2.0, gt=0, le=30)
+    payment_callback_url: str | None = None
+    stub_delivery_interval_seconds: float = Field(default=1.0, ge=0.05, le=300)
+    stub_callback_timeout_seconds: float = Field(default=1.0, gt=0, le=30)
+
+    @field_validator("payment_callback_url")
+    @classmethod
+    def callback(cls, value):
+        if value is None:
+            return None
+        value = str(TypeAdapter(AnyHttpUrl).validate_python(value))
+        parsed = urlsplit(value)
+        if (
+            parsed.username is not None
+            or parsed.password is not None
+            or parsed.query
+            or parsed.fragment
+        ):
+            raise ValueError(
+                "Callback must be an HTTP(S) URL without credentials, query or fragment"
+            )
+        return value
 
     @field_validator("payment_stub_key")
     @classmethod
@@ -46,11 +78,18 @@ class Base(DeclarativeBase):
 class Operation(Base):
     __tablename__ = "operations"
     __table_args__ = (
+        Index(
+            "ix_operations_delivery",
+            "next_delivery_at",
+            "id",
+            postgresql_where=text("delivery_pending"),
+        ),
         CheckConstraint("amount > 0", name="ck_operations_positive_amount"),
         CheckConstraint("currency = 'RUB'", name="ck_operations_currency"),
         CheckConstraint("status IN ('pending','succeeded','failed')", name="ck_operations_status"),
         CheckConstraint(
-            "(status = 'succeeded') = (succeeded_at IS NOT NULL)", name="ck_operations_success_time"
+            "(status = 'succeeded') = (succeeded_at IS NOT NULL)",
+            name="ck_operations_success_time",
         ),
     )
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
@@ -60,6 +99,10 @@ class Operation(Base):
     currency: Mapped[str] = mapped_column(String(3), default="RUB")
     status: Mapped[str] = mapped_column(String(16), default="pending")
     simulate_timeout: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    delivery_pending: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    next_delivery_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.clock_timestamp()
+    )
     succeeded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 

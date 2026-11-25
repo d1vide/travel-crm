@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from sqlalchemy import select
 
+from app.modules.bookings.completion import business_date, eligible
 from app.modules.bookings.models import BookingStatus, BookingTourist
 from app.modules.bookings.schemas import Booking as BookingDto
 from app.modules.bookings.schemas import BookingTourist as TouristDto
@@ -20,7 +21,7 @@ def summary(row, paid=Decimal(0)):
     )
 
 
-def summaries(session, rows):
+def summaries(session, rows, *, with_completion=False):
     amounts = totals(
         session,
         [
@@ -29,10 +30,23 @@ def summaries(session, rows):
             if row.status not in (BookingStatus.PENDING, BookingStatus.REJECTED)
         ],
     )
-    return {
+    result = {
         identity: summary(row, amounts.get(row.id, (Decimal(0), Decimal(0)))[0])
         for identity, row in rows.items()
     }
+    if not with_completion:
+        return result
+    today = (
+        business_date(session)
+        if any(row.status == BookingStatus.CONFIRMED for row in rows.values())
+        else None
+    )
+    completed = {
+        identity
+        for identity, row in rows.items()
+        if today is not None and eligible(row, amounts.get(row.id, (Decimal(0), Decimal(0))), today)
+    }
+    return result, completed
 
 
 def project(session, rows):

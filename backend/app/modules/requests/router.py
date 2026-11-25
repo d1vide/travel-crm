@@ -127,3 +127,18 @@ def history(
     request_id: UUID, actor: Staff, session: DbSession, query: Annotated[HistoryQuery, Query()]
 ):
     return service.list_history(session, actor, request_id, query)
+
+
+@router.post(
+    "/{request_id}/actions/complete", response_model=Request, operation_id="complete_request"
+)
+def complete(
+    request_id: UUID,
+    actor: Staff,
+    session: DbSession,
+    body: ExpectedVersion,
+    command: IdempotentCommand,
+):
+    from app.modules.bookings.completion import complete as complete_request
+
+    return complete_request(session, actor, request_id, body, command)

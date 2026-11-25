@@ -311,7 +311,7 @@ export interface paths {
         put?: never;
         /**
          * Действие заявки: complete
-         * @description Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.
+         * @description Только booked с confirmed-бронью, полной оплатой, без pending платежей и возвратов. После ends_on сохранённого снимка брони по Москве; version относится к заявке.
          */
         post: operations["complete_request"];
         delete?: never;
@@ -4129,13 +4129,13 @@ export interface operations {
                      *       "tourist_count": 2,
                      *       "budget": "120000.00",
                      *       "wishes": "Море",
-                     *       "status": "booked",
+                     *       "status": "completed",
                      *       "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
-                     *       "completed_at": null,
+                     *       "completed_at": "2027-06-09T09:00:00Z",
                      *       "cancelled_at": null,
                      *       "version": 4,
                      *       "created_at": "2026-11-15T09:00:00Z",
-                     *       "updated_at": "2026-11-15T09:00:00Z",
+                     *       "updated_at": "2027-06-09T09:00:00Z",
                      *       "client": {
                      *         "id": "00000000-0000-4000-8000-000000000002",
                      *         "client_number": 1,
@@ -4166,8 +4166,8 @@ export interface operations {
                      *         "status": "confirmed",
                      *         "total_amount": "100000.00",
                      *         "currency": "RUB",
-                     *         "paid_amount": "30000.00",
-                     *         "remaining_amount": "70000.00"
+                     *         "paid_amount": "100000.00",
+                     *         "remaining_amount": "0.00"
                      *       },
                      *       "tourists_received": 2,
                      *       "tourist_form_editable": false,
@@ -6924,7 +6924,7 @@ export interface operations {
                      *       "recipient_id": "00000000-0000-4000-8000-000000000001",
                      *       "payment_id": "00000000-0000-4000-8000-000000000009",
                      *       "type": "payment_succeeded",
-                     *       "read_at": null,
+                     *       "read_at": "2026-11-25T09:00:00Z",
                      *       "created_at": "2026-11-15T09:00:00Z",
                      *       "request_id": "00000000-0000-4000-8000-000000000004",
                      *       "amount": "30000.00",

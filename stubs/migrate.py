@@ -1,9 +1,9 @@
 from pathlib import Path
 
+from alembic import command
 from alembic.config import Config
 from sqlalchemy.schema import CreateSchema
 
-from alembic import command
 from stubs.store import database
 
 

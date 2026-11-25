@@ -7,6 +7,7 @@ import argparse
 import copy
 import json
 import re
+from datetime import date, timedelta
 from pathlib import Path
 
 DIRECTORY = Path(__file__).resolve().parent
@@ -243,6 +244,28 @@ def build():
                         available_refund_amount="0.00",
                         allowed_actions=["reconcile"] if waiting else [],
                     )
+            if operation_id == "read_notification":
+                example["read_at"] = "2026-11-25T09:00:00Z"
+            if operation_id == "complete_request":
+                end = date.fromisoformat(
+                    examples["Booking"]["offer_snapshot"]["ends_on"]
+                )
+                completed = f"{end + timedelta(days=1)}T09:00:00Z"
+                example.update(
+                    status="completed",
+                    completed_at=completed,
+                    updated_at=completed,
+                    allowed_actions=[],
+                    tourist_form_editable=False,
+                    active_booking=copy.deepcopy(examples["BookingSummary"]),
+                )
+                example["active_booking"].update(
+                    status="confirmed",
+                    paid_amount=example["active_booking"]["total_amount"],
+                    remaining_amount="0.00",
+                )
+                if example["tourist_link"] is not None:
+                    example["tourist_link"]["is_active"] = False
             responses[str(status)]["content"] = {
                 "application/json": {
                     "schema": ref(response),
@@ -315,6 +338,10 @@ def build():
                 "submit_public_tourists",
                 "get_request_tourists",
                 "replace_request_tourists",
+                "complete_request",
+                "list_financial_bookings",
+                "list_notifications",
+                "read_notification",
                 "list_request_bookings",
                 "create_booking",
                 "get_booking",
@@ -563,6 +590,9 @@ def build():
             body,
             requirements=["FR-03", "FR-11"],
             idempotent=True,
+            description="Только booked с confirmed-бронью, полной оплатой, без pending платежей и возвратов. После ends_on сохранённого снимка брони по Москве; version относится к заявке."
+            if action == "complete"
+            else "",
         )
     operation(
         "put",

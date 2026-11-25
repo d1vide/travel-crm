@@ -1,0 +1,5 @@
+extend = "../backend/pyproject.toml"
+
+[lint.isort]
+known-first-party = ["stubs"]
+known-third-party = ["alembic"]
