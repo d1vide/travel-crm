@@ -20,6 +20,16 @@ class ConfirmBooking(ExpectedVersion):
         return value.strip() if isinstance(value, str) else value
 
 
+class ConfirmCancellation(ExpectedVersion):
+    supplier_response: StrictStr = Field(min_length=1)
+
+    @field_validator("supplier_response", mode="before")
+    @classmethod
+    def valid_response(cls, value):
+        value = checked_text(value)
+        return value.strip() if isinstance(value, str) else value
+
+
 class TouristSnapshot(Dto):
     full_name: str = Field(repr=False)
     birth_date: date = Field(repr=False)

@@ -189,6 +189,9 @@ def build():
                 "get_booking",
                 "confirm_booking",
                 "reject_booking",
+                "request_cancellation_booking",
+                "confirm_cancellation_booking",
+                "reject_cancellation_booking",
             }:
                 bookings = example["items"] if response == "BookingPage" else [example]
                 for booking in bookings:
@@ -199,9 +202,9 @@ def build():
                         refunded_amount="0.00",
                         remaining_amount=booking["total_amount"],
                         available_payment_amount=booking["total_amount"],
-                        allowed_actions=["create_payment"]
+                        allowed_actions=["request_cancellation", "create_payment"]
                         if booking["total_amount"] != "0.00"
-                        else [],
+                        else ["request_cancellation"],
                     )
                     if operation_id in {"create_booking", "reject_booking"}:
                         booking.update(
@@ -220,6 +223,39 @@ def build():
                             if operation_id == "create_booking"
                             else [],
                         )
+                    if operation_id in {
+                        "request_cancellation_booking",
+                        "confirm_cancellation_booking",
+                        "reject_cancellation_booking",
+                    }:
+                        booking.update(
+                            version=3
+                            if operation_id == "request_cancellation_booking"
+                            else 4,
+                            cancellation_reason="Просьба клиента об отмене",
+                            cancellation_response=None,
+                            updated_at="2026-11-25T09:00:00Z",
+                        )
+                        if operation_id == "reject_cancellation_booking":
+                            booking["cancellation_response"] = (
+                                "Поставщик отказал в отмене"
+                            )
+                        else:
+                            booking.update(
+                                status="cancellation_requested",
+                                available_payment_amount="0.00",
+                                allowed_actions=[
+                                    "confirm_cancellation",
+                                    "reject_cancellation",
+                                ],
+                            )
+                        if operation_id == "confirm_cancellation_booking":
+                            booking.update(
+                                status="cancelled",
+                                cancelled_at="2026-11-25T09:00:00Z",
+                                cancellation_response="Поставщик подтвердил отмену",
+                                allowed_actions=[],
+                            )
             if operation_id in {
                 "list_payments",
                 "list_booking_payments",
@@ -339,6 +375,9 @@ def build():
                 "get_request_tourists",
                 "replace_request_tourists",
                 "complete_request",
+                "request_cancellation_booking",
+                "confirm_cancellation_booking",
+                "reject_cancellation_booking",
                 "list_financial_bookings",
                 "list_notifications",
                 "read_notification",
@@ -805,7 +844,14 @@ def build():
             body,
             requirements=["FR-05", "FR-11"],
             idempotent=True,
-            description="version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно.",
+            description=(
+                "version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно. "
+                + {
+                    "request-cancellation": "Только confirmed при booked-заявке; причина обязательна. Pending-платёж не мешает запросить отмену, новые платежи блокируются.",
+                    "confirm-cancellation": "Только cancellation_requested при booked-заявке; ответ поставщика обязателен, pending-платежей нет. Без успешных оплат заявка становится in_progress, с оплатами — cancelled; деньги остаются у старой брони, возврат отдельный.",
+                    "reject-cancellation": "Только cancellation_requested при booked-заявке; причина отказа поставщика обязательна. Бронь снова confirmed, заявка остаётся booked.",
+                }.get(action, "")
+            ).strip(),
         )
 
     financial_filters = [

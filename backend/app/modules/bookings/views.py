@@ -7,6 +7,7 @@ from app.modules.bookings.models import BookingStatus, BookingTourist
 from app.modules.bookings.schemas import Booking as BookingDto
 from app.modules.bookings.schemas import BookingTourist as TouristDto
 from app.modules.payments.views import totals
+from app.modules.requests.models import RequestStatus, TravelRequest
 from app.modules.requests.schemas import BookingSummary, OfferSnapshot
 
 
@@ -61,6 +62,22 @@ def project(session, rows):
             if row.status not in (BookingStatus.PENDING, BookingStatus.REJECTED)
         ],
     )
+    request_ids = {
+        row.request_id
+        for row in rows
+        if row.status in (BookingStatus.CONFIRMED, BookingStatus.CANCELLATION_REQUESTED)
+    }
+    statuses = (
+        dict(
+            session.execute(
+                select(TravelRequest.id, TravelRequest.status).where(
+                    TravelRequest.id.in_(request_ids)
+                )
+            ).all()
+        )
+        if request_ids
+        else {}
+    )
     tourists = {identity: [] for identity in ids}
     for item in session.scalars(
         select(BookingTourist)
@@ -96,12 +113,23 @@ def project(session, rows):
             created_at=row.created_at,
             updated_at=row.updated_at,
             tourists=tourists[row.id],
-            allowed_actions=["confirm", "reject"]
-            if row.status == BookingStatus.PENDING
-            else ["create_payment"]
-            if row.status == BookingStatus.CONFIRMED
-            and row.total_amount > sum(amounts.get(row.id, (Decimal(0), Decimal(0))))
-            else [],
+            allowed_actions=allowed_actions(
+                row, amounts.get(row.id, (Decimal(0), Decimal(0))), statuses.get(row.request_id)
+            ),
         )
         for row in rows
     ]
+
+
+def allowed_actions(row, money, request_status):
+    if row.status == BookingStatus.PENDING:
+        return ["confirm", "reject"]
+    if request_status != RequestStatus.BOOKED:
+        return []
+    if row.status == BookingStatus.CONFIRMED:
+        return ["request_cancellation"] + (
+            ["create_payment"] if row.total_amount > sum(money) else []
+        )
+    if row.status == BookingStatus.CANCELLATION_REQUESTED:
+        return (["confirm_cancellation"] if money[1] == 0 else []) + ["reject_cancellation"]
+    return []

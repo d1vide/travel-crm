@@ -10,7 +10,7 @@ from app.core.idempotency import check_payload, find_previous, remember
 from app.modules.auth.directory import active_assignee, user_briefs
 from app.modules.auth.models import Role
 from app.modules.bookings import views as booking_views
-from app.modules.bookings.access import active_bookings, ensure_no_active
+from app.modules.bookings.access import active_bookings, ensure_no_active, pending_request_ids
 from app.modules.clients import service as clients
 from app.modules.requests.models import RequestStatus as Status
 from app.modules.requests.models import TravelRequest
@@ -41,14 +41,20 @@ def locked_request(session, actor, identity):
 
 
 def allowed_actions(
-    row, actor, latest_selection_id=None, has_booking=False, can_book=False, can_complete=False
+    row,
+    actor,
+    latest_selection_id=None,
+    has_booking=False,
+    can_book=False,
+    can_complete=False,
+    has_pending=False,
 ):
     actions = ["reassign"] if actor.role == Role.HEAD else []
     if not has_booking and row.status in (Status.NEW, Status.IN_PROGRESS):
         actions += ["update", "cancel"]
     if not has_booking and row.status == Status.NEW:
         actions.append("start_work")
-    if not has_booking and row.status == Status.CANCELLED:
+    if not has_booking and not has_pending and row.status == Status.CANCELLED:
         actions.append("resume")
     if not has_booking and row.status in (Status.IN_PROGRESS, Status.OFFER_PREPARED):
         actions.append("prepare_selection")
@@ -74,6 +80,9 @@ def project(session, actor, rows):
         session, bookings, with_completion=True
     )
     tourists = tourist_views.request_details(session, rows, bookings)
+    pending = pending_request_ids(
+        session, [row.id for row in rows if row.status == Status.CANCELLED]
+    )
     return [
         Request(
             id=row.id,
@@ -107,6 +116,7 @@ def project(session, actor, rows):
                 details[row.id]["latest_selection_id"],
                 row.id in bookings,
                 can_complete=row.id in can_complete,
+                has_pending=row.id in pending,
                 can_book=(
                     row.status == Status.OFFER_PREPARED
                     and row.id not in bookings
@@ -249,6 +259,10 @@ def mutate_request(session, actor, identity: UUID, body, command, action):
         allowed, target = transitions[action]
         if row.status not in allowed:
             invalid_transition()
+        if action == "resume" and pending_request_ids(session, [row.id]):
+            raise ApiError(
+                409, "invalid_transition", "Дождитесь окончательного результата платежей"
+            )
         if action in ("cancel", "resume", "return-to-work"):
             from app.modules.tours.selection_service import invalidate_request
 

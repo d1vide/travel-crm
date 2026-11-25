@@ -9,8 +9,8 @@ from app.core.idempotency import IdempotentCommand
 from app.core.pagination import HistoryQuery
 from app.modules.auth.dependencies import require_roles
 from app.modules.auth.models import Role, User
-from app.modules.bookings import service
-from app.modules.bookings.schemas import Booking, BookingPage, ConfirmBooking
+from app.modules.bookings import cancellation, service
+from app.modules.bookings.schemas import Booking, BookingPage, ConfirmBooking, ConfirmCancellation
 from app.modules.requests.schemas import ExpectedVersion, ReasonCommand
 
 Staff = Annotated[User, Depends(require_roles(Role.MANAGER, Role.HEAD))]
@@ -88,3 +88,48 @@ def reject_booking(
     command: IdempotentCommand,
 ):
     return service.act(session, actor, booking_id, body, command, "reject")
+
+
+@router.post(
+    "/api/bookings/{booking_id}/actions/request-cancellation",
+    response_model=Booking,
+    operation_id="request_cancellation_booking",
+)
+def request_cancellation(
+    booking_id: UUID,
+    actor: Staff,
+    session: DbSession,
+    body: ReasonCommand,
+    command: IdempotentCommand,
+):
+    return cancellation.act(session, actor, booking_id, body, command, "request-cancellation")
+
+
+@router.post(
+    "/api/bookings/{booking_id}/actions/confirm-cancellation",
+    response_model=Booking,
+    operation_id="confirm_cancellation_booking",
+)
+def confirm_cancellation(
+    booking_id: UUID,
+    actor: Staff,
+    session: DbSession,
+    body: ConfirmCancellation,
+    command: IdempotentCommand,
+):
+    return cancellation.act(session, actor, booking_id, body, command, "confirm-cancellation")
+
+
+@router.post(
+    "/api/bookings/{booking_id}/actions/reject-cancellation",
+    response_model=Booking,
+    operation_id="reject_cancellation_booking",
+)
+def reject_cancellation(
+    booking_id: UUID,
+    actor: Staff,
+    session: DbSession,
+    body: ReasonCommand,
+    command: IdempotentCommand,
+):
+    return cancellation.act(session, actor, booking_id, body, command, "reject-cancellation")

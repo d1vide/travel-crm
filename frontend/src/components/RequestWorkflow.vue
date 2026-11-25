@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { NAlert, NButton, NCard, NCheckbox, NInput, NPagination, NSpin, NTag } from 'naive-ui'
-import { apiErrorFromResponse, fieldMessages } from '@/api/errors'
+import { ApiError, apiErrorFromResponse, fieldMessages } from '@/api/errors'
 import { useSessionStore } from '@/stores/session'
 import { formatDateTime } from '@/utils/format'
 import { useHttp } from '@/api/instance'
@@ -42,6 +42,7 @@ const touristErrors = ref<Record<string, string>>({})
 const tourists = ref<Dto['TouristSubmissionItem'][]>([])
 const touristVersion = ref(0)
 const bookingInputs = ref<Record<string, string>>({})
+const cancellationInputs = ref<Record<string, string>>({})
 const paymentInputs = ref<Record<string, string>>({})
 const payments = ref<Record<string, Dto['PaymentPage']>>({})
 const paymentPages = ref<Record<string, number>>({})
@@ -153,6 +154,10 @@ async function run(operation: () => Promise<void>, reload = true) {
     }
   } catch (cause) {
     report(cause)
+    if (cause instanceof ApiError && cause.status === 409) {
+      emit('changed')
+      await load()
+    }
   } finally {
     busy.value = false
   }
@@ -293,6 +298,28 @@ function createBooking() {
   void run(async () => {
     await post(base.value + '/bookings', { version: request.version })
     bookingPage.value = 1
+  })
+}
+
+type CancellationAction = 'request-cancellation' | 'confirm-cancellation' | 'reject-cancellation'
+
+function changeCancellation(booking: Dto['Booking'], action: CancellationAction) {
+  const text = cancellationInputs.value[booking.id]?.trim()
+  if (!text) {
+    messages.value = 'Введите причину отмены или ответ поставщика.'
+    return
+  }
+  const body =
+    action === 'confirm-cancellation'
+      ? { version: booking.version, supplier_response: text }
+      : { version: booking.version, reason: text }
+  void run(async () => {
+    await post('/bookings/' + booking.id + '/actions/' + action, body)
+    delete cancellationInputs.value[booking.id]
+    if (action === 'confirm-cancellation') {
+      selectionLink.value = ''
+      touristLink.value = ''
+    }
   })
 }
 function respond(booking: Dto['Booking'], action: 'confirm' | 'reject') {
@@ -514,6 +541,51 @@ function changePaymentPage(id: string, page: number) {
           Номер у поставщика: {{ booking.supplier_booking_number }}
         </p>
         <p v-if="booking.rejection_reason">Причина отказа: {{ booking.rejection_reason }}</p>
+        <p v-if="booking.cancellation_reason">Причина отмены: {{ booking.cancellation_reason }}</p>
+        <p v-if="booking.cancellation_response">
+          Ответ поставщика: {{ booking.cancellation_response }}
+        </p>
+        <n-alert
+          v-if="booking.status === 'cancelled' && booking.paid_amount !== '0.00'"
+          type="warning"
+        >
+          Бронь отменена. Деньги автоматически не возвращены. Возврат оформляется отдельно.
+        </n-alert>
+        <div v-if="booking.allowed_actions.includes('request_cancellation')" class="actions">
+          <n-input
+            v-model:value="cancellationInputs[booking.id]"
+            aria-label="Причина отмены брони"
+            placeholder="Причина отмены брони"
+          />
+          <n-button :loading="busy" @click="changeCancellation(booking, 'request-cancellation')"
+            >Запросить отмену брони</n-button
+          >
+        </div>
+        <template v-else-if="booking.status === 'cancellation_requested'">
+          <div class="actions">
+            <n-input
+              v-model:value="cancellationInputs[booking.id]"
+              aria-label="Ответ поставщика на отмену"
+              placeholder="Ответ поставщика на отмену"
+            />
+            <n-button
+              v-if="booking.allowed_actions.includes('confirm_cancellation')"
+              type="warning"
+              :loading="busy"
+              @click="changeCancellation(booking, 'confirm-cancellation')"
+              >Подтвердить отмену</n-button
+            >
+            <n-button
+              v-if="booking.allowed_actions.includes('reject_cancellation')"
+              :loading="busy"
+              @click="changeCancellation(booking, 'reject-cancellation')"
+              >Внести отказ в отмене</n-button
+            >
+          </div>
+          <p v-if="booking.reserved_payment_amount !== '0.00'">
+            Подтверждение отмены станет доступно после обработки ожидающих платежей.
+          </p>
+        </template>
         <div
           v-if="
             booking.allowed_actions.includes('confirm') ||
