@@ -262,12 +262,16 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/UserProfile"
                 },
                 "example": {
                   "id": "00000000-0000-4000-8000-000000000001",
                   "full_name": "Тестовый Менеджер",
-                  "role": "manager"
+                  "role": "manager",
+                  "email": "manager@example.com",
+                  "department": "Учебный отдел продаж",
+                  "position": "Менеджер по туризму",
+                  "work_phone": "+7 000 000-00-01"
                 }
               }
             }
@@ -7085,6 +7089,68 @@
             "id": "00000000-0000-4000-8000-000000000001",
             "full_name": "Тестовый Менеджер",
             "role": "manager"
+          }
+        ]
+      },
+      "UserProfile": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "full_name",
+          "role",
+          "email",
+          "department",
+          "position",
+          "work_phone"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "full_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 320
+          },
+          "department": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "position": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "work_phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 64
+          }
+        },
+        "description": "Личный профиль текущего сотрудника; расширенные поля не входят в User списка ответственных и бизнес-карточек.",
+        "examples": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "full_name": "Тестовый Менеджер",
+            "role": "manager",
+            "email": "manager@example.com",
+            "department": "Учебный отдел продаж",
+            "position": "Менеджер по туризму",
+            "work_phone": "+7 000 000-00-01"
           }
         ]
       },

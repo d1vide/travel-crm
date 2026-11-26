@@ -1070,6 +1070,27 @@ export interface components {
             role: components["schemas"]["Role"];
         };
         /**
+         * @description Личный профиль текущего сотрудника; расширенные поля не входят в User списка ответственных и бизнес-карточек.
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000001",
+         *       "full_name": "Тестовый Менеджер",
+         *       "role": "manager",
+         *       "email": "manager@example.com",
+         *       "department": "Учебный отдел продаж",
+         *       "position": "Менеджер по туризму",
+         *       "work_phone": "+7 000 000-00-01"
+         *     }
+         */
+        UserProfile: {
+            id: components["schemas"]["Id"];
+            full_name: string;
+            role: components["schemas"]["Role"];
+            email: string;
+            department: string | null;
+            position: string | null;
+            work_phone: string | null;
+        };
+        /**
          * @example {
          *       "access_token": "EXAMPLE_NOT_A_REAL_TOKEN",
          *       "user": {
@@ -2930,10 +2951,14 @@ export interface operations {
                      * @example {
                      *       "id": "00000000-0000-4000-8000-000000000001",
                      *       "full_name": "Тестовый Менеджер",
-                     *       "role": "manager"
+                     *       "role": "manager",
+                     *       "email": "manager@example.com",
+                     *       "department": "Учебный отдел продаж",
+                     *       "position": "Менеджер по туризму",
+                     *       "work_phone": "+7 000 000-00-01"
                      *     }
                      */
-                    "application/json": components["schemas"]["User"];
+                    "application/json": components["schemas"]["UserProfile"];
                 };
             };
             401: components["responses"]["Error401"];

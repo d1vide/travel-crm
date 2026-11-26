@@ -6,7 +6,7 @@ from fastapi.security import APIKeyCookie
 from app.core.database import DbSession
 from app.core.errors import Error
 from app.modules.auth.dependencies import CurrentUser, require_same_origin
-from app.modules.auth.schemas import AuthResult, LoginInput, UserDto
+from app.modules.auth.schemas import AuthResult, LoginInput, UserProfileDto
 from app.modules.auth.service import AuthService
 
 router = APIRouter(
@@ -85,7 +85,7 @@ def logout(request: Request, session: DbSession):
     return response
 
 
-@router.get("/me", response_model=UserDto, operation_id="get_current_user")
+@router.get("/me", response_model=UserProfileDto, operation_id="get_current_user")
 def me(user: CurrentUser, response: Response):
     response.headers["Cache-Control"] = "no-store"
-    return UserDto.model_validate(user)
+    return UserProfileDto.model_validate(user)

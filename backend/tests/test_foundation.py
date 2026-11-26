@@ -102,7 +102,7 @@ def test_auth_and_errors_follow_frozen_contract(login, client):
     response = client.get(
         "/api/auth/me", headers={"Authorization": "Bearer " + result.json()["access_token"]}
     )
-    validate("User", response.json())
+    validate("UserProfile", response.json())
     for payload in [
         {"email": "invalid", "password": "private-fixture"},
         {"email": "manager@example.com", "password": 123},

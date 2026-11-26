@@ -24,6 +24,9 @@ class User(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     full_name: Mapped[str] = mapped_column(String(255))
     email: Mapped[str] = mapped_column(String(320), unique=True)
+    department: Mapped[str | None] = mapped_column(String(255))
+    position: Mapped[str | None] = mapped_column(String(255))
+    work_phone: Mapped[str | None] = mapped_column(String(64))
     password_hash: Mapped[str] = mapped_column(String(512))
     role: Mapped[Role] = mapped_column(
         Enum(

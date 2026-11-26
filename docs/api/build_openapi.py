@@ -510,7 +510,7 @@ def build():
         "/auth/me",
         "get_current_user",
         "Текущий сотрудник",
-        "User",
+        "UserProfile",
         roles=ALL_STAFF,
         requirements=["FR-01"],
     )
