@@ -397,6 +397,7 @@ def build():
                 "get_request_tourists",
                 "replace_request_tourists",
                 "complete_request",
+                "get_summary_report",
                 "list_refunds",
                 "list_payment_refunds",
                 "create_refund",

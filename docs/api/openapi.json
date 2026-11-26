@@ -6888,7 +6888,7 @@
           "FR-09",
           "FR-01"
         ],
-        "x-implementation-status": "planned",
+        "x-implementation-status": "implemented",
         "responses": {
           "200": {
             "description": "Сводный отчёт за период",

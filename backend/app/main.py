@@ -21,6 +21,7 @@ from app.modules.payments.events import router as payment_events_router
 from app.modules.payments.reconciliation import Reconciler
 from app.modules.payments.refund_router import router as refunds_router
 from app.modules.payments.router import router as payments_router
+from app.modules.reports.router import router as reports_router
 from app.modules.requests.router import router as requests_router
 from app.modules.tourists.router import public_router as public_tourists_router
 from app.modules.tourists.router import router as tourists_router
@@ -62,6 +63,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(clients_router)
     application.include_router(users_router)
     application.include_router(requests_router)
+    application.include_router(reports_router)
     application.include_router(tours_router)
     application.include_router(communications_router)
     application.include_router(selections_router)
