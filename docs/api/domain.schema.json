@@ -231,6 +231,57 @@
         }
       }
     },
+    "UserProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "full_name",
+        "role",
+        "email",
+        "department",
+        "position",
+        "work_phone"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "full_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "$ref": "#/$defs/Role"
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 320
+        },
+        "department": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 255
+        },
+        "position": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 255
+        },
+        "work_phone": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 64
+        }
+      },
+      "description": "Личный профиль текущего сотрудника; расширенные поля не входят в User списка ответственных и бизнес-карточек."
+    },
     "AuthResult": {
       "type": "object",
       "additionalProperties": false,

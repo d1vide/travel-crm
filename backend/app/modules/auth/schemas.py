@@ -22,6 +22,13 @@ class UserDto(Dto):
     role: Role
 
 
+class UserProfileDto(UserDto):
+    email: str = Field(max_length=320)
+    department: str | None = Field(max_length=255)
+    position: str | None = Field(max_length=255)
+    work_phone: str | None = Field(max_length=64)
+
+
 class AuthResult(Dto):
     access_token: str = Field(min_length=1, repr=False)
     user: UserDto

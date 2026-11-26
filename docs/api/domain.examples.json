@@ -10,6 +10,18 @@
       }
     },
     {
+      "schema": "UserProfile",
+      "value": {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "full_name": "Тестовый Менеджер",
+        "role": "manager",
+        "email": "manager@example.com",
+        "department": "Учебный отдел продаж",
+        "position": "Менеджер по туризму",
+        "work_phone": "+7 000 000-00-01"
+      }
+    },
+    {
       "schema": "Client",
       "value": {
         "id": "00000000-0000-4000-8000-000000000002",

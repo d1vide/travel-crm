@@ -50,7 +50,7 @@ erDiagram
 
 | Таблица | Основные поля | Ограничения |
 |---|---|---|
-| `users` | `id`, `full_name`, `email`, `password_hash`, `role`, `is_active`, даты | Уникальный нормализованный email; `role`: `manager`, `head`, `accountant`; хеш пароля никогда не входит в DTO |
+| `users` | `id`, `full_name`, `email`, `department`, `position`, `work_phone`, `password_hash`, `role`, `is_active`, даты | Уникальный нормализованный email; `role`: `manager`, `head`, `accountant`; отдел/должность/рабочий телефон nullable (255/255/64); хеш пароля никогда не входит в DTO |
 | `refresh_tokens` | `id`, `user_id`, `token_hash`, `family_id`, `expires_at`, `revoked_at`, `replaced_by_id`, `created_at` | Уникальный хеш; хранится только хеш. Ротация и отзыв транзакционны; повторное использование заменённого токена отзывает семейство. Access после logout может жить до истечения своих 15 минут, refresh отозван сразу |
 | `clients` | `id`, `client_number`, `created_by_id`, `full_name`, `full_name_normalized`, `phone`, `email`, `phone_normalized`, `email_normalized`, `preferences`, `note`, `version`, даты | `client_number` unique; CHECK контакта; имя непустое. Нормализованные контакты индексируются, но не unique; нормализованное имя используется только для поиска |
 | `requests` | `id`, `client_id`, `manager_id`, `destination`, `starts_on`, `ends_on`, `tourist_count`, `budget`, `wishes`, `status`, `selected_selection_item_id`, `cancellation_reason`, `completed_at`, `cancelled_at`, `version`, даты | Ответственный — активный manager или head; туристов > 0; бюджет >= 0; окончание >= начала. Выбранный элемент принадлежит подборке этой заявки |

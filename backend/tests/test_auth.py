@@ -38,7 +38,9 @@ def test_login_profile_cookie_and_hash(login, client, database, email, role):
         token = session.scalar(select(RefreshToken))
         assert token.token_hash == hash_refresh(raw) and raw != token.token_hash
     me = client.get("/api/auth/me", headers={"Authorization": "Bearer " + body["access_token"]})
-    assert me.status_code == 200 and me.json() == body["user"]
+    assert me.status_code == 200
+    assert {key: me.json()[key] for key in body["user"]} == body["user"]
+    assert me.json()["email"] == email
 
 
 @pytest.mark.parametrize(
