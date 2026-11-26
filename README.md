@@ -64,3 +64,5 @@
 На новом окружении выполните `python scripts/init_env.py`. Если локальный `.env` создан до появления оплаты, выполните `python scripts/init_env.py --add-payment-settings`. Затем запустите `docker compose up -d --build --wait`. Compose запускает PostgreSQL, FastAPI, платёжную заглушку и nginx с интерфейсом на http://localhost:8080. [Подробности запуска](backend/README.md)
 
 Фронтенд запускается отдельно по [frontend/README.md](frontend/README.md) на localhost:5173 и проксирует /api на бэкенд. Для нативной разработки после подготовки PostgreSQL: `uv sync --directory backend --frozen`, затем `uv run --directory backend python -m app.bootstrap`.
+
+Перед показом выполните `docker compose exec backend .venv/bin/python -m app.preflight --web-url http://web:8080`. Команда проверяет готовность демо-окружения без изменения данных. [Подготовка стенда, демо-сотрудники и сценарий](docs/demo-preparation.md); [результаты и ограничения приёмки](docs/test-report.md). Проверка чистого контейнерного запуска остаётся в #24.

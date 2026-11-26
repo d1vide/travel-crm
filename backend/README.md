@@ -15,7 +15,7 @@ python scripts/init_env.py
 docker compose up --build
 ```
 
-Скрипт создаёт корневой .env со случайными секретами и не перезаписывает существующий файл. Образец полей — в .env.example; плейсхолдер JWT заведомо не принимается сервером. В Compose работают db, backend и web (Vue через nginx на localhost:8080); платёжная заглушка добавляется в #15 с завершением #24.
+Скрипт создаёт корневой .env со случайными секретами и не перезаписывает существующий файл. Образец полей — в .env.example; плейсхолдер JWT заведомо не принимается сервером. В Compose работают db, backend, stubs и web (Vue через nginx на localhost:8080). Проверка чистого контейнерного запуска остаётся в #24.
 
 При старте backend выполняет `alembic upgrade head`, затем добавляет демо-пользователей при SEED_DEMO=true и запускает сервер. База использует постоянный том; обычный перезапуск контейнеров сохраняет данные. DB и API публикуются только на 127.0.0.1, по умолчанию 5432 и 8000. Порты переопределяются POSTGRES_PORT/BACKEND_PORT. В контейнере backend работает непривилегированным пользователем.
 
@@ -31,11 +31,13 @@ docker compose up --build
 
 ```bash
 uv sync --directory backend --frozen
-docker compose up -d db
+docker compose up -d db stubs
 uv run --directory backend python -m app.bootstrap
 ```
 
 Команда bootstrap подходит для повторного запуска: миграции не применяются повторно, seed не создаёт дублей и не меняет существующие пароли/роли. Изменение DEMO_PASSWORD в .env не сбрасывает пароль уже созданного пользователя.
+
+При работе через Vite PUBLIC_APP_URL в корневом `.env` должен соответствовать адресу браузера, например `http://localhost:5173`; это значение используют backend и stubs для публичных ссылок и проверки Origin. После смены значения перезапустите оба сервиса. PAYMENT_STUB_URL для backend на хосте — `http://127.0.0.1:8010`, PAYMENT_RECONCILIATION_ENABLED=true. Правила прокси и оплаты — в [инструкции подключения](../docs/api/payments-integration.md). Контейнерный callback рассчитан на backend внутри Compose; при разработке с backend на хосте учёт результата обеспечивает его фоновая сверка. Проверка обоих режимов в контейнерах остаётся в #24.
 
 Для горячей перезагрузки после первоначальной подготовки:
 
@@ -62,7 +64,7 @@ uv run --directory backend uvicorn app.main:create_app --factory --reload --host
 - POST /api/auth/login принимает JSON email/password и возвращает AuthResult из контракта 0.2.
 - POST /api/auth/refresh использует только cookie refresh_token и возвращает новый access/профиль, ротируя cookie.
 - POST /api/auth/logout отзывает семейство refresh-сессии и очищает cookie; повторный выход даёт 204.
-- GET /api/auth/me требует Bearer access и возвращает только id/full_name/role.
+- GET /api/auth/me требует Bearer access и возвращает UserProfile: id/full_name/role/email/department/position/work_phone; необязательные рабочие поля могут быть null.
 
 Access JWT действует 15 минут, проверяются подпись, issuer, audience, срок и обязательные claims; сотрудник должен оставаться активным. Access хранится только в памяти фронтенда. После logout уже выданный access живёт до истечения своего короткого срока; refresh отозван сразу.
 
@@ -124,3 +126,7 @@ Vue/nginx включены в Compose. Серверные API до оплаты 
 Общий обработчик #18 возвращает единый Error для валидации, HTTP-ошибок и сбоев БД; поля и статусы описаны в docs/api/errors-integration.md. Исходный ввод и внутренние исключения не включаются в ответ.
 
 Профиль текущего сотрудника #48: `/api/auth/me` возвращает UserProfile с email, отделом, должностью и рабочим телефоном. Миграция 0012 добавляет nullable-поля; seed заполняет их только при создании новых демо-сотрудников. Контракт и поведение старых записей — в `docs/api/profile-integration.md`.
+
+## Подготовка демонстрации
+
+`uv run --directory backend python -m app.preflight` проверяет актуальность миграций, демо-роли/пароль, каталог, web/API и платёжную заглушку без записи в БД. Команда возвращает 0 при успехе всех проверок, 1 при проблеме. В Compose: `docker compose exec backend .venv/bin/python -m app.preflight --web-url http://web:8080`. Флаг меняет только адрес диагностического чтения web, не рабочий PUBLIC_APP_URL. Полная инструкция и границы проверки — в [подготовке стенда](../docs/demo-preparation.md).
