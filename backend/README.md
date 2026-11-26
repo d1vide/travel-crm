@@ -117,6 +117,8 @@ uv run --directory backend ruff format --check .
 
 ## Контракт и следующие шаги
 
-Полная спецификация MVP остаётся в docs/api/openapi.json. Runtime /openapi.json показывает реализованные auth/health/clients/requests/users/tours/communications/selections/tourists/bookings/payments/notifications/financial-bookings. Его нельзя целиком записывать поверх полной спецификации, удаляя будущие операции. В #26 экспорт из серверных схем должен заменить временный генератор с сохранением всех согласованных маршрутов/моделей; порядок описан в docs/api/README.md. Возвраты реализованы в #35; отчёты остаются planned.
+Полная спецификация MVP остаётся в docs/api/openapi.json. Runtime /openapi.json показывает реализованные auth/health/clients/requests/users/tours/communications/selections/tourists/bookings/payments/notifications/financial-bookings. Его нельзя целиком записывать поверх полной спецификации, удаляя будущие операции. В #26 экспорт из серверных схем должен заменить временный генератор с сохранением всех согласованных маршрутов/моделей; порядок описан в docs/api/README.md. Возвраты #35 и сводный отчёт #36 реализованы; все 60 операций зафиксированного HTTP-контракта подключены.
 
 Vue/nginx включены в Compose. Серверные API до оплаты #15 и уведомлений/завершения #33 реализованы; состояние интерфейсов проверяется отдельно. Независимая доставка результатов и фоновая сверка описаны в docs/api/payment-notifications-integration.md. Отмена #34 реализована: docs/api/booking-cancellation-integration.md. Возвраты #35 реализованы: docs/api/refunds-integration.md (миграция 0011). Серверные критерии #17 покрыты существующими правами, фильтрами и переназначением; сводный отчёт #36 реализован: docs/api/reports-integration.md; CI перенесён после показа по #46.
+
+Общий обработчик #18 возвращает единый Error для валидации, HTTP-ошибок и сбоев БД; поля и статусы описаны в docs/api/errors-integration.md. Исходный ввод и внутренние исключения не включаются в ответ.

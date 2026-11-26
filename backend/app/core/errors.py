@@ -47,11 +47,14 @@ class ApiError(Exception):
 
 
 def error_response(status: int, code: str, message: str, fields=None):
-    return JSONResponse(
+    response = JSONResponse(
         status_code=status,
         content=Error(code=code, message=message, fields=fields or []).model_dump(mode="json"),
         headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"},
     )
+    if status == 401:
+        response.headers["WWW-Authenticate"] = "Bearer"
+    return response
 
 
 def register_errors(app: FastAPI):
@@ -82,14 +85,12 @@ def register_errors(app: FastAPI):
                     ]
                 )
                 continue
-            path = (
-                ".".join(
-                    str(part)
-                    for part in item["loc"]
-                    if part not in ("body", "query", "path", "header")
-                )
-                or "body"
-            )
+            location = item["loc"]
+            if location and location[0] in ("body", "query", "path", "header"):
+                location = location[1:]
+            path = ".".join(str(part) for part in location) or "body"
+            if item["type"] == "json_invalid":
+                path = "body"
             message = {
                 "missing": "Обязательное поле",
                 "extra_forbidden": "Неизвестное поле",
@@ -101,25 +102,55 @@ def register_errors(app: FastAPI):
                 "date_order": "Дата окончания не может быть раньше начала",
                 "birth_not_future": "Дата рождения не может быть в будущем",
                 "passport_expiry": "Укажите срок действия загранпаспорта",
+                "json_invalid": "Передайте корректный JSON",
+                "uuid_parsing": "Передайте корректный UUID",
+                "uuid_type": "Передайте корректный UUID",
+                "literal_error": "Выберите допустимое значение",
+                "enum": "Выберите допустимое значение",
+                "list_type": "Ожидается список",
+                "too_short": "Добавьте хотя бы один элемент",
+                "int_type": "Ожидается целое число",
+                "int_parsing": "Ожидается целое число",
             }.get(item["type"], "Некорректное значение")
-            if path == "email" and item["type"] != "missing":
+            specific = item["type"] not in ("missing", "extra_forbidden")
+            if path == "email" and specific:
                 message = "Введите корректный email"
-            if path == "phone" and item["type"] != "missing":
+            if path == "phone" and specific:
                 message = "Введите корректный телефон"
-            if path in {"budget", "max_price"} and item["type"] != "missing":
+            if path in {"budget", "max_price"} and specific:
                 message = "Передайте неотрицательную сумму строкой с двумя знаками после точки"
-            if path == "tourist_count" and item["type"] != "missing":
+            if path == "amount" and specific:
+                message = "Передайте положительную сумму строкой с двумя знаками после точки"
+            if path in {"version", "request_version"} and specific:
+                message = "Укажите целую версию не меньше 1"
+            if path == "tourist_count" and specific:
                 message = "Введите целое число туристов от 1 до 2147483647"
             fields.append(FieldError(field=path, message=message))
         return error_response(422, "validation_error", "Проверьте данные", fields)
 
     @app.exception_handler(HTTPException)
     async def http_error_handler(_request: Request, error: HTTPException):
-        return error_response(
+        code, message = {
+            400: ("validation_error", "Передайте корректный запрос"),
+            401: ("unauthorized", "Требуется вход в систему"),
+            403: ("forbidden", "Недостаточно прав для этого действия"),
+            404: ("not_found", "Запрошенные данные не найдены"),
+            405: ("not_found", "Метод недоступен"),
+            409: ("conflict", "Запрос конфликтует с текущим состоянием"),
+            422: ("validation_error", "Проверьте данные"),
+            429: ("rate_limited", "Слишком много запросов. Повторите позже"),
+            501: ("not_implemented", "Операция пока недоступна"),
+        }.get(
             error.status_code,
-            "not_found" if error.status_code in (404, 405) else "forbidden",
-            "Ресурс или метод недоступен",
+            ("server_error", "Ошибка сервера")
+            if error.status_code >= 500
+            else ("validation_error", "Запрос недоступен"),
         )
+        response = error_response(error.status_code, code, message)
+        for name, value in (error.headers or {}).items():
+            if name.lower() in {"allow", "retry-after"}:
+                response.headers[name] = value
+        return response
 
     @app.exception_handler(SQLAlchemyError)
     async def database_error_handler(_request: Request, _error: SQLAlchemyError):
