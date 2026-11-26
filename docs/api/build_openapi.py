@@ -43,7 +43,7 @@ def build():
         "info": {
             "title": "TravelCRM API",
             "version": domain["x-contract-version"],
-            "description": "Контракт зафиксирован по результатам сверки сценариев и каркаса фронтенда 15.11.2026. Описывает целевое поведение; сервер ещё реализуется. Условия команд: docs/state-transitions.md. Права проверяются сервером, включая принадлежность каждой заявки.",
+            "description": "Контракт зафиксирован по результатам сверки сценариев и каркаса фронтенда 15.11.2026. Описывает HTTP-контракт и условия бизнес-команд. Условия команд: docs/state-transitions.md. Права проверяются сервером, включая принадлежность каждой заявки.",
         },
         "servers": [{"url": "/"}],
         "security": [{"BearerAuth": []}],
@@ -108,6 +108,21 @@ def build():
                 }
             },
         }
+    document["components"]["responses"]["Error422"]["content"]["application/json"][
+        "example"
+    ] = {
+        "code": "validation_error",
+        "message": "Проверьте данные",
+        "fields": [
+            {
+                "field": "tourists.0.birth_date",
+                "message": "Дата рождения не может быть в будущем",
+            }
+        ],
+    }
+    document["components"]["responses"]["Error401"]["headers"] = {
+        "WWW-Authenticate": {"schema": {"type": "string"}, "description": "Bearer"}
+    }
     for name, value in examples.items():
         document["components"]["schemas"][name]["examples"] = [value]
 
@@ -1119,6 +1134,15 @@ def build():
     document["paths"] = {
         "/api" + path: item for path, item in document["paths"].items()
     }
+    statuses = {
+        operation["x-implementation-status"]
+        for path in document["paths"].values()
+        for method, operation in path.items()
+        if method in {"get", "post", "put", "patch", "delete"}
+    }
+    document["x-implementation-status"] = (
+        "implemented" if statuses == {"implemented"} else "partial"
+    )
     # Domain definitions remain a standalone JSON Schema; the exported OpenAPI is self-contained.
     text = json.dumps(document, ensure_ascii=False, indent=2)
     return json.loads(text.replace("#/$defs/", "#/components/schemas/"))

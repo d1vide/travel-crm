@@ -2632,6 +2632,8 @@ export interface components {
         /** @description Необходим вход или обновление access-токена */
         Error401: {
             headers: {
+                /** @description Bearer */
+                "WWW-Authenticate"?: string;
                 [name: string]: unknown;
             };
             content: {
@@ -2702,8 +2704,13 @@ export interface components {
                 /**
                  * @example {
                  *       "code": "validation_error",
-                 *       "message": "Некорректные поля тела или параметры запроса",
-                 *       "fields": []
+                 *       "message": "Проверьте данные",
+                 *       "fields": [
+                 *         {
+                 *           "field": "tourists.0.birth_date",
+                 *           "message": "Дата рождения не может быть в будущем"
+                 *         }
+                 *       ]
                  *     }
                  */
                 "application/json": components["schemas"]["Error"];

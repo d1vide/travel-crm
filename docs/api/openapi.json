@@ -3,7 +3,7 @@
   "info": {
     "title": "TravelCRM API",
     "version": "0.2",
-    "description": "Контракт зафиксирован по результатам сверки сценариев и каркаса фронтенда 15.11.2026. Описывает целевое поведение; сервер ещё реализуется. Условия команд: docs/state-transitions.md. Права проверяются сервером, включая принадлежность каждой заявки."
+    "description": "Контракт зафиксирован по результатам сверки сценариев и каркаса фронтенда 15.11.2026. Описывает HTTP-контракт и условия бизнес-команд. Условия команд: docs/state-transitions.md. Права проверяются сервером, включая принадлежность каждой заявки."
   },
   "servers": [
     {
@@ -16,7 +16,7 @@
     }
   ],
   "x-contract-status": "baseline-fixed-after-source-review",
-  "x-implementation-status": "partial",
+  "x-implementation-status": "implemented",
   "paths": {
     "/api/auth/login": {
       "post": {
@@ -10664,6 +10664,14 @@
               "fields": []
             }
           }
+        },
+        "headers": {
+          "WWW-Authenticate": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer"
+          }
         }
       },
       "Error403": {
@@ -10720,8 +10728,13 @@
             },
             "example": {
               "code": "validation_error",
-              "message": "Некорректные поля тела или параметры запроса",
-              "fields": []
+              "message": "Проверьте данные",
+              "fields": [
+                {
+                  "field": "tourists.0.birth_date",
+                  "message": "Дата рождения не может быть в будущем"
+                }
+              ]
             }
           }
         }
