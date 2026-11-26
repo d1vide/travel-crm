@@ -411,7 +411,7 @@ def test_notification_and_financial_pages_have_bounded_queries(client, actors, p
         assert (
             client.get("/api/financial-bookings", headers=actors["head"]["headers"]).status_code
             == 200
-            and len(statements) <= 4
+            and len(statements) <= 5
         )
     finally:
         event.remove(engine, "before_cursor_execute", capture)

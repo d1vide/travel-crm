@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
+from typing import Literal
 from urllib.parse import urlsplit
 from uuid import UUID, uuid4
 
@@ -11,6 +12,7 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     DateTime,
+    ForeignKey,
     Index,
     Numeric,
     String,
@@ -35,6 +37,7 @@ class Settings(BaseSettings):
     payment_callback_url: str | None = None
     stub_delivery_interval_seconds: float = Field(default=1.0, ge=0.05, le=300)
     stub_callback_timeout_seconds: float = Field(default=1.0, gt=0, le=30)
+    stub_refund_outcome: Literal["succeeded", "failed", "timeout"] = "succeeded"
 
     @field_validator("payment_callback_url")
     @classmethod
@@ -103,6 +106,30 @@ class Operation(Base):
     next_delivery_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.clock_timestamp()
     )
+    succeeded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class RefundOperation(Base):
+    __tablename__ = "refund_operations"
+    __table_args__ = (
+        CheckConstraint("amount > 0", name="ck_refund_operations_positive_amount"),
+        CheckConstraint("currency = 'RUB'", name="ck_refund_operations_currency"),
+        CheckConstraint(
+            "status IN ('processing','succeeded','failed')", name="ck_refund_operations_status"
+        ),
+        CheckConstraint(
+            "(status = 'succeeded') = (succeeded_at IS NOT NULL)",
+            name="ck_refund_operations_success_time",
+        ),
+        Index("ix_refund_operations_payment_status", "payment_id", "status"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    client_operation_id: Mapped[UUID] = mapped_column(unique=True)
+    payment_id: Mapped[UUID] = mapped_column(ForeignKey("operations.id", ondelete="RESTRICT"))
+    amount: Mapped[Decimal] = mapped_column(Numeric(14, 2))
+    currency: Mapped[str] = mapped_column(String(3), default="RUB")
+    status: Mapped[str] = mapped_column(String(16), default="processing")
+    simulate_timeout: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     succeeded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 

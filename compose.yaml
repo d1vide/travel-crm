@@ -57,6 +57,7 @@ services:
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:8080}
       STUB_SCHEMA: payment_stub
       PAYMENT_CALLBACK_URL: http://backend:8000/internal/payment-events
+      STUB_REFUND_OUTCOME: ${STUB_REFUND_OUTCOME:-succeeded}
     ports:
       - "127.0.0.1:${PAYMENT_STUB_PORT:-8010}:8010"
     depends_on:

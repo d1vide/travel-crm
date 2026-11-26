@@ -12,7 +12,7 @@ POST /api/notifications/{notification_id}/read возвращает Notification
 
 ## Финансовые брони
 
-GET /api/financial-bookings доступен head/accountant; manager получает 403. Параметры: request_id, status, page, page_size, sort=-created_at. Использовать FinancialBookingPage: суммы строками, paid_amount по succeeded, reserved_payment_amount по pending, remaining_amount=total_amount-paid_amount. Пока возвраты не реализованы, refunded_amount="0.00".
+GET /api/financial-bookings доступен head/accountant; manager получает 403. Параметры: request_id, status, page, page_size, sort=-created_at. Использовать FinancialBookingPage: суммы строками, paid_amount по succeeded, reserved_payment_amount по pending, remaining_amount=total_amount-paid_amount. Успешные возвраты входят в refunded_amount ([#35](refunds-integration.md)); paid_amount остаётся валовой оплатой.
 
 Это отдельное безопасное представление без клиента, снимка тура и паспортов. can_open_request=true только у руководителя; бухгалтер не получает доступ к полной Booking или Request. Для карточек менеджера остаются обычные брони собственной заявки. Списки считают суммы пакетно и не вызывают провайдера для каждой строки.
 
@@ -22,7 +22,7 @@ POST /api/requests/{request_id}/actions/complete принимает ExpectedVers
 
 Условия: заявка booked, её действующая бронь confirmed и соответствует выбранному предложению, paid_amount=total_amount, pending-платежей нет. По Москве уже наступил день после Booking.offer_snapshot.ends_on. Именно неизменяемая дата забронированного тура определяет окончание поездки; Request.ends_on хранит пожелание и может отличаться. В последний день тура завершение запрещено.
 
-Команда атомарно сохраняет completed, completed_at, историю и повышение version заявки; версия брони не меняется. Повтор того же тела/ключа безопасен, другое тело даёт idempotency_conflict. Новая команда с устаревшей версией — version_conflict; невыполненные условия — invalid_transition. После 409 перечитать Request. completed — конечный статус, форма туристов закрыта. Модуль возвратов #35 должен дополнить эту проверку запретом завершения после возврата или при ожидающем возврате.
+Команда атомарно сохраняет completed, completed_at, историю и повышение version заявки; версия брони не меняется. Повтор того же тела/ключа безопасен, другое тело даёт idempotency_conflict. Новая команда с устаревшей версией — version_conflict; невыполненные условия — invalid_transition. После 409 перечитать Request. completed — конечный статус, форма туристов закрыта. В #35 эта проверка дополнена запретом завершения при succeeded/processing-возврате действующей брони; возвраты прежних отменённых попыток не учитываются.
 
 ## Доставка и восстановление
 

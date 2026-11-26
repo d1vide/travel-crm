@@ -6,6 +6,7 @@ from app.modules.bookings.completion import business_date, eligible
 from app.modules.bookings.models import BookingStatus, BookingTourist
 from app.modules.bookings.schemas import Booking as BookingDto
 from app.modules.bookings.schemas import BookingTourist as TouristDto
+from app.modules.payments.refund_views import booking_totals
 from app.modules.payments.views import totals
 from app.modules.requests.models import RequestStatus, TravelRequest
 from app.modules.requests.schemas import BookingSummary, OfferSnapshot
@@ -42,10 +43,19 @@ def summaries(session, rows, *, with_completion=False):
         if any(row.status == BookingStatus.CONFIRMED for row in rows.values())
         else None
     )
+    refunds = booking_totals(
+        session, [row.id for row in rows.values() if row.status == BookingStatus.CONFIRMED]
+    )
     completed = {
         identity
         for identity, row in rows.items()
-        if today is not None and eligible(row, amounts.get(row.id, (Decimal(0), Decimal(0))), today)
+        if today is not None
+        and eligible(
+            row,
+            amounts.get(row.id, (Decimal(0), Decimal(0))),
+            today,
+            refunds.get(row.id, (Decimal(0), Decimal(0))),
+        )
     }
     return result, completed
 
@@ -67,6 +77,9 @@ def project(session, rows):
         for row in rows
         if row.status in (BookingStatus.CONFIRMED, BookingStatus.CANCELLATION_REQUESTED)
     }
+    refunds = booking_totals(
+        session, [row.id for row in rows if row.status == BookingStatus.CANCELLED]
+    )
     statuses = (
         dict(
             session.execute(
@@ -108,7 +121,7 @@ def project(session, rows):
             available_payment_amount=f"{row.total_amount - sum(amounts.get(row.id, (Decimal(0), Decimal(0)))):.2f}"
             if row.status == BookingStatus.CONFIRMED
             else "0.00",
-            refunded_amount="0.00",
+            refunded_amount=f"{refunds.get(row.id, (Decimal(0), Decimal(0)))[0]:.2f}",
             version=row.version,
             created_at=row.created_at,
             updated_at=row.updated_at,

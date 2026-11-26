@@ -7,6 +7,7 @@ from app.core.audit import record_request_change
 from app.core.errors import ApiError
 from app.core.idempotency import find_previous
 from app.modules.bookings.models import Booking, BookingStatus
+from app.modules.payments.refund_views import booking_totals
 from app.modules.payments.views import totals
 from app.modules.requests.models import RequestStatus
 
@@ -15,12 +16,13 @@ def business_date(session):
     return session.scalar(select(func.timezone("Europe/Moscow", func.clock_timestamp()))).date()
 
 
-def eligible(booking, money, today):
+def eligible(booking, money, today, refunds=(Decimal(0), Decimal(0))):
     paid, reserved = money
     return (
         booking.status == BookingStatus.CONFIRMED
         and paid == booking.total_amount
         and reserved == 0
+        and sum(refunds) == 0
         and today > date.fromisoformat(booking.offer_snapshot["ends_on"])
     )
 
@@ -46,7 +48,8 @@ def complete(session, actor, identity, body, command):
     if booking is None or booking.selection_item_id != request.selected_selection_item_id:
         requests.invalid_transition()
     money = totals(session, [booking.id]).get(booking.id, (Decimal(0), Decimal(0)))
-    if not eligible(booking, money, business_date(session)):
+    refunded = booking_totals(session, [booking.id]).get(booking.id, (Decimal(0), Decimal(0)))
+    if not eligible(booking, money, business_date(session), refunded):
         raise ApiError(
             409,
             "invalid_transition",

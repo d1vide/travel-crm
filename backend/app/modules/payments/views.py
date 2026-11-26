@@ -4,6 +4,7 @@ from sqlalchemy import func, select
 
 from app.modules.auth.models import Role
 from app.modules.bookings.models import Booking
+from app.modules.payments import refund_views
 from app.modules.payments.models import Payment
 from app.modules.payments.schemas import Payment as PaymentDto
 
@@ -34,6 +35,7 @@ def project(session, actor, rows):
             select(Booking).where(Booking.id.in_({row.booking_id for row in rows}))
         )
     }
+    money = refund_views.payment_totals(session, [row.id for row in rows])
     return [
         PaymentDto(
             id=row.id,
@@ -49,12 +51,18 @@ def project(session, actor, rows):
             request_id=bookings[row.booking_id].request_id,
             booking_status=bookings[row.booking_id].status,
             pending_reason=row.pending_reason,
-            refunded_amount="0.00",
-            reserved_refund_amount="0.00",
-            available_refund_amount="0.00",
+            refunded_amount=f"{money.get(row.id, (Decimal(0), Decimal(0)))[0]:.2f}",
+            reserved_refund_amount=f"{money.get(row.id, (Decimal(0), Decimal(0)))[1]:.2f}",
+            available_refund_amount=f"{refund_views.available(row, bookings[row.booking_id], money.get(row.id, (Decimal(0), Decimal(0)))):.2f}",
             can_open_request=actor.role != Role.ACCOUNTANT,
             allowed_actions=["reconcile"]
             if row.status == "pending" and actor.role != Role.ACCOUNTANT
+            else ["create_refund"]
+            if actor.role != Role.ACCOUNTANT
+            and refund_views.available(
+                row, bookings[row.booking_id], money.get(row.id, (Decimal(0), Decimal(0)))
+            )
+            > 0
             else [],
         )
         for row in rows

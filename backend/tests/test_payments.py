@@ -474,6 +474,7 @@ def test_adapter_rejects_mismatched_http_results(
     result = gateway.adapter.fetch(
         UUID(payment["id"]), payment["external_operation_id"], Decimal(payment["amount"]), "RUB"
     ).model_dump(mode="json")
+    external_id = result["id"]
     result[field] = value
     client_type = httpx.Client
     transport = httpx.MockTransport(lambda request: httpx.Response(200, json=result))
@@ -485,7 +486,7 @@ def test_adapter_rejects_mismatched_http_results(
         with pytest.raises(ProviderError):
             gateway.adapter.fetch(
                 UUID(payment["id"]),
-                payment["external_operation_id"],
+                external_id,
                 Decimal(payment["amount"]),
                 "RUB",
             )

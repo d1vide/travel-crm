@@ -855,7 +855,7 @@ export interface paths {
         put?: never;
         /**
          * Создать возврат
-         * @description Только по cancelled-брони и succeeded-платежу; amount <= available_refund_amount. Под блокировками резервируются processing суммы. Сотрудник не назначает статус сервиса.
+         * @description Только по cancelled-брони и succeeded-платежу; amount <= available_refund_amount с учётом processing. Команда без version, с Idempotency-Key. Резерв фиксируется до HTTP. Ответ 202 с текущим состоянием, а не обещание успеха; статус назначается проверенным ответом сервиса. Тайм-аут сохраняет processing и pending_reason. Повтор использует тот же внешний ключ.
          */
         post: operations["create_refund"];
         delete?: never;
@@ -873,7 +873,7 @@ export interface paths {
         };
         /**
          * Состояние возврата
-         * @description Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.
+         * @description Для processing выполняет сверку через адаптер. Бухгалтер читает безопасное представление, can_open_request=false, allowed_actions=[]. Фоновая сверка работает независимо от открытой карточки.
          */
         get: operations["get_refund"];
         put?: never;
@@ -6333,18 +6333,16 @@ export interface operations {
                      *           "payment_id": "00000000-0000-4000-8000-000000000009",
                      *           "amount": "10000.00",
                      *           "currency": "RUB",
-                     *           "status": "processing",
-                     *           "external_operation_id": "DEMO-REFUND-1",
+                     *           "status": "succeeded",
+                     *           "external_operation_id": "00000000-0000-4000-8000-000000000016",
                      *           "failure_reason": null,
-                     *           "succeeded_at": null,
+                     *           "succeeded_at": "2026-11-25T09:00:00Z",
                      *           "created_at": "2026-11-15T09:00:00Z",
                      *           "booking_id": "00000000-0000-4000-8000-000000000008",
                      *           "request_id": "00000000-0000-4000-8000-000000000004",
                      *           "pending_reason": null,
                      *           "can_open_request": true,
-                     *           "allowed_actions": [
-                     *             "reconcile"
-                     *           ]
+                     *           "allowed_actions": []
                      *         }
                      *       ],
                      *       "page": 1,
@@ -6397,18 +6395,16 @@ export interface operations {
                      *           "payment_id": "00000000-0000-4000-8000-000000000009",
                      *           "amount": "10000.00",
                      *           "currency": "RUB",
-                     *           "status": "processing",
-                     *           "external_operation_id": "DEMO-REFUND-1",
+                     *           "status": "succeeded",
+                     *           "external_operation_id": "00000000-0000-4000-8000-000000000016",
                      *           "failure_reason": null,
-                     *           "succeeded_at": null,
+                     *           "succeeded_at": "2026-11-25T09:00:00Z",
                      *           "created_at": "2026-11-15T09:00:00Z",
                      *           "booking_id": "00000000-0000-4000-8000-000000000008",
                      *           "request_id": "00000000-0000-4000-8000-000000000004",
                      *           "pending_reason": null,
                      *           "can_open_request": true,
-                     *           "allowed_actions": [
-                     *             "reconcile"
-                     *           ]
+                     *           "allowed_actions": []
                      *         }
                      *       ],
                      *       "page": 1,
@@ -6466,13 +6462,13 @@ export interface operations {
                      *       "amount": "10000.00",
                      *       "currency": "RUB",
                      *       "status": "processing",
-                     *       "external_operation_id": "DEMO-REFUND-1",
+                     *       "external_operation_id": null,
                      *       "failure_reason": null,
                      *       "succeeded_at": null,
                      *       "created_at": "2026-11-15T09:00:00Z",
                      *       "booking_id": "00000000-0000-4000-8000-000000000008",
                      *       "request_id": "00000000-0000-4000-8000-000000000004",
-                     *       "pending_reason": null,
+                     *       "pending_reason": "Ожидает результата возврата",
                      *       "can_open_request": true,
                      *       "allowed_actions": [
                      *         "reconcile"
@@ -6516,18 +6512,16 @@ export interface operations {
                      *       "payment_id": "00000000-0000-4000-8000-000000000009",
                      *       "amount": "10000.00",
                      *       "currency": "RUB",
-                     *       "status": "processing",
-                     *       "external_operation_id": "DEMO-REFUND-1",
+                     *       "status": "succeeded",
+                     *       "external_operation_id": "00000000-0000-4000-8000-000000000016",
                      *       "failure_reason": null,
-                     *       "succeeded_at": null,
+                     *       "succeeded_at": "2026-11-25T09:00:00Z",
                      *       "created_at": "2026-11-15T09:00:00Z",
                      *       "booking_id": "00000000-0000-4000-8000-000000000008",
                      *       "request_id": "00000000-0000-4000-8000-000000000004",
                      *       "pending_reason": null,
                      *       "can_open_request": true,
-                     *       "allowed_actions": [
-                     *         "reconcile"
-                     *       ]
+                     *       "allowed_actions": []
                      *     }
                      */
                     "application/json": components["schemas"]["Refund"];
@@ -6567,13 +6561,13 @@ export interface operations {
                      *       "amount": "10000.00",
                      *       "currency": "RUB",
                      *       "status": "processing",
-                     *       "external_operation_id": "DEMO-REFUND-1",
+                     *       "external_operation_id": null,
                      *       "failure_reason": null,
                      *       "succeeded_at": null,
                      *       "created_at": "2026-11-15T09:00:00Z",
                      *       "booking_id": "00000000-0000-4000-8000-000000000008",
                      *       "request_id": "00000000-0000-4000-8000-000000000004",
-                     *       "pending_reason": null,
+                     *       "pending_reason": "Ожидает результата возврата",
                      *       "can_open_request": true,
                      *       "allowed_actions": [
                      *         "reconcile"
