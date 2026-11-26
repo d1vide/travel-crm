@@ -5,12 +5,13 @@ import re
 import time
 from contextlib import asynccontextmanager
 from decimal import Decimal
+from pathlib import Path
 from typing import Annotated, Literal
 from urllib.parse import parse_qs
 from uuid import UUID
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
 from sqlalchemy import func, select
 
@@ -156,7 +157,7 @@ def create_app(settings=None):
             else ""
         )
         return HTMLResponse(
-            f'<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Тестовая оплата</title><style>body{{font:18px system-ui;max-width:640px;margin:10vh auto;padding:24px;color:#18243b;background:#f5f7fa}}main{{background:white;border-radius:16px;padding:32px}}button{{padding:12px 18px;margin:8px 8px 0 0;border:0;border-radius:8px;background:#234fc7;color:white;font-size:16px}}</style><main><h1>Тестовая оплата</h1><p>{row.amount:.2f} RUB</p><p>{labels[row.status]}</p><p>Реальные деньги не списываются. Выберите тестовый исход.</p><form method="post">{buttons}</form></main></html>',
+            f'<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Тестовая оплата</title><style>body{{font:18px system-ui;max-width:640px;margin:10vh auto;padding:24px;color:#18243b;background:#f5f7fa}}main{{background:white;border-radius:16px;padding:32px}}button{{padding:12px 18px;margin:8px 8px 0 0;border:0;border-radius:8px;background:#234fc7;color:white;font-size:16px}}</style><main><h1>Тестовая оплата</h1><p>{row.amount:.2f} RUB</p><p>{labels[row.status]}</p><p>Реальные деньги не списываются. Выберите тестовый исход.</p><form id="checkout" method="post">{buttons}</form><p id="checkout-error" role="alert" hidden></p><script src="/payment-stub/checkout.js" defer></script></main></html>',
             headers=HEADERS,
         )
 
@@ -164,6 +165,14 @@ def create_app(settings=None):
     def checkout(raw: str):
         with sessions() as session:
             return page(find(session, raw))
+
+    @app.get("/payment-stub/checkout.js")
+    def checkout_script():
+        return FileResponse(
+            Path(__file__).with_name("checkout.js"),
+            media_type="application/javascript",
+            headers=HEADERS,
+        )
 
     @app.post("/payment-stub/pay/{raw}")
     async def choose(raw: str, request: Request):
