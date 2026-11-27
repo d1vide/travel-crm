@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { decimalAmount, publicRequest } from '../workflow'
+import { decimalAmount, publicRequest, validatePositiveAmount } from '../workflow'
 
 afterEach(() => vi.unstubAllGlobals())
 
@@ -53,4 +53,17 @@ describe('public workflow', () => {
   ])('normalizes %s as %s', (input, result) => {
     expect(decimalAmount(input!)).toBe(result)
   })
+})
+
+it.each(['0', '-1', '1000.01', '10.001'])(
+  'rejects invalid amounts before sending a command: %s',
+  (value) => {
+    expect(validatePositiveAmount(value, '1000.00').amount).toBeNull()
+  },
+)
+
+it('allows the exact available amount without rounding', () => {
+  expect(validatePositiveAmount('999999999999,99', '999999999999.99').amount).toBe(
+    '999999999999.99',
+  )
 })

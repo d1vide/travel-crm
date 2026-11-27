@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NAlert, NButton, NCard, NInput, NPagination, NSelect, NSpin, NTag } from 'naive-ui'
-import { ApiError } from '@/api/errors'
+import { ApiError, fieldMessages } from '@/api/errors'
 import { useClientsApi } from '@/api/clients'
 import { useRequestsApi, type RequestUpdate, type TravelRequest } from '@/api/requests'
 import { useCommandKey } from '@/composables/useCommandKey'
@@ -26,6 +26,7 @@ const loading = ref(false)
 const busy = ref(false)
 const loadError = ref('')
 const error = ref('')
+const fieldErrors = ref<Record<string, string>>({})
 const directoryError = ref('')
 const historyError = ref('')
 const query = ref('')
@@ -46,6 +47,12 @@ const historyLabels: Record<string, string> = {
   selection_prepared: 'Подборка опубликована',
   booking_created: 'Бронь создана',
   booking_confirmed: 'Бронь подтверждена',
+  booking_cancellation_requested: 'Запрошена отмена брони',
+  booking_cancellation_rejected: 'Поставщик отказал в отмене',
+  booking_cancelled: 'Поставщик подтвердил отмену брони',
+  refund_created: 'Возврат оформлен',
+  refund_succeeded: 'Средства возвращены',
+  refund_failed: 'Возврат отклонён',
   booking_rejected: 'Получен отказ поставщика',
   payment_created: 'Платёж создан',
   payment_succeeded: 'Оплата зачислена',
@@ -121,6 +128,7 @@ async function load() {
   loadError.value = ''
   directoryError.value = ''
   error.value = ''
+  fieldErrors.value = {}
   editing.value = false
   cancelling.value = false
   clientId.value = null
@@ -169,6 +177,7 @@ watch(historyPage, () => {
 })
 
 function edit(request: TravelRequest) {
+  fieldErrors.value = {}
   fields.value = {
     destination: request.destination,
     start: request.starts_on,
@@ -184,14 +193,20 @@ function edit(request: TravelRequest) {
 function formData(): Omit<RequestUpdate, 'version'> | undefined {
   const { destination, start, end, count, budget, wishes } = fields.value
   const amount = budget.trim().replace(',', '.')
-  if (!destination.trim() || !start || !end || start > end) {
-    error.value = 'Укажите направление и даты поездки. Окончание должно быть не раньше начала.'
-  } else if (!/^\d+$/.test(count) || Number(count) < 1 || Number(count) > 2147483647) {
-    error.value = 'Укажите допустимое целое число туристов.'
-  } else if (!/^\d{1,12}(\.\d{1,2})?$/.test(amount)) {
-    error.value = 'Укажите бюджет в рублях с точностью до копеек.'
+  const problems: Record<string, string> = {}
+  if (!destination.trim()) problems.destination = 'Укажите направление поездки.'
+  if (!start) problems.starts_on = 'Укажите начало поездки.'
+  if (!end) problems.ends_on = 'Укажите окончание поездки.'
+  else if (start > end) problems.ends_on = 'Окончание должно быть не раньше начала.'
+  if (!/^\d+$/.test(count) || Number(count) < 1 || Number(count) > 2147483647) {
+    problems.tourist_count = 'Укажите целое число туристов от 1 до 2147483647.'
   }
-  if (error.value) return
+  if (!/^\d{1,12}(\.\d{1,2})?$/.test(amount)) {
+    problems.budget = 'Укажите неотрицательный бюджет с точностью до копеек.'
+  }
+  if (!item.value && !clientId.value) problems.client_id = 'Выберите клиента.'
+  fieldErrors.value = problems
+  if (Object.keys(problems).length) return
   const [rubles, kopecks = ''] = amount.split('.')
   return {
     destination: destination.trim(),
@@ -218,6 +233,7 @@ async function run(action: () => Promise<TravelRequest>) {
     }
     item.value = result
     assignee.value = result.manager_id
+    fieldErrors.value = {}
     editing.value = false
     cancelling.value = false
     reason.value = ''
@@ -225,7 +241,12 @@ async function run(action: () => Promise<TravelRequest>) {
     else historyPage.value = 1
   } catch (cause) {
     if (current !== generation) return
-    if (cause instanceof ApiError && cause.code === 'version_conflict' && item.value) {
+    fieldErrors.value = fieldMessages(cause)
+    if (
+      cause instanceof ApiError &&
+      ['version_conflict', 'invalid_transition'].includes(cause.code) &&
+      item.value
+    ) {
       try {
         const fresh = await api.get(item.value.id)
         if (current !== generation) return
@@ -269,7 +290,7 @@ function changeStatus(action: 'start-work' | 'cancel' | 'resume' | 'return-to-wo
   const current = item.value
   if (!current) return
   if (action === 'cancel' && !reason.value.trim()) {
-    error.value = 'Укажите причину отмены.'
+    fieldErrors.value.reason = 'Укажите причину отмены.'
     return
   }
   const body =
@@ -377,7 +398,11 @@ function changeStatus(action: 'start-work' | 'cancel' | 'resume' | 'return-to-wo
         @submit.prevent="changeStatus('cancel')"
       >
         <label for="request-reason">Причина отмены</label>
-        <n-input v-model:value="reason" :input-props="{ id: 'request-reason' }" />
+        <n-input
+          v-model:value="reason"
+          :input-props="{ id: 'request-reason' }"
+          :status="fieldErrors.reason ? 'error' : undefined"
+        /><small v-if="fieldErrors.reason" role="alert">{{ fieldErrors.reason }}</small>
         <div class="actions">
           <n-button type="error" attr-type="submit" :loading="busy">Подтвердить отмену</n-button
           ><n-button @click="cancelling = false">Назад</n-button>
@@ -392,7 +417,9 @@ function changeStatus(action: 'start-work' | 'cancel' | 'resume' | 'return-to-wo
             filterable
             class="select"
             aria-labelledby="request-assignee-label"
-          /><n-button
+            :status="fieldErrors.manager_id ? 'error' : undefined"
+          /><small v-if="fieldErrors.manager_id" role="alert">{{ fieldErrors.manager_id }}</small
+          ><n-button
             attr-type="submit"
             :disabled="!assignee || assignee === item.manager_id"
             :loading="busy"
@@ -412,7 +439,8 @@ function changeStatus(action: 'start-work' | 'cancel' | 'resume' | 'return-to-wo
               :options="clients"
               placeholder="Выберите клиента"
               aria-labelledby="request-client-label"
-            />
+              :status="fieldErrors.client_id ? 'error' : undefined"
+            /><small v-if="fieldErrors.client_id" role="alert">{{ fieldErrors.client_id }}</small>
           </div>
           <div v-if="session.role === 'head'">
             <label id="request-manager-label">Ответственный</label>
@@ -423,7 +451,8 @@ function changeStatus(action: 'start-work' | 'cancel' | 'resume' | 'return-to-wo
               :options="managers"
               placeholder="Назначить себе"
               aria-labelledby="request-manager-label"
-            />
+              :status="fieldErrors.manager_id ? 'error' : undefined"
+            /><small v-if="fieldErrors.manager_id" role="alert">{{ fieldErrors.manager_id }}</small>
           </div>
         </div>
         <div class="grid block">
@@ -433,29 +462,46 @@ function changeStatus(action: 'start-work' | 'cancel' | 'resume' | 'return-to-wo
               v-model:value="fields.destination"
               :input-props="{ id: 'request-destination' }"
               placeholder="Например, Сочи"
-            />
+              :status="fieldErrors.destination ? 'error' : undefined"
+            /><small v-if="fieldErrors.destination" role="alert">{{
+              fieldErrors.destination
+            }}</small>
           </div>
           <div>
             <label for="request-start">Начало поездки</label
-            ><input id="request-start" v-model="fields.start" type="date" required />
+            ><input
+              id="request-start"
+              v-model="fields.start"
+              type="date"
+              :aria-invalid="!!fieldErrors.starts_on"
+            /><small v-if="fieldErrors.starts_on" role="alert">{{ fieldErrors.starts_on }}</small>
           </div>
           <div>
             <label for="request-end">Окончание поездки</label
-            ><input id="request-end" v-model="fields.end" type="date" required />
+            ><input
+              id="request-end"
+              v-model="fields.end"
+              type="date"
+              :aria-invalid="!!fieldErrors.ends_on"
+            /><small v-if="fieldErrors.ends_on" role="alert">{{ fieldErrors.ends_on }}</small>
           </div>
           <div>
             <label for="request-count">Число туристов</label
             ><n-input
               v-model:value="fields.count"
               :input-props="{ id: 'request-count', inputmode: 'numeric' }"
-            />
+              :status="fieldErrors.tourist_count ? 'error' : undefined"
+            /><small v-if="fieldErrors.tourist_count" role="alert">{{
+              fieldErrors.tourist_count
+            }}</small>
           </div>
           <div>
             <label for="request-budget">Бюджет, ₽</label
             ><n-input
               v-model:value="fields.budget"
               :input-props="{ id: 'request-budget', inputmode: 'decimal' }"
-            />
+              :status="fieldErrors.budget ? 'error' : undefined"
+            /><small v-if="fieldErrors.budget" role="alert">{{ fieldErrors.budget }}</small>
           </div>
           <div class="wide">
             <label for="request-wishes">Пожелания</label
@@ -463,7 +509,8 @@ function changeStatus(action: 'start-work' | 'cancel' | 'resume' | 'return-to-wo
               v-model:value="fields.wishes"
               type="textarea"
               :input-props="{ id: 'request-wishes' }"
-            />
+              :status="fieldErrors.wishes ? 'error' : undefined"
+            /><small v-if="fieldErrors.wishes" role="alert">{{ fieldErrors.wishes }}</small>
           </div>
         </div>
         <div class="actions">
@@ -495,7 +542,11 @@ function changeStatus(action: 'start-work' | 'cancel' | 'resume' | 'return-to-wo
       <template v-else-if="history">
         <ul v-if="history.items.length" class="history">
           <li v-for="event in history.items" :key="event.id">
-            <strong>{{ historyLabels[event.action] ?? event.action }}</strong
+            <strong>{{
+              event.action === 'booking_cancelled' && event.entity_type === 'request'
+                ? 'Статус заявки изменён после отмены брони'
+                : (historyLabels[event.action] ?? 'Изменение по заявке')
+            }}</strong
             ><span
               >{{ formatDateTime(event.created_at) }} ·
               {{ event.actor?.full_name ?? 'Система' }}</span
@@ -576,5 +627,9 @@ input[type='date'] {
 }
 .history span {
   color: var(--c-text-muted);
+}
+small {
+  display: block;
+  color: #b42318;
 }
 </style>
