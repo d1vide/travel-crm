@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { NAlert, NButton, NCard, NPagination, NSpace, NSpin, NTag } from 'naive-ui'
+import RefundsPanel from '@/components/RefundsPanel.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { useHttp } from '@/api/instance'
 import type { Dto } from '@/api/workflow'
 import { formatDateTime } from '@/utils/format'
+defineProps<{ embedded?: boolean }>()
 const http = useHttp()
-const mode = ref<'bookings' | 'payments'>('bookings')
+const mode = ref<'bookings' | 'payments' | 'refunds'>('bookings')
 const page = ref(1)
 const bookings = ref<Dto['FinancialBookingPage']>()
 const payments = ref<Dto['PaymentPage']>()
@@ -37,6 +39,11 @@ function change(next: typeof mode.value) {
 }
 async function load() {
   const seq = ++sequence
+  if (mode.value === 'refunds') {
+    loading.value = false
+    error.value = ''
+    return
+  }
   loading.value = true
   error.value = ''
   try {
@@ -74,7 +81,7 @@ async function view(payment: Dto['Payment'], reconcile = false) {
 watch([mode, page], load, { immediate: true })
 </script>
 <template>
-  <PageHeader title="Оплаты и возвраты" />
+  <PageHeader v-if="!embedded" title="Оплаты и возвраты" />
   <n-space class="actions">
     <n-button :type="mode === 'bookings' ? 'primary' : 'default'" @click="change('bookings')"
       >Финансовая сводка</n-button
@@ -82,7 +89,9 @@ watch([mode, page], load, { immediate: true })
     <n-button :type="mode === 'payments' ? 'primary' : 'default'" @click="change('payments')"
       >Платежи</n-button
     >
-    <n-button @click="load">Обновить</n-button>
+    <n-button :type="mode === 'refunds' ? 'primary' : 'default'" @click="change('refunds')"
+      >Возвраты</n-button
+    ><n-button v-if="mode !== 'refunds'" @click="load">Обновить</n-button>
   </n-space>
   <n-alert v-if="error" type="error">{{ error }}</n-alert>
   <n-alert v-if="detailError" type="error">{{ detailError }}</n-alert>
@@ -97,7 +106,7 @@ watch([mode, page], load, { immediate: true })
       >Сверить платёж</n-button
     >
   </n-alert>
-  <n-spin :show="loading">
+  <RefundsPanel v-if="mode === 'refunds'" /><n-spin v-else :show="loading">
     <n-card v-if="!loading && !error && !currentPage?.items.length">Записей пока нет.</n-card>
     <div v-else-if="mode === 'bookings'" class="items">
       <n-card v-for="booking in bookings?.items" :key="booking.id" size="small">

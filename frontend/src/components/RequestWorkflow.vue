@@ -6,10 +6,11 @@ import { useSessionStore } from '@/stores/session'
 import { formatDateTime } from '@/utils/format'
 import { useHttp } from '@/api/instance'
 import { useToursApi, type TourOffer } from '@/api/tours'
-import { decimalAmount, type Dto } from '@/api/workflow'
+import { validatePositiveAmount, type Dto } from '@/api/workflow'
 import { useCommandKey } from '@/composables/useCommandKey'
 import WorkflowOffer from './WorkflowOffer.vue'
 import TouristFields from './TouristFields.vue'
+import RefundsPanel from './RefundsPanel.vue'
 
 const { request } = defineProps<{ request: Dto['Request'] }>()
 const emit = defineEmits<{ changed: [] }>()
@@ -33,6 +34,7 @@ const selectionTotal = ref(0)
 const bookingPage = ref(1)
 const bookingTotal = ref(0)
 const messages = ref('')
+const commandErrors = ref<Record<string, string>>({})
 const busy = ref(false)
 const loading = ref(true)
 const selectionLink = ref('')
@@ -46,6 +48,7 @@ const cancellationInputs = ref<Record<string, string>>({})
 const paymentInputs = ref<Record<string, string>>({})
 const payments = ref<Record<string, Dto['PaymentPage']>>({})
 const paymentPages = ref<Record<string, number>>({})
+const refundPaymentId = ref('')
 const paymentDetails = ref<Dto['Payment']>()
 const paymentLabels: Record<Dto['PaymentStatus'], string> = {
   pending: 'Ожидает',
@@ -62,6 +65,7 @@ const bookingLabels: Record<string, string> = {
 let catalogSequence = 0
 
 function report(cause: unknown) {
+  commandErrors.value = fieldMessages(cause)
   messages.value = cause instanceof Error ? cause.message : 'Не удалось выполнить действие.'
 }
 async function loadSelections() {
@@ -144,6 +148,7 @@ function searchCatalog() {
 async function run(operation: () => Promise<void>, reload = true) {
   if (busy.value) return
   messages.value = ''
+  commandErrors.value = {}
   busy.value = true
   try {
     await operation()
@@ -306,7 +311,7 @@ type CancellationAction = 'request-cancellation' | 'confirm-cancellation' | 'rej
 function changeCancellation(booking: Dto['Booking'], action: CancellationAction) {
   const text = cancellationInputs.value[booking.id]?.trim()
   if (!text) {
-    messages.value = 'Введите причину отмены или ответ поставщика.'
+    commandErrors.value = { reason: 'Введите причину отмены или ответ поставщика.' }
     return
   }
   const body =
@@ -325,7 +330,7 @@ function changeCancellation(booking: Dto['Booking'], action: CancellationAction)
 function respond(booking: Dto['Booking'], action: 'confirm' | 'reject') {
   const value = bookingInputs.value[booking.id]?.trim()
   if (!value) {
-    messages.value = 'Введите номер брони или причину отказа.'
+    commandErrors.value = { reason: 'Введите номер брони или причину отказа.' }
     return
   }
   void run(async () => {
@@ -339,9 +344,12 @@ function respond(booking: Dto['Booking'], action: 'confirm' | 'reject') {
   })
 }
 function createPayment(booking: Dto['Booking']) {
-  const amount = decimalAmount(paymentInputs.value[booking.id] ?? '')
-  if (!amount || amount === '0.00') {
-    messages.value = 'Укажите сумму платежа больше нуля.'
+  const { amount, error } = validatePositiveAmount(
+    paymentInputs.value[booking.id] ?? '',
+    booking.available_payment_amount,
+  )
+  if (!amount) {
+    commandErrors.value = { amount: error }
     return
   }
   void run(async () => {
@@ -556,7 +564,19 @@ function changePaymentPage(id: string, page: number) {
             v-model:value="cancellationInputs[booking.id]"
             aria-label="Причина отмены брони"
             placeholder="Причина отмены брони"
-          />
+          /><small
+            v-if="
+              commandErrors.reason ||
+              commandErrors.supplier_response ||
+              commandErrors.supplier_booking_number
+            "
+            role="alert"
+            >{{
+              commandErrors.reason ||
+              commandErrors.supplier_response ||
+              commandErrors.supplier_booking_number
+            }}</small
+          >
           <n-button :loading="busy" @click="changeCancellation(booking, 'request-cancellation')"
             >Запросить отмену брони</n-button
           >
@@ -567,7 +587,19 @@ function changePaymentPage(id: string, page: number) {
               v-model:value="cancellationInputs[booking.id]"
               aria-label="Ответ поставщика на отмену"
               placeholder="Ответ поставщика на отмену"
-            />
+            /><small
+              v-if="
+                commandErrors.reason ||
+                commandErrors.supplier_response ||
+                commandErrors.supplier_booking_number
+              "
+              role="alert"
+              >{{
+                commandErrors.reason ||
+                commandErrors.supplier_response ||
+                commandErrors.supplier_booking_number
+              }}</small
+            >
             <n-button
               v-if="booking.allowed_actions.includes('confirm_cancellation')"
               type="warning"
@@ -597,7 +629,19 @@ function changePaymentPage(id: string, page: number) {
             v-model:value="bookingInputs[booking.id]"
             aria-label="Номер брони или причина отказа"
             placeholder="Номер брони или причина отказа"
-          />
+          /><small
+            v-if="
+              commandErrors.reason ||
+              commandErrors.supplier_response ||
+              commandErrors.supplier_booking_number
+            "
+            role="alert"
+            >{{
+              commandErrors.reason ||
+              commandErrors.supplier_response ||
+              commandErrors.supplier_booking_number
+            }}</small
+          >
           <n-button
             v-if="booking.allowed_actions.includes('confirm')"
             :loading="busy"
@@ -625,7 +669,8 @@ function changePaymentPage(id: string, page: number) {
               v-model:value="paymentInputs[booking.id]"
               aria-label="Сумма платежа"
               :placeholder="'Доступно ' + booking.available_payment_amount + ' ₽'"
-            />
+              :status="commandErrors.amount ? 'error' : undefined"
+            /><small v-if="commandErrors.amount" role="alert">{{ commandErrors.amount }}</small>
             <n-button attr-type="submit" type="primary" :loading="busy">Создать платёж</n-button>
           </form>
           <div v-for="payment in payments[booking.id]?.items" :key="payment.id" class="actions">
@@ -651,6 +696,18 @@ function changePaymentPage(id: string, page: number) {
               >Сверить платёж</n-button
             >
             <span>{{ payment.failure_reason || payment.pending_reason }}</span>
+            <n-button
+              v-if="booking.status === 'cancelled' && payment.status === 'succeeded'"
+              size="small"
+              @click="refundPaymentId = refundPaymentId === payment.id ? '' : payment.id"
+              >Возвраты платежа</n-button
+            >
+            <RefundsPanel
+              v-if="refundPaymentId === payment.id"
+              :payment="payment"
+              class="refund-panel"
+              @changed="reloadWorkflow"
+            />
           </div>
           <n-pagination
             v-if="(payments[booking.id]?.total ?? 0) > 20"
@@ -709,5 +766,11 @@ p {
 .booking + .booking {
   border-top: 1px solid var(--c-border);
   padding-top: 12px;
+}
+.refund-panel {
+  flex: 0 0 100%;
+}
+small {
+  color: #b42318;
 }
 </style>

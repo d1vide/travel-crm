@@ -41,3 +41,15 @@ export function decimalAmount(value: string): string | null {
   const [rubles, fraction = ''] = amount.split('.')
   return String(Number(rubles)) + '.' + fraction.padEnd(2, '0')
 }
+
+export function validatePositiveAmount(input: string, limit: string) {
+  const amount = decimalAmount(input)
+  if (!amount || amount === '0.00') {
+    return { amount: null, error: 'Введите сумму больше нуля с точностью до копеек.' }
+  }
+  const cents = (value: string) => BigInt(value.replace('.', ''))
+  if (cents(amount) > cents(limit)) {
+    return { amount: null, error: 'Сумма превышает доступный остаток.' }
+  }
+  return { amount, error: '' }
+}

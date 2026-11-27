@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { NAlert, NButton, NCard, NInput, NPagination, NSelect, NSpin } from 'naive-ui'
+import { fieldMessages } from '@/api/errors'
 import { useHttp } from '@/api/instance'
 import type { Dto } from '@/api/workflow'
 import { useCommandKey } from '@/composables/useCommandKey'
@@ -23,6 +24,7 @@ const occurred = ref('')
 const data = ref<Dto['CommunicationPage']>()
 const page = ref(1)
 const error = ref('')
+const fields = ref<Record<string, string>>({})
 const loading = ref(false)
 const busy = ref(false)
 let sequence = 0
@@ -47,10 +49,11 @@ async function load() {
 async function add() {
   if (busy.value) return
   const date = new Date(occurred.value)
-  if (!text.value.trim() || Number.isNaN(date.valueOf())) {
-    error.value = 'Укажите текст и время контакта.'
-    return
-  }
+  fields.value = {}
+  if (!text.value.trim()) fields.value.text = 'Опишите, что обсудили.'
+  if (Number.isNaN(date.valueOf())) fields.value.occurred_at = 'Укажите дату и время контакта.'
+  if (Object.keys(fields.value).length) return
+
   busy.value = true
   error.value = ''
   const body: Dto['CommunicationCreate'] = {
@@ -70,6 +73,7 @@ async function add() {
     if (page.value === 1) await load()
     else page.value = 1
   } catch (cause) {
+    fields.value = fieldMessages(cause)
     error.value = explain(cause)
   } finally {
     busy.value = false
@@ -83,17 +87,29 @@ watch(page, load, { immediate: true })
       >{{ error }} <n-button size="small" @click="load">Обновить</n-button></n-alert
     >
     <n-button v-if="!editing" @click="editing = true">Записать контакт</n-button>
-    <form v-else class="log-form" @submit.prevent="add">
-      <label>Канал<n-select v-model:value="channel" :options="channels" /></label>
+    <form v-else class="log-form" novalidate @submit.prevent="add">
       <label
-        >Дата и время контакта<input v-model="occurred" type="datetime-local" required
-      /></label>
+        >Канал<n-select v-model:value="channel" :options="channels" /><small
+          v-if="fields.channel"
+          role="alert"
+          >{{ fields.channel }}</small
+        ></label
+      >
+      <label
+        >Дата и время контакта<input
+          v-model="occurred"
+          type="datetime-local"
+          :aria-invalid="!!fields.occurred_at"
+        /><small v-if="fields.occurred_at" role="alert">{{ fields.occurred_at }}</small></label
+      >
       <label class="wide"
         >Что обсудили<n-input
           v-model:value="text"
           type="textarea"
           :input-props="{ required: true }"
-      /></label>
+          :status="fields.text ? 'error' : undefined"
+        /><small v-if="fields.text" role="alert">{{ fields.text }}</small></label
+      >
       <n-button class="wide" type="primary" attr-type="submit" :loading="busy"
         >Добавить запись</n-button
       >
@@ -146,5 +162,8 @@ article p {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   margin-bottom: 0;
+}
+small {
+  color: #b42318;
 }
 </style>

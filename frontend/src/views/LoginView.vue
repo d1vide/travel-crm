@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { NAlert, NButton, NCard, NForm, NFormItem, NInput } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
-import { ApiError } from '@/api/errors'
+import { ApiError, fieldMessages } from '@/api/errors'
 import { homePathFor } from '@/auth/navigation'
 import { useSessionStore } from '@/stores/session'
 
@@ -25,7 +25,12 @@ function safeRedirect(value: unknown): string | null {
 }
 
 function validate(): boolean {
-  emailError.value = email.value.trim() ? null : 'Укажите email'
+  const login = email.value.trim()
+  emailError.value = !login
+    ? 'Укажите email'
+    : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login)
+      ? null
+      : 'Проверьте формат email'
   passwordError.value = password.value ? null : 'Укажите пароль'
   return !emailError.value && !passwordError.value
 }
@@ -40,6 +45,9 @@ async function submit() {
     const target = safeRedirect(route.query.redirect) ?? (role ? homePathFor(role) : '/')
     await router.push(target)
   } catch (error) {
+    const fields = fieldMessages(error)
+    emailError.value = fields.email ?? null
+    passwordError.value = fields.password ?? null
     formError.value =
       error instanceof ApiError ? error.message : 'Не удалось выполнить вход, попробуйте позже'
   } finally {
