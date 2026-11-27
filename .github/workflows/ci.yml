@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: backend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16-bookworm
+        env:
+          POSTGRES_USER: travelcrm
+          POSTGRES_PASSWORD: ci-test-only-password
+          POSTGRES_DB: travelcrm_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U travelcrm -d travelcrm_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://travelcrm:ci-test-only-password@127.0.0.1:5432/travelcrm_test
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install uv==0.13.8
+      - run: uv sync --directory backend --frozen
+      - name: Ruff
+        working-directory: backend
+        run: |
+          uv run --frozen ruff check . ../stubs ../scripts
+          uv run --frozen ruff format --check . ../stubs ../scripts
+      - name: PostgreSQL integration tests
+        working-directory: backend
+        run: uv run --frozen pytest -q
+      - name: Set up Node for checkout tests
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+      - name: Run checkout script tests
+        run: node --test stubs/checkout.test.mjs
+
+  frontend:
+    name: frontend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint:check
+      - run: npm run type-check
+      - run: npm run test:unit -- --run
+      - run: npm run build-only
+
+  contract:
+    name: contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+      - run: python -m pip install uv==0.13.8
+      - run: uv run docs/api/validate_contract.py
+      - name: Generated frontend types match contract
+        working-directory: frontend
+        run: |
+          npm run gen:api
+          git diff --exit-code -- src/api/schema.d.ts
+
+  docker:
+    name: docker
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - run: python scripts/init_env.py
+      - run: docker compose config --quiet
+      - run: docker compose build
