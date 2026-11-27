@@ -10,7 +10,7 @@ from app.core.validation import Money
 
 
 class RefundCreate(Dto):
-    amount: Money
+    amount: Money = Field(json_schema_extra={"not": {"const": "0.00"}})
     currency: Literal["RUB"]
 
     @field_validator("amount")

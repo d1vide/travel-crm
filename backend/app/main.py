@@ -8,6 +8,7 @@ from app.core.config import Settings, get_settings
 from app.core.database import Database, DbSession
 from app.core.errors import register_errors
 from app.core.public_privacy import PublicResponsePrivacy
+from app.core.schemas import Health
 from app.modules.auth.directory import router as users_router
 from app.modules.auth.models import User
 from app.modules.auth.router import router as auth_router
@@ -28,6 +29,7 @@ from app.modules.tourists.router import router as tourists_router
 from app.modules.tours.router import router as tours_router
 from app.modules.tours.selection_router import public_router as public_selections_router
 from app.modules.tours.selection_router import router as selections_router
+from app.openapi import build_openapi
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -77,13 +79,23 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(notifications_router)
     application.include_router(financial_router)
 
-    @application.get("/api/health/live", tags=["health"])
+    @application.get(
+        "/api/health/live", tags=["health"], response_model=Health, operation_id="health_live"
+    )
     def live():
         return {"status": "ok"}
 
-    @application.get("/api/health/ready", tags=["health"])
+    @application.get(
+        "/api/health/ready", tags=["health"], response_model=Health, operation_id="health_ready"
+    )
     def ready(session: DbSession):
         session.execute(select(User.id).limit(1)).all()
         return {"status": "ok"}
 
+    def public_openapi():
+        if application.openapi_schema is None:
+            application.openapi_schema = build_openapi(application)
+        return application.openapi_schema
+
+    application.openapi = public_openapi
     return application

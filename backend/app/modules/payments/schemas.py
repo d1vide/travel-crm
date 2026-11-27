@@ -11,7 +11,7 @@ from app.modules.requests.schemas import ExpectedVersion
 
 
 class PaymentCreate(ExpectedVersion):
-    amount: Money
+    amount: Money = Field(json_schema_extra={"not": {"const": "0.00"}})
     currency: Literal["RUB"]
 
     @field_validator("amount")

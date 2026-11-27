@@ -1,0 +1,4185 @@
+{
+  "info": {
+    "title": "TravelCRM API",
+    "version": "0.2",
+    "description": "Контракт зафиксирован по результатам сверки сценариев и каркаса фронтенда 15.11.2026. Описывает HTTP-контракт и условия бизнес-команд. Условия команд: docs/state-transitions.md. Права проверяются сервером, включая принадлежность каждой заявки."
+  },
+  "operations": {
+    "login": {
+      "summary": "Войти сотрудником",
+      "x-requirements": [
+        "FR-01",
+        "FR-09"
+      ],
+      "description": "Проверить email/пароль, вернуть access и профиль; установить refresh-cookie. Демо-вход по роли не является частью API.",
+      "responses": {
+        "200": {
+          "description": "Войти сотрудником",
+          "headers": {
+            "Set-Cookie": {
+              "schema": {
+                "type": "string"
+              },
+              "description": "refresh_token; HttpOnly; SameSite=Strict; Path=/api/auth; Secure в HTTPS. Login/refresh ротируют cookie, logout очищает её. Сырой refresh отсутствует в JSON."
+            }
+          },
+          "example": {
+            "access_token": "EXAMPLE_NOT_A_REAL_TOKEN",
+            "user": {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "full_name": "Тестовый Менеджер",
+              "role": "manager"
+            }
+          }
+        }
+      },
+      "request_example": {
+        "email": "manager@example.test",
+        "password": "EXAMPLE_ONLY_NOT_A_REAL_PASSWORD"
+      },
+      "parameters": {}
+    },
+    "refresh_session": {
+      "summary": "Обновить сессию",
+      "x-requirements": [
+        "FR-01"
+      ],
+      "description": "Атомарно ротировать refresh-cookie; заменить access. Просроченный или отозванный refresh: 401. Не требует Bearer access.",
+      "responses": {
+        "200": {
+          "description": "Обновить сессию",
+          "headers": {
+            "Set-Cookie": {
+              "schema": {
+                "type": "string"
+              },
+              "description": "refresh_token; HttpOnly; SameSite=Strict; Path=/api/auth; Secure в HTTPS. Login/refresh ротируют cookie, logout очищает её. Сырой refresh отсутствует в JSON."
+            }
+          },
+          "example": {
+            "access_token": "EXAMPLE_NOT_A_REAL_TOKEN",
+            "user": {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "full_name": "Тестовый Менеджер",
+              "role": "manager"
+            }
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "logout": {
+      "summary": "Завершить сессию",
+      "x-requirements": [
+        "FR-01"
+      ],
+      "description": "Отозвать текущую refresh-cookie и очистить её. Повторный выход или отсутствие cookie: 204. Access живёт до своего срока, около 15 минут.",
+      "responses": {
+        "204": {
+          "description": "Завершить сессию",
+          "headers": {
+            "Set-Cookie": {
+              "schema": {
+                "type": "string"
+              },
+              "description": "refresh_token; HttpOnly; SameSite=Strict; Path=/api/auth; Secure в HTTPS. Login/refresh ротируют cookie, logout очищает её. Сырой refresh отсутствует в JSON."
+            }
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "get_current_user": {
+      "summary": "Текущий сотрудник",
+      "x-requirements": [
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Текущий сотрудник",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "full_name": "Тестовый Менеджер",
+            "role": "manager",
+            "email": "manager@example.com",
+            "department": "Учебный отдел продаж",
+            "position": "Менеджер по туризму",
+            "work_phone": "+7 000 000-00-01"
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "list_assignees": {
+      "summary": "Сотрудники для назначения ответственным",
+      "x-requirements": [
+        "FR-08",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Только активные manager/head, без email и технических полей учётной записи. Менеджер создаёт заявку на себя; руководитель выбирает ответственного.",
+      "responses": {
+        "200": {
+          "description": "Сотрудники для назначения ответственным",
+          "example": {
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000001",
+                "full_name": "Тестовый Менеджер",
+                "role": "manager"
+              }
+            ],
+            "page": 1,
+            "page_size": 20,
+            "total": 1
+          }
+        }
+      },
+      "parameters": {
+        "query:page": "Номер страницы с 1",
+        "query:page_size": "Размер страницы",
+        "query:sort": "Стабильная сортировка; при равенстве добавляется id в том же направлении"
+      }
+    },
+    "list_clients": {
+      "summary": "Найти доступных клиентов",
+      "x-requirements": [
+        "FR-02",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Найти доступных клиентов",
+          "example": {
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "client_number": 1,
+                "full_name": "Тестовый Клиент",
+                "phone": "+79990000000",
+                "email": null,
+                "preferences": "Море",
+                "note": "Вымышленные данные",
+                "version": 1,
+                "created_at": "2026-11-15T09:00:00Z",
+                "updated_at": "2026-11-15T09:00:00Z",
+                "allowed_actions": [
+                  "update",
+                  "create_request"
+                ]
+              }
+            ],
+            "page": 1,
+            "page_size": 20,
+            "total": 1
+          }
+        }
+      },
+      "parameters": {
+        "query:q": "Поиск по части имени, нормализованному телефону или email",
+        "query:page": "Номер страницы с 1",
+        "query:page_size": "Размер страницы",
+        "query:sort": "Стабильная сортировка; при равенстве добавляется id в том же направлении"
+      }
+    },
+    "create_client": {
+      "summary": "Создать клиента",
+      "x-requirements": [
+        "FR-02",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "При совпадении и duplicate_acknowledged=false: 409 duplicate_contacts. Повтор после проверки менеджером: новый ключ и duplicate_acknowledged=true. Недоступные совпадения: 409 duplicate_requires_head_review до проверки руководителем.",
+      "responses": {
+        "201": {
+          "description": "Создать клиента",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "client_number": 1,
+            "full_name": "Тестовый Клиент",
+            "phone": "+79990000000",
+            "email": null,
+            "preferences": "Море",
+            "note": "Вымышленные данные",
+            "version": 1,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "allowed_actions": [
+              "update",
+              "create_request"
+            ]
+          }
+        }
+      },
+      "request_example": {
+        "full_name": "Тестовый Клиент",
+        "phone": "+79990000000",
+        "email": null,
+        "preferences": "Море",
+        "note": "Вымышленные данные",
+        "duplicate_acknowledged": false
+      },
+      "parameters": {}
+    },
+    "check_duplicate_clients": {
+      "summary": "Проверить совпадения контактов",
+      "x-requirements": [
+        "FR-02",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Сервер требует хотя бы один контакт, проверяет доступ к exclude_client_id. Возвращает только доступные совпадения. Недоступные совпадения дают requires_head_review без персональных данных.",
+      "responses": {
+        "200": {
+          "description": "Проверить совпадения контактов",
+          "example": {
+            "matches": [
+              {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "client_number": 1,
+                "full_name": "Тестовый Клиент"
+              }
+            ],
+            "requires_head_review": false
+          }
+        }
+      },
+      "parameters": {
+        "query:phone": "Телефон; нужен phone либо email",
+        "query:email": "Email; нужен phone либо email",
+        "query:exclude_client_id": "Своя карточка, исключаемая при редактировании"
+      }
+    },
+    "get_client": {
+      "summary": "Карточка клиента",
+      "x-requirements": [
+        "FR-02",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Карточка клиента",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "client_number": 1,
+            "full_name": "Тестовый Клиент",
+            "phone": "+79990000000",
+            "email": null,
+            "preferences": "Море",
+            "note": "Вымышленные данные",
+            "version": 1,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "allowed_actions": [
+              "update",
+              "create_request"
+            ]
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "update_client": {
+      "summary": "Изменить клиента",
+      "x-requirements": [
+        "FR-02",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Изменить клиента",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "client_number": 1,
+            "full_name": "Тестовый Клиент",
+            "phone": "+79990000000",
+            "email": null,
+            "preferences": "Море",
+            "note": "Вымышленные данные",
+            "version": 1,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "allowed_actions": [
+              "update",
+              "create_request"
+            ]
+          }
+        }
+      },
+      "request_example": {
+        "full_name": "Тестовый Клиент",
+        "phone": "+79990000000",
+        "email": null,
+        "preferences": "Море",
+        "note": "Вымышленные данные",
+        "duplicate_acknowledged": false,
+        "version": 1
+      },
+      "parameters": {}
+    },
+    "list_requests": {
+      "summary": "Список заявок",
+      "x-requirements": [
+        "FR-03",
+        "FR-08",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Список заявок",
+          "example": {
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000004",
+                "client_id": "00000000-0000-4000-8000-000000000002",
+                "manager_id": "00000000-0000-4000-8000-000000000001",
+                "destination": "Сочи",
+                "starts_on": "2027-06-01",
+                "ends_on": "2027-06-08",
+                "tourist_count": 2,
+                "budget": "120000.00",
+                "wishes": "Море",
+                "status": "booked",
+                "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+                "completed_at": null,
+                "cancelled_at": null,
+                "version": 4,
+                "created_at": "2026-11-15T09:00:00Z",
+                "updated_at": "2026-11-15T09:00:00Z",
+                "client": {
+                  "id": "00000000-0000-4000-8000-000000000002",
+                  "client_number": 1,
+                  "full_name": "Тестовый Клиент"
+                },
+                "manager": {
+                  "id": "00000000-0000-4000-8000-000000000001",
+                  "full_name": "Тестовый Менеджер",
+                  "role": "manager"
+                },
+                "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+                "selected_offer": {
+                  "title": "Учебный тур",
+                  "destination": "Сочи",
+                  "starts_on": "2027-06-01",
+                  "ends_on": "2027-06-08",
+                  "tourist_count": 2,
+                  "supplier": "Тестовый поставщик",
+                  "services": [
+                    "Перелёт",
+                    "Отель"
+                  ],
+                  "price": "100000.00",
+                  "currency": "RUB"
+                },
+                "active_booking": {
+                  "id": "00000000-0000-4000-8000-000000000008",
+                  "status": "confirmed",
+                  "total_amount": "100000.00",
+                  "currency": "RUB",
+                  "paid_amount": "30000.00",
+                  "remaining_amount": "70000.00"
+                },
+                "tourists_received": 2,
+                "tourist_form_editable": false,
+                "tourist_link": null,
+                "cancellation_reason": null,
+                "allowed_actions": []
+              }
+            ],
+            "page": 1,
+            "page_size": 20,
+            "total": 1
+          }
+        }
+      },
+      "parameters": {
+        "query:status": "Статус заявки",
+        "query:manager_id": "Ответственный; менеджер может указать только себя",
+        "query:client_id": "Заявки доступного клиента",
+        "query:page": "Номер страницы с 1",
+        "query:page_size": "Размер страницы",
+        "query:sort": "Стабильная сортировка; при равенстве добавляется id в том же направлении"
+      }
+    },
+    "create_request": {
+      "summary": "Создать заявку",
+      "x-requirements": [
+        "FR-03",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "manager_id=null означает текущего сотрудника; manager может назначить только себя, head — активного manager/head. Начальный статус new назначает сервер.",
+      "responses": {
+        "201": {
+          "description": "Создать заявку",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "client_id": "00000000-0000-4000-8000-000000000002",
+            "manager_id": "00000000-0000-4000-8000-000000000001",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "budget": "120000.00",
+            "wishes": "Море",
+            "status": "booked",
+            "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "completed_at": null,
+            "cancelled_at": null,
+            "version": 4,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "client": {
+              "id": "00000000-0000-4000-8000-000000000002",
+              "client_number": 1,
+              "full_name": "Тестовый Клиент"
+            },
+            "manager": {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "full_name": "Тестовый Менеджер",
+              "role": "manager"
+            },
+            "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+            "selected_offer": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "active_booking": {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "status": "confirmed",
+              "total_amount": "100000.00",
+              "currency": "RUB",
+              "paid_amount": "30000.00",
+              "remaining_amount": "70000.00"
+            },
+            "tourists_received": 2,
+            "tourist_form_editable": false,
+            "tourist_link": null,
+            "cancellation_reason": null,
+            "allowed_actions": []
+          }
+        }
+      },
+      "request_example": {
+        "client_id": "00000000-0000-4000-8000-000000000002",
+        "manager_id": null,
+        "destination": "Сочи",
+        "starts_on": "2027-06-01",
+        "ends_on": "2027-06-08",
+        "tourist_count": 2,
+        "budget": "120000.00",
+        "wishes": "Море"
+      },
+      "parameters": {}
+    },
+    "get_request": {
+      "summary": "Карточка заявки",
+      "x-requirements": [
+        "FR-03",
+        "FR-08",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Карточка заявки",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "client_id": "00000000-0000-4000-8000-000000000002",
+            "manager_id": "00000000-0000-4000-8000-000000000001",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "budget": "120000.00",
+            "wishes": "Море",
+            "status": "booked",
+            "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "completed_at": null,
+            "cancelled_at": null,
+            "version": 4,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "client": {
+              "id": "00000000-0000-4000-8000-000000000002",
+              "client_number": 1,
+              "full_name": "Тестовый Клиент"
+            },
+            "manager": {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "full_name": "Тестовый Менеджер",
+              "role": "manager"
+            },
+            "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+            "selected_offer": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "active_booking": {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "status": "confirmed",
+              "total_amount": "100000.00",
+              "currency": "RUB",
+              "paid_amount": "30000.00",
+              "remaining_amount": "70000.00"
+            },
+            "tourists_received": 2,
+            "tourist_form_editable": false,
+            "tourist_link": null,
+            "cancellation_reason": null,
+            "allowed_actions": []
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "update_request": {
+      "summary": "Изменить пожелания заявки",
+      "x-requirements": [
+        "FR-03",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Изменить пожелания заявки",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "client_id": "00000000-0000-4000-8000-000000000002",
+            "manager_id": "00000000-0000-4000-8000-000000000001",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "budget": "120000.00",
+            "wishes": "Море",
+            "status": "booked",
+            "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "completed_at": null,
+            "cancelled_at": null,
+            "version": 4,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "client": {
+              "id": "00000000-0000-4000-8000-000000000002",
+              "client_number": 1,
+              "full_name": "Тестовый Клиент"
+            },
+            "manager": {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "full_name": "Тестовый Менеджер",
+              "role": "manager"
+            },
+            "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+            "selected_offer": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "active_booking": {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "status": "confirmed",
+              "total_amount": "100000.00",
+              "currency": "RUB",
+              "paid_amount": "30000.00",
+              "remaining_amount": "70000.00"
+            },
+            "tourists_received": 2,
+            "tourist_form_editable": false,
+            "tourist_link": null,
+            "cancellation_reason": null,
+            "allowed_actions": []
+          }
+        }
+      },
+      "request_example": {
+        "version": 1,
+        "destination": "Сочи",
+        "starts_on": "2027-06-01",
+        "ends_on": "2027-06-08",
+        "tourist_count": 2,
+        "budget": "120000.00",
+        "wishes": "Море"
+      },
+      "parameters": {}
+    },
+    "assign_request": {
+      "summary": "Сменить ответственного",
+      "x-requirements": [
+        "FR-08",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Сменить ответственного",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "client_id": "00000000-0000-4000-8000-000000000002",
+            "manager_id": "00000000-0000-4000-8000-000000000001",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "budget": "120000.00",
+            "wishes": "Море",
+            "status": "booked",
+            "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "completed_at": null,
+            "cancelled_at": null,
+            "version": 4,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "client": {
+              "id": "00000000-0000-4000-8000-000000000002",
+              "client_number": 1,
+              "full_name": "Тестовый Клиент"
+            },
+            "manager": {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "full_name": "Тестовый Менеджер",
+              "role": "manager"
+            },
+            "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+            "selected_offer": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "active_booking": {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "status": "confirmed",
+              "total_amount": "100000.00",
+              "currency": "RUB",
+              "paid_amount": "30000.00",
+              "remaining_amount": "70000.00"
+            },
+            "tourists_received": 2,
+            "tourist_form_editable": false,
+            "tourist_link": null,
+            "cancellation_reason": null,
+            "allowed_actions": []
+          }
+        }
+      },
+      "request_example": {
+        "version": 1,
+        "manager_id": "00000000-0000-4000-8000-000000000001"
+      },
+      "parameters": {}
+    },
+    "start_work_request": {
+      "summary": "Действие заявки: start-work",
+      "x-requirements": [
+        "FR-03",
+        "FR-11",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Действие заявки: start-work",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "client_id": "00000000-0000-4000-8000-000000000002",
+            "manager_id": "00000000-0000-4000-8000-000000000001",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "budget": "120000.00",
+            "wishes": "Море",
+            "status": "booked",
+            "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "completed_at": null,
+            "cancelled_at": null,
+            "version": 4,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "client": {
+              "id": "00000000-0000-4000-8000-000000000002",
+              "client_number": 1,
+              "full_name": "Тестовый Клиент"
+            },
+            "manager": {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "full_name": "Тестовый Менеджер",
+              "role": "manager"
+            },
+            "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+            "selected_offer": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "active_booking": {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "status": "confirmed",
+              "total_amount": "100000.00",
+              "currency": "RUB",
+              "paid_amount": "30000.00",
+              "remaining_amount": "70000.00"
+            },
+            "tourists_received": 2,
+            "tourist_form_editable": false,
+            "tourist_link": null,
+            "cancellation_reason": null,
+            "allowed_actions": []
+          }
+        }
+      },
+      "request_example": {
+        "version": 1
+      },
+      "parameters": {}
+    },
+    "return_to_work_request": {
+      "summary": "Действие заявки: return-to-work",
+      "x-requirements": [
+        "FR-03",
+        "FR-11",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Действие заявки: return-to-work",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "client_id": "00000000-0000-4000-8000-000000000002",
+            "manager_id": "00000000-0000-4000-8000-000000000001",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "budget": "120000.00",
+            "wishes": "Море",
+            "status": "booked",
+            "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "completed_at": null,
+            "cancelled_at": null,
+            "version": 4,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "client": {
+              "id": "00000000-0000-4000-8000-000000000002",
+              "client_number": 1,
+              "full_name": "Тестовый Клиент"
+            },
+            "manager": {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "full_name": "Тестовый Менеджер",
+              "role": "manager"
+            },
+            "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+            "selected_offer": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "active_booking": {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "status": "confirmed",
+              "total_amount": "100000.00",
+              "currency": "RUB",
+              "paid_amount": "30000.00",
+              "remaining_amount": "70000.00"
+            },
+            "tourists_received": 2,
+            "tourist_form_editable": false,
+            "tourist_link": null,
+            "cancellation_reason": null,
+            "allowed_actions": []
+          }
+        }
+      },
+      "request_example": {
+        "version": 1
+      },
+      "parameters": {}
+    },
+    "cancel_request": {
+      "summary": "Действие заявки: cancel",
+      "x-requirements": [
+        "FR-03",
+        "FR-11",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Действие заявки: cancel",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "client_id": "00000000-0000-4000-8000-000000000002",
+            "manager_id": "00000000-0000-4000-8000-000000000001",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "budget": "120000.00",
+            "wishes": "Море",
+            "status": "booked",
+            "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "completed_at": null,
+            "cancelled_at": null,
+            "version": 4,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "client": {
+              "id": "00000000-0000-4000-8000-000000000002",
+              "client_number": 1,
+              "full_name": "Тестовый Клиент"
+            },
+            "manager": {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "full_name": "Тестовый Менеджер",
+              "role": "manager"
+            },
+            "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+            "selected_offer": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "active_booking": {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "status": "confirmed",
+              "total_amount": "100000.00",
+              "currency": "RUB",
+              "paid_amount": "30000.00",
+              "remaining_amount": "70000.00"
+            },
+            "tourists_received": 2,
+            "tourist_form_editable": false,
+            "tourist_link": null,
+            "cancellation_reason": null,
+            "allowed_actions": []
+          }
+        }
+      },
+      "request_example": {
+        "version": 1,
+        "reason": "Учебный пример"
+      },
+      "parameters": {}
+    },
+    "complete_request": {
+      "summary": "Действие заявки: complete",
+      "x-requirements": [
+        "FR-03",
+        "FR-11",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Только booked с confirmed-бронью, полной оплатой, без pending платежей и возвратов. После ends_on сохранённого снимка брони по Москве; version относится к заявке.",
+      "responses": {
+        "200": {
+          "description": "Действие заявки: complete",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "client_id": "00000000-0000-4000-8000-000000000002",
+            "manager_id": "00000000-0000-4000-8000-000000000001",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "budget": "120000.00",
+            "wishes": "Море",
+            "status": "completed",
+            "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "completed_at": "2027-06-09T09:00:00Z",
+            "cancelled_at": null,
+            "version": 4,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2027-06-09T09:00:00Z",
+            "client": {
+              "id": "00000000-0000-4000-8000-000000000002",
+              "client_number": 1,
+              "full_name": "Тестовый Клиент"
+            },
+            "manager": {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "full_name": "Тестовый Менеджер",
+              "role": "manager"
+            },
+            "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+            "selected_offer": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "active_booking": {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "status": "confirmed",
+              "total_amount": "100000.00",
+              "currency": "RUB",
+              "paid_amount": "100000.00",
+              "remaining_amount": "0.00"
+            },
+            "tourists_received": 2,
+            "tourist_form_editable": false,
+            "tourist_link": null,
+            "cancellation_reason": null,
+            "allowed_actions": []
+          }
+        }
+      },
+      "request_example": {
+        "version": 1
+      },
+      "parameters": {}
+    },
+    "resume_request": {
+      "summary": "Действие заявки: resume",
+      "x-requirements": [
+        "FR-03",
+        "FR-11",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Действие заявки: resume",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "client_id": "00000000-0000-4000-8000-000000000002",
+            "manager_id": "00000000-0000-4000-8000-000000000001",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "budget": "120000.00",
+            "wishes": "Море",
+            "status": "booked",
+            "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "completed_at": null,
+            "cancelled_at": null,
+            "version": 4,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "client": {
+              "id": "00000000-0000-4000-8000-000000000002",
+              "client_number": 1,
+              "full_name": "Тестовый Клиент"
+            },
+            "manager": {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "full_name": "Тестовый Менеджер",
+              "role": "manager"
+            },
+            "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+            "selected_offer": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "active_booking": {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "status": "confirmed",
+              "total_amount": "100000.00",
+              "currency": "RUB",
+              "paid_amount": "30000.00",
+              "remaining_amount": "70000.00"
+            },
+            "tourists_received": 2,
+            "tourist_form_editable": false,
+            "tourist_link": null,
+            "cancellation_reason": null,
+            "allowed_actions": []
+          }
+        }
+      },
+      "request_example": {
+        "version": 1
+      },
+      "parameters": {}
+    },
+    "select_request_tour": {
+      "summary": "Записать выбор клиента",
+      "x-requirements": [
+        "FR-04",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Записать выбор клиента",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "client_id": "00000000-0000-4000-8000-000000000002",
+            "manager_id": "00000000-0000-4000-8000-000000000001",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "budget": "120000.00",
+            "wishes": "Море",
+            "status": "booked",
+            "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "completed_at": null,
+            "cancelled_at": null,
+            "version": 4,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "client": {
+              "id": "00000000-0000-4000-8000-000000000002",
+              "client_number": 1,
+              "full_name": "Тестовый Клиент"
+            },
+            "manager": {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "full_name": "Тестовый Менеджер",
+              "role": "manager"
+            },
+            "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+            "selected_offer": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "active_booking": {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "status": "confirmed",
+              "total_amount": "100000.00",
+              "currency": "RUB",
+              "paid_amount": "30000.00",
+              "remaining_amount": "70000.00"
+            },
+            "tourists_received": 2,
+            "tourist_form_editable": false,
+            "tourist_link": null,
+            "cancellation_reason": null,
+            "allowed_actions": []
+          }
+        }
+      },
+      "request_example": {
+        "version": 1,
+        "selection_item_id": "00000000-0000-4000-8000-000000000001"
+      },
+      "parameters": {}
+    },
+    "list_tours": {
+      "summary": "Тестовый каталог туров",
+      "x-requirements": [
+        "FR-04",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Только активные предложения. Фильтры применяются совместно. Некорректный интервал дат: 422. Цена за всех туристов; отдельного экрана управления каталогом в MVP нет.",
+      "responses": {
+        "200": {
+          "description": "Тестовый каталог туров",
+          "example": {
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000003",
+                "title": "Учебный тур",
+                "destination": "Сочи",
+                "starts_on": "2027-06-01",
+                "ends_on": "2027-06-08",
+                "tourist_count": 2,
+                "supplier": "Тестовый поставщик",
+                "services": [
+                  "Перелёт",
+                  "Отель"
+                ],
+                "price": "100000.00",
+                "currency": "RUB",
+                "is_active": true,
+                "version": 1
+              }
+            ],
+            "page": 1,
+            "page_size": 20,
+            "total": 1
+          }
+        }
+      },
+      "parameters": {
+        "query:destination": "Часть направления без учёта регистра",
+        "query:starts_from": "Начало тура не раньше даты, включительно",
+        "query:ends_until": "Окончание тура не позже даты, включительно",
+        "query:tourist_count": "Точное число туристов",
+        "query:max_price": "Максимальная общая цена в RUB",
+        "query:page": "Номер страницы с 1",
+        "query:page_size": "Размер страницы",
+        "query:sort": "Стабильная сортировка; при равенстве добавляется id в том же направлении"
+      }
+    },
+    "get_tour": {
+      "summary": "Карточка предложения",
+      "x-requirements": [
+        "FR-04",
+        "FR-01"
+      ],
+      "description": "Активное предложение общего каталога доступно manager/head независимо от наличия заявок. Неактивный и отсутствующий тур дают одинаковый 404.",
+      "responses": {
+        "200": {
+          "description": "Карточка предложения",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000003",
+            "title": "Учебный тур",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "supplier": "Тестовый поставщик",
+            "services": [
+              "Перелёт",
+              "Отель"
+            ],
+            "price": "100000.00",
+            "currency": "RUB",
+            "is_active": true,
+            "version": 1
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "list_request_selections": {
+      "summary": "История подборок заявки",
+      "x-requirements": [
+        "FR-04",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "История подборок заявки",
+          "example": {
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000006",
+                "request_id": "00000000-0000-4000-8000-000000000004",
+                "items": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000000005",
+                    "tour_offer_id": "00000000-0000-4000-8000-000000000003",
+                    "position": 0,
+                    "offer_snapshot": {
+                      "title": "Учебный тур",
+                      "destination": "Сочи",
+                      "starts_on": "2027-06-01",
+                      "ends_on": "2027-06-08",
+                      "tourist_count": 2,
+                      "supplier": "Тестовый поставщик",
+                      "services": [
+                        "Перелёт",
+                        "Отель"
+                      ],
+                      "price": "100000.00",
+                      "currency": "RUB"
+                    }
+                  }
+                ],
+                "created_at": "2026-11-15T09:00:00Z",
+                "public_link": {
+                  "id": "00000000-0000-4000-8000-000000000013",
+                  "purpose": "selection",
+                  "expires_at": "2026-11-22T09:00:00Z",
+                  "is_active": true
+                }
+              }
+            ],
+            "page": 1,
+            "page_size": 20,
+            "total": 1
+          }
+        }
+      },
+      "parameters": {
+        "query:page": "Номер страницы с 1",
+        "query:page_size": "Размер страницы",
+        "query:sort": "Стабильная сортировка; при равенстве добавляется id в том же направлении"
+      }
+    },
+    "create_selection": {
+      "summary": "Опубликовать подборку",
+      "x-requirements": [
+        "FR-04",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "version относится к заявке; >=1 уникального тура. Снимки и статус offer_prepared создаются транзакционно; прежний выбор сбрасывается, ссылки старых подборок отзываются. Ссылку затем выдаёт отдельная команда.",
+      "responses": {
+        "201": {
+          "description": "Опубликовать подборку",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000006",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000005",
+                "tour_offer_id": "00000000-0000-4000-8000-000000000003",
+                "position": 0,
+                "offer_snapshot": {
+                  "title": "Учебный тур",
+                  "destination": "Сочи",
+                  "starts_on": "2027-06-01",
+                  "ends_on": "2027-06-08",
+                  "tourist_count": 2,
+                  "supplier": "Тестовый поставщик",
+                  "services": [
+                    "Перелёт",
+                    "Отель"
+                  ],
+                  "price": "100000.00",
+                  "currency": "RUB"
+                }
+              }
+            ],
+            "created_at": "2026-11-15T09:00:00Z",
+            "public_link": {
+              "id": "00000000-0000-4000-8000-000000000013",
+              "purpose": "selection",
+              "expires_at": "2026-11-22T09:00:00Z",
+              "is_active": true
+            }
+          }
+        }
+      },
+      "request_example": {
+        "version": 1,
+        "tour_offer_ids": [
+          "00000000-0000-4000-8000-000000000001"
+        ]
+      },
+      "parameters": {}
+    },
+    "get_selection": {
+      "summary": "Подборка сотрудника",
+      "x-requirements": [
+        "FR-04",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Подборка сотрудника",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000006",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000005",
+                "tour_offer_id": "00000000-0000-4000-8000-000000000003",
+                "position": 0,
+                "offer_snapshot": {
+                  "title": "Учебный тур",
+                  "destination": "Сочи",
+                  "starts_on": "2027-06-01",
+                  "ends_on": "2027-06-08",
+                  "tourist_count": 2,
+                  "supplier": "Тестовый поставщик",
+                  "services": [
+                    "Перелёт",
+                    "Отель"
+                  ],
+                  "price": "100000.00",
+                  "currency": "RUB"
+                }
+              }
+            ],
+            "created_at": "2026-11-15T09:00:00Z",
+            "public_link": {
+              "id": "00000000-0000-4000-8000-000000000013",
+              "purpose": "selection",
+              "expires_at": "2026-11-22T09:00:00Z",
+              "is_active": true
+            }
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "issue_selection_link": {
+      "summary": "Выдать или перевыпустить ссылку подборки",
+      "x-requirements": [
+        "FR-04",
+        "FR-01"
+      ],
+      "description": "Выдаёт случайный токен на 7 дней, отзывает предыдущую ссылку этой подборки. В хранилище только хеш. Повтор создаёт новую ссылку; не повторять автоматически после сетевой ошибки. Скопировать url можно из ответа в текущей сессии интерфейса.",
+      "responses": {
+        "201": {
+          "description": "Выдать или перевыпустить ссылку подборки",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000013",
+            "purpose": "selection",
+            "url": "http://localhost:8080/public/selections/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "expires_at": "2026-11-22T09:00:00Z"
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "issue_tourist_link": {
+      "summary": "Выдать или перевыпустить ссылку формы туристов",
+      "x-requirements": [
+        "FR-10",
+        "FR-01"
+      ],
+      "description": "Только при редактируемой форме. Срок 7 дней, предыдущая ссылка отзывается. При неопределённом результате сети использовать явный перевыпуск, не слепой повтор.",
+      "responses": {
+        "201": {
+          "description": "Выдать или перевыпустить ссылку формы туристов",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000013",
+            "purpose": "tourists",
+            "url": "http://localhost:8080/public/tourist-forms/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "expires_at": "2026-11-22T09:00:00Z"
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "revoke_public_link": {
+      "summary": "Отозвать публичную ссылку",
+      "x-requirements": [
+        "FR-04",
+        "FR-10",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "204": {
+          "description": "Отозвать публичную ссылку"
+        }
+      },
+      "parameters": {}
+    },
+    "get_public_selection": {
+      "summary": "Открыть подборку без входа",
+      "x-requirements": [
+        "FR-04"
+      ],
+      "description": "Только снимки туров одной подборки. Нет клиента, ответственного, токена в ответе и паспортов. Неверный/просроченный/отозванный токен: одинаковый 404.",
+      "responses": {
+        "200": {
+          "description": "Открыть подборку без входа",
+          "headers": {
+            "Cache-Control": {
+              "schema": {
+                "const": "no-store"
+              },
+              "description": "Публичные данные не кэшируются"
+            },
+            "Referrer-Policy": {
+              "schema": {
+                "const": "no-referrer"
+              },
+              "description": "Токен ссылки не передаётся в Referer"
+            }
+          },
+          "example": {
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000005",
+                "offer_snapshot": {
+                  "title": "Учебный тур",
+                  "destination": "Сочи",
+                  "starts_on": "2027-06-01",
+                  "ends_on": "2027-06-08",
+                  "tourist_count": 2,
+                  "supplier": "Тестовый поставщик",
+                  "services": [
+                    "Перелёт",
+                    "Отель"
+                  ],
+                  "price": "100000.00",
+                  "currency": "RUB"
+                }
+              }
+            ],
+            "expires_at": "2026-11-22T09:00:00Z"
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "get_public_tourist_form": {
+      "summary": "Открыть форму туристов без входа",
+      "x-requirements": [
+        "FR-10"
+      ],
+      "description": "Только число туристов, версия заявки, срок и редактируемость. Ранее введённые персональные данные не возвращаются. При действующей брони форма закрыта, is_editable=false и closed_reason заполнен.",
+      "responses": {
+        "200": {
+          "description": "Открыть форму туристов без входа",
+          "headers": {
+            "Cache-Control": {
+              "schema": {
+                "const": "no-store"
+              },
+              "description": "Публичные данные не кэшируются"
+            },
+            "Referrer-Policy": {
+              "schema": {
+                "const": "no-referrer"
+              },
+              "description": "Токен ссылки не передаётся в Referer"
+            }
+          },
+          "example": {
+            "tourist_count": 2,
+            "request_version": 3,
+            "expires_at": "2026-11-22T09:00:00Z",
+            "is_editable": true,
+            "closed_reason": null
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "submit_public_tourists": {
+      "summary": "Передать полный список туристов",
+      "x-requirements": [
+        "FR-10",
+        "FR-09"
+      ],
+      "description": "Атомарная замена полного списка, количество равно tourist_count. version проверяется по request_version. Новые туристы имеют id=null; переданный id обязан принадлежать этой заявке. После создания действующей брони: 409 tourist_form_closed.",
+      "responses": {
+        "200": {
+          "description": "Передать полный список туристов",
+          "headers": {
+            "Cache-Control": {
+              "schema": {
+                "const": "no-store"
+              },
+              "description": "Публичные данные не кэшируются"
+            },
+            "Referrer-Policy": {
+              "schema": {
+                "const": "no-referrer"
+              },
+              "description": "Токен ссылки не передаётся в Referer"
+            }
+          },
+          "example": {
+            "accepted_count": 2,
+            "request_version": 4
+          }
+        }
+      },
+      "request_example": {
+        "request_version": 3,
+        "tourists": [
+          {
+            "id": null,
+            "full_name": "Тестовый Турист",
+            "birth_date": "1995-05-20",
+            "document_type": "passport",
+            "document_number": "TEST-000001",
+            "document_expires_on": null
+          },
+          {
+            "id": null,
+            "full_name": "Второй Тестовый Турист",
+            "birth_date": "1995-05-20",
+            "document_type": "passport",
+            "document_number": "TEST-000002",
+            "document_expires_on": null
+          }
+        ]
+      },
+      "parameters": {}
+    },
+    "get_request_tourists": {
+      "summary": "Данные туристов для сотрудника",
+      "x-requirements": [
+        "FR-10",
+        "FR-01"
+      ],
+      "description": "Массив Tourist, без пагинации, только ответственный и руководитель.",
+      "responses": {
+        "200": {
+          "description": "Данные туристов для сотрудника",
+          "example": [
+            {
+              "id": "00000000-0000-4000-8000-000000000007",
+              "request_id": "00000000-0000-4000-8000-000000000004",
+              "full_name": "Тестовый Турист",
+              "birth_date": "1995-05-20",
+              "document_type": "passport",
+              "document_number": "TEST-000001",
+              "document_expires_on": null,
+              "version": 1
+            }
+          ]
+        }
+      },
+      "parameters": {}
+    },
+    "replace_request_tourists": {
+      "summary": "Исправить список туристов сотрудником",
+      "x-requirements": [
+        "FR-10",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Исправить список туристов сотрудником",
+          "example": {
+            "accepted_count": 2,
+            "request_version": 4
+          }
+        }
+      },
+      "request_example": {
+        "request_version": 3,
+        "tourists": [
+          {
+            "id": null,
+            "full_name": "Тестовый Турист",
+            "birth_date": "1995-05-20",
+            "document_type": "passport",
+            "document_number": "TEST-000001",
+            "document_expires_on": null
+          },
+          {
+            "id": null,
+            "full_name": "Второй Тестовый Турист",
+            "birth_date": "1995-05-20",
+            "document_type": "passport",
+            "document_number": "TEST-000002",
+            "document_expires_on": null
+          }
+        ]
+      },
+      "parameters": {}
+    },
+    "list_request_bookings": {
+      "summary": "Попытки бронирования",
+      "x-requirements": [
+        "FR-05",
+        "FR-11",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Попытки бронирования",
+          "example": {
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000008",
+                "request_id": "00000000-0000-4000-8000-000000000004",
+                "selection_item_id": "00000000-0000-4000-8000-000000000005",
+                "offer_snapshot": {
+                  "title": "Учебный тур",
+                  "destination": "Сочи",
+                  "starts_on": "2027-06-01",
+                  "ends_on": "2027-06-08",
+                  "tourist_count": 2,
+                  "supplier": "Тестовый поставщик",
+                  "services": [
+                    "Перелёт",
+                    "Отель"
+                  ],
+                  "price": "100000.00",
+                  "currency": "RUB"
+                },
+                "total_amount": "100000.00",
+                "currency": "RUB",
+                "status": "confirmed",
+                "supplier_booking_number": "DEMO-001",
+                "rejection_reason": null,
+                "cancellation_reason": null,
+                "cancellation_response": null,
+                "confirmed_at": "2026-11-15T09:00:00Z",
+                "cancelled_at": null,
+                "paid_amount": "0.00",
+                "reserved_payment_amount": "0.00",
+                "remaining_amount": "100000.00",
+                "available_payment_amount": "100000.00",
+                "refunded_amount": "0.00",
+                "version": 2,
+                "created_at": "2026-11-15T09:00:00Z",
+                "updated_at": "2026-11-15T09:00:00Z",
+                "tourists": [
+                  {
+                    "tourist_id": "00000000-0000-4000-8000-000000000007",
+                    "tourist_snapshot": {
+                      "full_name": "Тестовый Турист",
+                      "birth_date": "1995-05-20",
+                      "document_type": "passport",
+                      "document_number": "TEST-000001",
+                      "document_expires_on": null
+                    }
+                  },
+                  {
+                    "tourist_id": "00000000-0000-4000-8000-000000000014",
+                    "tourist_snapshot": {
+                      "full_name": "Второй Тестовый Турист",
+                      "birth_date": "1995-05-20",
+                      "document_type": "passport",
+                      "document_number": "TEST-000002",
+                      "document_expires_on": null
+                    }
+                  }
+                ],
+                "allowed_actions": [
+                  "request_cancellation",
+                  "create_payment"
+                ]
+              }
+            ],
+            "page": 1,
+            "page_size": 20,
+            "total": 1
+          }
+        }
+      },
+      "parameters": {
+        "query:page": "Номер страницы с 1",
+        "query:page_size": "Размер страницы",
+        "query:sort": "Стабильная сортировка; при равенстве добавляется id в том же направлении"
+      }
+    },
+    "create_booking": {
+      "summary": "Создать попытку брони",
+      "x-requirements": [
+        "FR-05",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "version относится к заявке; выбранный элемент берётся из заявки. Полный корректный список туристов обязателен уже при создании, число совпадает с заявкой и туром: после создания форма блокируется. Сумма и снимок назначаются сервером. Не более одной действующей брони.",
+      "responses": {
+        "201": {
+          "description": "Создать попытку брони",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000008",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "offer_snapshot": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "total_amount": "100000.00",
+            "currency": "RUB",
+            "status": "pending_confirmation",
+            "supplier_booking_number": null,
+            "rejection_reason": null,
+            "cancellation_reason": null,
+            "cancellation_response": null,
+            "confirmed_at": null,
+            "cancelled_at": null,
+            "paid_amount": "0.00",
+            "reserved_payment_amount": "0.00",
+            "remaining_amount": "100000.00",
+            "available_payment_amount": "0.00",
+            "refunded_amount": "0.00",
+            "version": 1,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "tourists": [],
+            "allowed_actions": [
+              "confirm",
+              "reject"
+            ]
+          }
+        }
+      },
+      "request_example": {
+        "version": 1
+      },
+      "parameters": {}
+    },
+    "get_booking": {
+      "summary": "Карточка брони со снимками туристов",
+      "x-requirements": [
+        "FR-05",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Карточка брони со снимками туристов",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000008",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "offer_snapshot": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "total_amount": "100000.00",
+            "currency": "RUB",
+            "status": "confirmed",
+            "supplier_booking_number": "DEMO-001",
+            "rejection_reason": null,
+            "cancellation_reason": null,
+            "cancellation_response": null,
+            "confirmed_at": "2026-11-15T09:00:00Z",
+            "cancelled_at": null,
+            "paid_amount": "0.00",
+            "reserved_payment_amount": "0.00",
+            "remaining_amount": "100000.00",
+            "available_payment_amount": "100000.00",
+            "refunded_amount": "0.00",
+            "version": 2,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "tourists": [
+              {
+                "tourist_id": "00000000-0000-4000-8000-000000000007",
+                "tourist_snapshot": {
+                  "full_name": "Тестовый Турист",
+                  "birth_date": "1995-05-20",
+                  "document_type": "passport",
+                  "document_number": "TEST-000001",
+                  "document_expires_on": null
+                }
+              },
+              {
+                "tourist_id": "00000000-0000-4000-8000-000000000014",
+                "tourist_snapshot": {
+                  "full_name": "Второй Тестовый Турист",
+                  "birth_date": "1995-05-20",
+                  "document_type": "passport",
+                  "document_number": "TEST-000002",
+                  "document_expires_on": null
+                }
+              }
+            ],
+            "allowed_actions": [
+              "request_cancellation",
+              "create_payment"
+            ]
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "confirm_booking": {
+      "summary": "Действие брони: confirm",
+      "x-requirements": [
+        "FR-05",
+        "FR-11",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно.",
+      "responses": {
+        "200": {
+          "description": "Действие брони: confirm",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000008",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "offer_snapshot": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "total_amount": "100000.00",
+            "currency": "RUB",
+            "status": "confirmed",
+            "supplier_booking_number": "DEMO-001",
+            "rejection_reason": null,
+            "cancellation_reason": null,
+            "cancellation_response": null,
+            "confirmed_at": "2026-11-15T09:00:00Z",
+            "cancelled_at": null,
+            "paid_amount": "0.00",
+            "reserved_payment_amount": "0.00",
+            "remaining_amount": "100000.00",
+            "available_payment_amount": "100000.00",
+            "refunded_amount": "0.00",
+            "version": 2,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "tourists": [
+              {
+                "tourist_id": "00000000-0000-4000-8000-000000000007",
+                "tourist_snapshot": {
+                  "full_name": "Тестовый Турист",
+                  "birth_date": "1995-05-20",
+                  "document_type": "passport",
+                  "document_number": "TEST-000001",
+                  "document_expires_on": null
+                }
+              },
+              {
+                "tourist_id": "00000000-0000-4000-8000-000000000014",
+                "tourist_snapshot": {
+                  "full_name": "Второй Тестовый Турист",
+                  "birth_date": "1995-05-20",
+                  "document_type": "passport",
+                  "document_number": "TEST-000002",
+                  "document_expires_on": null
+                }
+              }
+            ],
+            "allowed_actions": [
+              "request_cancellation",
+              "create_payment"
+            ]
+          }
+        }
+      },
+      "request_example": {
+        "version": 1,
+        "supplier_booking_number": "Учебный пример"
+      },
+      "parameters": {}
+    },
+    "reject_booking": {
+      "summary": "Действие брони: reject",
+      "x-requirements": [
+        "FR-05",
+        "FR-11",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно.",
+      "responses": {
+        "200": {
+          "description": "Действие брони: reject",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000008",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "offer_snapshot": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "total_amount": "100000.00",
+            "currency": "RUB",
+            "status": "rejected",
+            "supplier_booking_number": null,
+            "rejection_reason": "Учебный отказ поставщика",
+            "cancellation_reason": null,
+            "cancellation_response": null,
+            "confirmed_at": null,
+            "cancelled_at": null,
+            "paid_amount": "0.00",
+            "reserved_payment_amount": "0.00",
+            "remaining_amount": "100000.00",
+            "available_payment_amount": "0.00",
+            "refunded_amount": "0.00",
+            "version": 2,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-15T09:00:00Z",
+            "tourists": [],
+            "allowed_actions": []
+          }
+        }
+      },
+      "request_example": {
+        "version": 1,
+        "reason": "Учебный пример"
+      },
+      "parameters": {}
+    },
+    "request_cancellation_booking": {
+      "summary": "Действие брони: request-cancellation",
+      "x-requirements": [
+        "FR-05",
+        "FR-11",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно. Только confirmed при booked-заявке; причина обязательна. Pending-платёж не мешает запросить отмену, новые платежи блокируются.",
+      "responses": {
+        "200": {
+          "description": "Действие брони: request-cancellation",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000008",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "offer_snapshot": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "total_amount": "100000.00",
+            "currency": "RUB",
+            "status": "cancellation_requested",
+            "supplier_booking_number": "DEMO-001",
+            "rejection_reason": null,
+            "cancellation_reason": "Просьба клиента об отмене",
+            "cancellation_response": null,
+            "confirmed_at": "2026-11-15T09:00:00Z",
+            "cancelled_at": null,
+            "paid_amount": "0.00",
+            "reserved_payment_amount": "0.00",
+            "remaining_amount": "100000.00",
+            "available_payment_amount": "0.00",
+            "refunded_amount": "0.00",
+            "version": 3,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-25T09:00:00Z",
+            "tourists": [
+              {
+                "tourist_id": "00000000-0000-4000-8000-000000000007",
+                "tourist_snapshot": {
+                  "full_name": "Тестовый Турист",
+                  "birth_date": "1995-05-20",
+                  "document_type": "passport",
+                  "document_number": "TEST-000001",
+                  "document_expires_on": null
+                }
+              },
+              {
+                "tourist_id": "00000000-0000-4000-8000-000000000014",
+                "tourist_snapshot": {
+                  "full_name": "Второй Тестовый Турист",
+                  "birth_date": "1995-05-20",
+                  "document_type": "passport",
+                  "document_number": "TEST-000002",
+                  "document_expires_on": null
+                }
+              }
+            ],
+            "allowed_actions": [
+              "confirm_cancellation",
+              "reject_cancellation"
+            ]
+          }
+        }
+      },
+      "request_example": {
+        "version": 1,
+        "reason": "Учебный пример"
+      },
+      "parameters": {}
+    },
+    "confirm_cancellation_booking": {
+      "summary": "Действие брони: confirm-cancellation",
+      "x-requirements": [
+        "FR-05",
+        "FR-11",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно. Только cancellation_requested при booked-заявке; ответ поставщика обязателен, pending-платежей нет. Без успешных оплат заявка становится in_progress, с оплатами — cancelled; деньги остаются у старой брони, возврат отдельный.",
+      "responses": {
+        "200": {
+          "description": "Действие брони: confirm-cancellation",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000008",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "offer_snapshot": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "total_amount": "100000.00",
+            "currency": "RUB",
+            "status": "cancelled",
+            "supplier_booking_number": "DEMO-001",
+            "rejection_reason": null,
+            "cancellation_reason": "Просьба клиента об отмене",
+            "cancellation_response": "Поставщик подтвердил отмену",
+            "confirmed_at": "2026-11-15T09:00:00Z",
+            "cancelled_at": "2026-11-25T09:00:00Z",
+            "paid_amount": "0.00",
+            "reserved_payment_amount": "0.00",
+            "remaining_amount": "100000.00",
+            "available_payment_amount": "0.00",
+            "refunded_amount": "0.00",
+            "version": 4,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-25T09:00:00Z",
+            "tourists": [
+              {
+                "tourist_id": "00000000-0000-4000-8000-000000000007",
+                "tourist_snapshot": {
+                  "full_name": "Тестовый Турист",
+                  "birth_date": "1995-05-20",
+                  "document_type": "passport",
+                  "document_number": "TEST-000001",
+                  "document_expires_on": null
+                }
+              },
+              {
+                "tourist_id": "00000000-0000-4000-8000-000000000014",
+                "tourist_snapshot": {
+                  "full_name": "Второй Тестовый Турист",
+                  "birth_date": "1995-05-20",
+                  "document_type": "passport",
+                  "document_number": "TEST-000002",
+                  "document_expires_on": null
+                }
+              }
+            ],
+            "allowed_actions": []
+          }
+        }
+      },
+      "request_example": {
+        "version": 1,
+        "supplier_response": "Учебный пример"
+      },
+      "parameters": {}
+    },
+    "reject_cancellation_booking": {
+      "summary": "Действие брони: reject-cancellation",
+      "x-requirements": [
+        "FR-05",
+        "FR-11",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно. Только cancellation_requested при booked-заявке; причина отказа поставщика обязательна. Бронь снова confirmed, заявка остаётся booked.",
+      "responses": {
+        "200": {
+          "description": "Действие брони: reject-cancellation",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000008",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "selection_item_id": "00000000-0000-4000-8000-000000000005",
+            "offer_snapshot": {
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB"
+            },
+            "total_amount": "100000.00",
+            "currency": "RUB",
+            "status": "confirmed",
+            "supplier_booking_number": "DEMO-001",
+            "rejection_reason": null,
+            "cancellation_reason": "Просьба клиента об отмене",
+            "cancellation_response": "Поставщик отказал в отмене",
+            "confirmed_at": "2026-11-15T09:00:00Z",
+            "cancelled_at": null,
+            "paid_amount": "0.00",
+            "reserved_payment_amount": "0.00",
+            "remaining_amount": "100000.00",
+            "available_payment_amount": "100000.00",
+            "refunded_amount": "0.00",
+            "version": 4,
+            "created_at": "2026-11-15T09:00:00Z",
+            "updated_at": "2026-11-25T09:00:00Z",
+            "tourists": [
+              {
+                "tourist_id": "00000000-0000-4000-8000-000000000007",
+                "tourist_snapshot": {
+                  "full_name": "Тестовый Турист",
+                  "birth_date": "1995-05-20",
+                  "document_type": "passport",
+                  "document_number": "TEST-000001",
+                  "document_expires_on": null
+                }
+              },
+              {
+                "tourist_id": "00000000-0000-4000-8000-000000000014",
+                "tourist_snapshot": {
+                  "full_name": "Второй Тестовый Турист",
+                  "birth_date": "1995-05-20",
+                  "document_type": "passport",
+                  "document_number": "TEST-000002",
+                  "document_expires_on": null
+                }
+              }
+            ],
+            "allowed_actions": [
+              "request_cancellation",
+              "create_payment"
+            ]
+          }
+        }
+      },
+      "request_example": {
+        "version": 1,
+        "reason": "Учебный пример"
+      },
+      "parameters": {}
+    },
+    "list_financial_bookings": {
+      "summary": "Финансовая сводка броней",
+      "x-requirements": [
+        "FR-06",
+        "FR-08",
+        "FR-12",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Бухгалтер получает только суммы, статусы и идентификаторы, can_open_request=false. Полная Booking содержит туристов и бухгалтеру недоступна.",
+      "responses": {
+        "200": {
+          "description": "Финансовая сводка броней",
+          "example": {
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000008",
+                "request_id": "00000000-0000-4000-8000-000000000004",
+                "status": "confirmed",
+                "total_amount": "100000.00",
+                "currency": "RUB",
+                "paid_amount": "30000.00",
+                "reserved_payment_amount": "20000.00",
+                "remaining_amount": "70000.00",
+                "refunded_amount": "0.00",
+                "can_open_request": false,
+                "confirmed_at": "2026-11-15T09:00:00Z",
+                "cancelled_at": null,
+                "created_at": "2026-11-15T09:00:00Z"
+              }
+            ],
+            "page": 1,
+            "page_size": 20,
+            "total": 1
+          }
+        }
+      },
+      "parameters": {
+        "query:request_id": "Идентификатор заявки",
+        "query:status": "Статус брони",
+        "query:page": "Номер страницы с 1",
+        "query:page_size": "Размер страницы",
+        "query:sort": "Стабильная сортировка; при равенстве добавляется id в том же направлении"
+      }
+    },
+    "list_payments": {
+      "summary": "Глобальный список оплат",
+      "x-requirements": [
+        "FR-06",
+        "FR-08",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Глобальный список оплат",
+          "example": {
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000009",
+                "booking_id": "00000000-0000-4000-8000-000000000008",
+                "amount": "30000.00",
+                "currency": "RUB",
+                "status": "succeeded",
+                "external_operation_id": "00000000-0000-4000-8000-000000000015",
+                "payment_url": "http://localhost:8080/payment-stub/pay/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                "failure_reason": null,
+                "succeeded_at": "2026-11-15T09:00:00Z",
+                "created_at": "2026-11-15T09:00:00Z",
+                "request_id": "00000000-0000-4000-8000-000000000004",
+                "booking_status": "confirmed",
+                "pending_reason": null,
+                "refunded_amount": "0.00",
+                "reserved_refund_amount": "0.00",
+                "available_refund_amount": "0.00",
+                "can_open_request": true,
+                "allowed_actions": []
+              }
+            ],
+            "page": 1,
+            "page_size": 20,
+            "total": 1
+          }
+        }
+      },
+      "parameters": {
+        "query:request_id": "Идентификатор заявки",
+        "query:booking_id": "Идентификатор брони",
+        "query:status": "Статус платежа",
+        "query:page": "Номер страницы с 1",
+        "query:page_size": "Размер страницы",
+        "query:sort": "Стабильная сортировка; при равенстве добавляется id в том же направлении"
+      }
+    },
+    "list_booking_payments": {
+      "summary": "Оплаты конкретной брони",
+      "x-requirements": [
+        "FR-06",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Оплаты конкретной брони",
+          "example": {
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000009",
+                "booking_id": "00000000-0000-4000-8000-000000000008",
+                "amount": "30000.00",
+                "currency": "RUB",
+                "status": "succeeded",
+                "external_operation_id": "00000000-0000-4000-8000-000000000015",
+                "payment_url": "http://localhost:8080/payment-stub/pay/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                "failure_reason": null,
+                "succeeded_at": "2026-11-15T09:00:00Z",
+                "created_at": "2026-11-15T09:00:00Z",
+                "request_id": "00000000-0000-4000-8000-000000000004",
+                "booking_status": "confirmed",
+                "pending_reason": null,
+                "refunded_amount": "0.00",
+                "reserved_refund_amount": "0.00",
+                "available_refund_amount": "0.00",
+                "can_open_request": true,
+                "allowed_actions": []
+              }
+            ],
+            "page": 1,
+            "page_size": 20,
+            "total": 1
+          }
+        }
+      },
+      "parameters": {
+        "query:page": "Номер страницы с 1",
+        "query:page_size": "Размер страницы",
+        "query:sort": "Стабильная сортировка; при равенстве добавляется id в том же направлении"
+      }
+    },
+    "create_payment": {
+      "summary": "Создать тестовый платёж",
+      "x-requirements": [
+        "FR-06",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "version относится к брони; amount <= available_payment_amount. Возвращает локальную pending-операцию; payment_url может быть null до ответа сервиса. Через GET или reconcile получить ссылку/результат. Сетевой тайм-аут сохраняет резерв и pending_reason.",
+      "responses": {
+        "202": {
+          "description": "Создать тестовый платёж",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000009",
+            "booking_id": "00000000-0000-4000-8000-000000000008",
+            "amount": "30000.00",
+            "currency": "RUB",
+            "status": "pending",
+            "external_operation_id": "00000000-0000-4000-8000-000000000015",
+            "payment_url": "http://localhost:8080/payment-stub/pay/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "failure_reason": null,
+            "succeeded_at": null,
+            "created_at": "2026-11-15T09:00:00Z",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "booking_status": "confirmed",
+            "pending_reason": "Ожидает тестовой оплаты",
+            "refunded_amount": "0.00",
+            "reserved_refund_amount": "0.00",
+            "available_refund_amount": "0.00",
+            "can_open_request": true,
+            "allowed_actions": [
+              "reconcile"
+            ]
+          }
+        }
+      },
+      "request_example": {
+        "version": 1,
+        "amount": "1.00",
+        "currency": "RUB"
+      },
+      "parameters": {}
+    },
+    "get_payment": {
+      "summary": "Платёж и доступный остаток возврата",
+      "x-requirements": [
+        "FR-06",
+        "FR-12",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Платёж и доступный остаток возврата",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000009",
+            "booking_id": "00000000-0000-4000-8000-000000000008",
+            "amount": "30000.00",
+            "currency": "RUB",
+            "status": "succeeded",
+            "external_operation_id": "00000000-0000-4000-8000-000000000015",
+            "payment_url": "http://localhost:8080/payment-stub/pay/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "failure_reason": null,
+            "succeeded_at": "2026-11-15T09:00:00Z",
+            "created_at": "2026-11-15T09:00:00Z",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "booking_status": "confirmed",
+            "pending_reason": null,
+            "refunded_amount": "0.00",
+            "reserved_refund_amount": "0.00",
+            "available_refund_amount": "0.00",
+            "can_open_request": true,
+            "allowed_actions": []
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "reconcile_payment": {
+      "summary": "Сверить платёж с сервисом",
+      "x-requirements": [
+        "FR-06",
+        "FR-01"
+      ],
+      "description": "Естественно повторяемая команда без ручного назначения успеха. Адаптер опрашивает известную операцию с тем же внешним ключом; терминальная операция возвращается без повторного зачисления. Бухгалтер имеет только GET.",
+      "responses": {
+        "202": {
+          "description": "Сверить платёж с сервисом",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000009",
+            "booking_id": "00000000-0000-4000-8000-000000000008",
+            "amount": "30000.00",
+            "currency": "RUB",
+            "status": "pending",
+            "external_operation_id": "00000000-0000-4000-8000-000000000015",
+            "payment_url": "http://localhost:8080/payment-stub/pay/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "failure_reason": null,
+            "succeeded_at": null,
+            "created_at": "2026-11-15T09:00:00Z",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "booking_status": "confirmed",
+            "pending_reason": "Ожидает тестовой оплаты",
+            "refunded_amount": "0.00",
+            "reserved_refund_amount": "0.00",
+            "available_refund_amount": "0.00",
+            "can_open_request": true,
+            "allowed_actions": [
+              "reconcile"
+            ]
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "list_refunds": {
+      "summary": "Глобальный список возвратов",
+      "x-requirements": [
+        "FR-12",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Глобальный список возвратов",
+          "example": {
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000010",
+                "payment_id": "00000000-0000-4000-8000-000000000009",
+                "amount": "10000.00",
+                "currency": "RUB",
+                "status": "succeeded",
+                "external_operation_id": "00000000-0000-4000-8000-000000000016",
+                "failure_reason": null,
+                "succeeded_at": "2026-11-25T09:00:00Z",
+                "created_at": "2026-11-15T09:00:00Z",
+                "booking_id": "00000000-0000-4000-8000-000000000008",
+                "request_id": "00000000-0000-4000-8000-000000000004",
+                "pending_reason": null,
+                "can_open_request": true,
+                "allowed_actions": []
+              }
+            ],
+            "page": 1,
+            "page_size": 20,
+            "total": 1
+          }
+        }
+      },
+      "parameters": {
+        "query:request_id": "Идентификатор заявки",
+        "query:booking_id": "Идентификатор брони",
+        "query:payment_id": "Исходный платёж",
+        "query:status": "Статус возврата",
+        "query:page": "Номер страницы с 1",
+        "query:page_size": "Размер страницы",
+        "query:sort": "Стабильная сортировка; при равенстве добавляется id в том же направлении"
+      }
+    },
+    "list_payment_refunds": {
+      "summary": "Возвраты по платежу",
+      "x-requirements": [
+        "FR-12",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Возвраты по платежу",
+          "example": {
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000010",
+                "payment_id": "00000000-0000-4000-8000-000000000009",
+                "amount": "10000.00",
+                "currency": "RUB",
+                "status": "succeeded",
+                "external_operation_id": "00000000-0000-4000-8000-000000000016",
+                "failure_reason": null,
+                "succeeded_at": "2026-11-25T09:00:00Z",
+                "created_at": "2026-11-15T09:00:00Z",
+                "booking_id": "00000000-0000-4000-8000-000000000008",
+                "request_id": "00000000-0000-4000-8000-000000000004",
+                "pending_reason": null,
+                "can_open_request": true,
+                "allowed_actions": []
+              }
+            ],
+            "page": 1,
+            "page_size": 20,
+            "total": 1
+          }
+        }
+      },
+      "parameters": {
+        "query:page": "Номер страницы с 1",
+        "query:page_size": "Размер страницы",
+        "query:sort": "Стабильная сортировка; при равенстве добавляется id в том же направлении"
+      }
+    },
+    "create_refund": {
+      "summary": "Создать возврат",
+      "x-requirements": [
+        "FR-12",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Только по cancelled-брони и succeeded-платежу; amount <= available_refund_amount с учётом processing. Команда без version, с Idempotency-Key. Резерв фиксируется до HTTP. Ответ 202 с текущим состоянием, а не обещание успеха; статус назначается проверенным ответом сервиса. Тайм-аут сохраняет processing и pending_reason. Повтор использует тот же внешний ключ.",
+      "responses": {
+        "202": {
+          "description": "Создать возврат",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000010",
+            "payment_id": "00000000-0000-4000-8000-000000000009",
+            "amount": "10000.00",
+            "currency": "RUB",
+            "status": "processing",
+            "external_operation_id": null,
+            "failure_reason": null,
+            "succeeded_at": null,
+            "created_at": "2026-11-15T09:00:00Z",
+            "booking_id": "00000000-0000-4000-8000-000000000008",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "pending_reason": "Ожидает результата возврата",
+            "can_open_request": true,
+            "allowed_actions": [
+              "reconcile"
+            ]
+          }
+        }
+      },
+      "request_example": {
+        "amount": "1.00",
+        "currency": "RUB"
+      },
+      "parameters": {}
+    },
+    "get_refund": {
+      "summary": "Состояние возврата",
+      "x-requirements": [
+        "FR-12",
+        "FR-01"
+      ],
+      "description": "Для processing выполняет сверку через адаптер. Бухгалтер читает безопасное представление, can_open_request=false, allowed_actions=[]. Фоновая сверка работает независимо от открытой карточки.",
+      "responses": {
+        "200": {
+          "description": "Состояние возврата",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000010",
+            "payment_id": "00000000-0000-4000-8000-000000000009",
+            "amount": "10000.00",
+            "currency": "RUB",
+            "status": "succeeded",
+            "external_operation_id": "00000000-0000-4000-8000-000000000016",
+            "failure_reason": null,
+            "succeeded_at": "2026-11-25T09:00:00Z",
+            "created_at": "2026-11-15T09:00:00Z",
+            "booking_id": "00000000-0000-4000-8000-000000000008",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "pending_reason": null,
+            "can_open_request": true,
+            "allowed_actions": []
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "reconcile_refund": {
+      "summary": "Сверить возврат с сервисом",
+      "x-requirements": [
+        "FR-12",
+        "FR-01"
+      ],
+      "description": "Естественно повторяемая команда. Только проверенный ответ сервиса завершает возврат; повтор не увеличивает возвращённую сумму.",
+      "responses": {
+        "202": {
+          "description": "Сверить возврат с сервисом",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000010",
+            "payment_id": "00000000-0000-4000-8000-000000000009",
+            "amount": "10000.00",
+            "currency": "RUB",
+            "status": "processing",
+            "external_operation_id": null,
+            "failure_reason": null,
+            "succeeded_at": null,
+            "created_at": "2026-11-15T09:00:00Z",
+            "booking_id": "00000000-0000-4000-8000-000000000008",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "pending_reason": "Ожидает результата возврата",
+            "can_open_request": true,
+            "allowed_actions": [
+              "reconcile"
+            ]
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "list_client_communications": {
+      "summary": "История общения с клиентом",
+      "x-requirements": [
+        "FR-07",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "В карточке клиента выдаются записи без заявки и по доступным заявкам; записи чужих заявок исключены до пагинации и подсчёта total.",
+      "responses": {
+        "200": {
+          "description": "История общения с клиентом",
+          "example": {
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000011",
+                "client_id": "00000000-0000-4000-8000-000000000002",
+                "request_id": "00000000-0000-4000-8000-000000000004",
+                "author_id": "00000000-0000-4000-8000-000000000001",
+                "channel": "phone",
+                "text": "Клиент сообщил пожелания",
+                "occurred_at": "2026-11-15T09:00:00Z",
+                "created_at": "2026-11-15T09:00:00Z",
+                "author": {
+                  "id": "00000000-0000-4000-8000-000000000001",
+                  "full_name": "Тестовый Менеджер",
+                  "role": "manager"
+                }
+              }
+            ],
+            "page": 1,
+            "page_size": 20,
+            "total": 1
+          }
+        }
+      },
+      "parameters": {
+        "query:page": "Номер страницы с 1",
+        "query:page_size": "Размер страницы",
+        "query:sort": "Стабильная сортировка; при равенстве добавляется id в том же направлении"
+      }
+    },
+    "create_communication": {
+      "summary": "Записать контакт с клиентом",
+      "x-requirements": [
+        "FR-07",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Автор и created_at назначаются сервером; occurred_at передаёт время контакта. request_id=null либо доступная заявка этого клиента. Фактическая отправка сообщений отсутствует.",
+      "responses": {
+        "201": {
+          "description": "Записать контакт с клиентом",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000011",
+            "client_id": "00000000-0000-4000-8000-000000000002",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "author_id": "00000000-0000-4000-8000-000000000001",
+            "channel": "phone",
+            "text": "Клиент сообщил пожелания",
+            "occurred_at": "2026-11-15T09:00:00Z",
+            "created_at": "2026-11-15T09:00:00Z",
+            "author": {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "full_name": "Тестовый Менеджер",
+              "role": "manager"
+            }
+          }
+        }
+      },
+      "request_example": {
+        "request_id": "00000000-0000-4000-8000-000000000001",
+        "channel": "phone",
+        "text": "Учебный пример",
+        "occurred_at": "2026-11-15T09:00:00Z"
+      },
+      "parameters": {}
+    },
+    "list_request_communications": {
+      "summary": "Общение по заявке",
+      "x-requirements": [
+        "FR-07",
+        "FR-08",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.",
+      "responses": {
+        "200": {
+          "description": "Общение по заявке",
+          "example": {
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000011",
+                "client_id": "00000000-0000-4000-8000-000000000002",
+                "request_id": "00000000-0000-4000-8000-000000000004",
+                "author_id": "00000000-0000-4000-8000-000000000001",
+                "channel": "phone",
+                "text": "Клиент сообщил пожелания",
+                "occurred_at": "2026-11-15T09:00:00Z",
+                "created_at": "2026-11-15T09:00:00Z",
+                "author": {
+                  "id": "00000000-0000-4000-8000-000000000001",
+                  "full_name": "Тестовый Менеджер",
+                  "role": "manager"
+                }
+              }
+            ],
+            "page": 1,
+            "page_size": 20,
+            "total": 1
+          }
+        }
+      },
+      "parameters": {
+        "query:page": "Номер страницы с 1",
+        "query:page_size": "Размер страницы",
+        "query:sort": "Стабильная сортировка; при равенстве добавляется id в том же направлении"
+      }
+    },
+    "list_request_history": {
+      "summary": "История статусов и ответственных",
+      "x-requirements": [
+        "FR-01",
+        "FR-08",
+        "FR-09"
+      ],
+      "description": "Только белый список изменений: ответственный и статусы/суммы. Нет паспортов, хешей, токенов и произвольного внутреннего JSON аудита.",
+      "responses": {
+        "200": {
+          "description": "История статусов и ответственных",
+          "example": {
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000015",
+                "request_id": "00000000-0000-4000-8000-000000000004",
+                "entity_id": "00000000-0000-4000-8000-000000000009",
+                "entity_type": "payment",
+                "actor": null,
+                "source": "payment_service",
+                "action": "payment_succeeded",
+                "changes": [
+                  {
+                    "field": "payment_status",
+                    "old_value": "pending",
+                    "new_value": "succeeded"
+                  }
+                ],
+                "created_at": "2026-11-15T09:00:00Z"
+              }
+            ],
+            "page": 1,
+            "page_size": 20,
+            "total": 1
+          }
+        }
+      },
+      "parameters": {
+        "query:page": "Номер страницы с 1",
+        "query:page_size": "Размер страницы",
+        "query:sort": "Стабильная сортировка; при равенстве добавляется id в том же направлении"
+      }
+    },
+    "list_notifications": {
+      "summary": "Свои уведомления",
+      "x-requirements": [
+        "FR-13",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "Только уведомления текущего сотрудника; unread_count по всем его непрочитанным, независимо от страницы. После переназначения недоступной заявки request_id=null, can_open_request=false. Базовый способ обновления UI — опрос раз в 15 секунд при активной вкладке.",
+      "responses": {
+        "200": {
+          "description": "Свои уведомления",
+          "example": {
+            "items": [
+              {
+                "id": "00000000-0000-4000-8000-000000000012",
+                "recipient_id": "00000000-0000-4000-8000-000000000001",
+                "payment_id": "00000000-0000-4000-8000-000000000009",
+                "type": "payment_succeeded",
+                "read_at": null,
+                "created_at": "2026-11-15T09:00:00Z",
+                "request_id": "00000000-0000-4000-8000-000000000004",
+                "amount": "30000.00",
+                "currency": "RUB",
+                "can_open_request": true
+              }
+            ],
+            "page": 1,
+            "page_size": 20,
+            "total": 1,
+            "unread_count": 1
+          }
+        }
+      },
+      "parameters": {
+        "query:unread_only": "Только непрочитанные",
+        "query:page": "Номер страницы с 1",
+        "query:page_size": "Размер страницы",
+        "query:sort": "Стабильная сортировка; при равенстве добавляется id в том же направлении"
+      }
+    },
+    "read_notification": {
+      "summary": "Отметить своё уведомление прочитанным",
+      "x-requirements": [
+        "FR-13",
+        "FR-01"
+      ],
+      "description": "Естественно идемпотентно: read_at первого прочтения сохраняется. Другому получателю: 404.",
+      "responses": {
+        "200": {
+          "description": "Отметить своё уведомление прочитанным",
+          "example": {
+            "id": "00000000-0000-4000-8000-000000000012",
+            "recipient_id": "00000000-0000-4000-8000-000000000001",
+            "payment_id": "00000000-0000-4000-8000-000000000009",
+            "type": "payment_succeeded",
+            "read_at": "2026-11-25T09:00:00Z",
+            "created_at": "2026-11-15T09:00:00Z",
+            "request_id": "00000000-0000-4000-8000-000000000004",
+            "amount": "30000.00",
+            "currency": "RUB",
+            "can_open_request": true
+          }
+        }
+      },
+      "parameters": {}
+    },
+    "get_summary_report": {
+      "summary": "Сводный отчёт за период",
+      "x-requirements": [
+        "FR-08",
+        "FR-09",
+        "FR-01"
+      ],
+      "description": "date_to >= date_from. Интервал [начало date_from, начало дня после date_to) в Europe/Moscow. Заявки: created_at; брони: confirmed_at, включая позже отменённые; оплаты/возвраты: succeeded_at. Пустой период возвращает нули.",
+      "responses": {
+        "200": {
+          "description": "Сводный отчёт за период",
+          "example": {
+            "date_from": "2026-11-01",
+            "date_to": "2026-11-30",
+            "timezone": "Europe/Moscow",
+            "currency": "RUB",
+            "requests_created": 1,
+            "bookings_confirmed": 1,
+            "payments_succeeded_amount": "30000.00",
+            "refunds_succeeded_amount": "0.00"
+          }
+        }
+      },
+      "parameters": {
+        "query:date_from": "Первый календарный день Москвы, включительно",
+        "query:date_to": "Последний календарный день Москвы, включительно"
+      }
+    },
+    "health_live": {
+      "summary": "Liveness",
+      "x-requirements": []
+    },
+    "health_ready": {
+      "summary": "PostgreSQL readiness",
+      "x-requirements": []
+    }
+  },
+  "schemas": {
+    "Money": {
+      "description": "RUB, decimal string; numeric(14,2), never float."
+    },
+    "User": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000001",
+          "full_name": "Тестовый Менеджер",
+          "role": "manager"
+        }
+      ]
+    },
+    "UserProfile": {
+      "description": "Личный профиль текущего сотрудника; расширенные поля не входят в User списка ответственных и бизнес-карточек.",
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000001",
+          "full_name": "Тестовый Менеджер",
+          "role": "manager",
+          "email": "manager@example.com",
+          "department": "Учебный отдел продаж",
+          "position": "Менеджер по туризму",
+          "work_phone": "+7 000 000-00-01"
+        }
+      ]
+    },
+    "AuthResult": {
+      "examples": [
+        {
+          "access_token": "EXAMPLE_NOT_A_REAL_TOKEN",
+          "user": {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "full_name": "Тестовый Менеджер",
+            "role": "manager"
+          }
+        }
+      ]
+    },
+    "FieldError": {
+      "examples": [
+        {
+          "field": "tourist_count",
+          "message": "Число туристов должно быть больше нуля"
+        }
+      ]
+    },
+    "Error": {
+      "examples": [
+        {
+          "code": "validation_error",
+          "message": "Проверьте данные",
+          "fields": [
+            {
+              "field": "tourist_count",
+              "message": "Число туристов должно быть больше нуля"
+            }
+          ]
+        }
+      ]
+    },
+    "Client": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000002",
+          "client_number": 1,
+          "full_name": "Тестовый Клиент",
+          "phone": "+79990000000",
+          "email": null,
+          "preferences": "Море",
+          "note": "Вымышленные данные",
+          "version": 1,
+          "created_at": "2026-11-15T09:00:00Z",
+          "updated_at": "2026-11-15T09:00:00Z",
+          "allowed_actions": [
+            "update",
+            "create_request"
+          ]
+        }
+      ]
+    },
+    "OfferSnapshot": {
+      "examples": [
+        {
+          "title": "Учебный тур",
+          "destination": "Сочи",
+          "starts_on": "2027-06-01",
+          "ends_on": "2027-06-08",
+          "tourist_count": 2,
+          "supplier": "Тестовый поставщик",
+          "services": [
+            "Перелёт",
+            "Отель"
+          ],
+          "price": "100000.00",
+          "currency": "RUB"
+        }
+      ]
+    },
+    "TourOffer": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000003",
+          "title": "Учебный тур",
+          "destination": "Сочи",
+          "starts_on": "2027-06-01",
+          "ends_on": "2027-06-08",
+          "tourist_count": 2,
+          "supplier": "Тестовый поставщик",
+          "services": [
+            "Перелёт",
+            "Отель"
+          ],
+          "price": "100000.00",
+          "currency": "RUB",
+          "is_active": true,
+          "version": 1
+        }
+      ]
+    },
+    "SelectionItem": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000005",
+          "tour_offer_id": "00000000-0000-4000-8000-000000000003",
+          "position": 0,
+          "offer_snapshot": {
+            "title": "Учебный тур",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "supplier": "Тестовый поставщик",
+            "services": [
+              "Перелёт",
+              "Отель"
+            ],
+            "price": "100000.00",
+            "currency": "RUB"
+          }
+        }
+      ]
+    },
+    "Selection": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000006",
+          "request_id": "00000000-0000-4000-8000-000000000004",
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000005",
+              "tour_offer_id": "00000000-0000-4000-8000-000000000003",
+              "position": 0,
+              "offer_snapshot": {
+                "title": "Учебный тур",
+                "destination": "Сочи",
+                "starts_on": "2027-06-01",
+                "ends_on": "2027-06-08",
+                "tourist_count": 2,
+                "supplier": "Тестовый поставщик",
+                "services": [
+                  "Перелёт",
+                  "Отель"
+                ],
+                "price": "100000.00",
+                "currency": "RUB"
+              }
+            }
+          ],
+          "created_at": "2026-11-15T09:00:00Z",
+          "public_link": {
+            "id": "00000000-0000-4000-8000-000000000013",
+            "purpose": "selection",
+            "expires_at": "2026-11-22T09:00:00Z",
+            "is_active": true
+          }
+        }
+      ]
+    },
+    "PublicSelectionItem": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000005",
+          "offer_snapshot": {
+            "title": "Учебный тур",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "supplier": "Тестовый поставщик",
+            "services": [
+              "Перелёт",
+              "Отель"
+            ],
+            "price": "100000.00",
+            "currency": "RUB"
+          }
+        }
+      ]
+    },
+    "PublicSelection": {
+      "examples": [
+        {
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000005",
+              "offer_snapshot": {
+                "title": "Учебный тур",
+                "destination": "Сочи",
+                "starts_on": "2027-06-01",
+                "ends_on": "2027-06-08",
+                "tourist_count": 2,
+                "supplier": "Тестовый поставщик",
+                "services": [
+                  "Перелёт",
+                  "Отель"
+                ],
+                "price": "100000.00",
+                "currency": "RUB"
+              }
+            }
+          ],
+          "expires_at": "2026-11-22T09:00:00Z"
+        }
+      ]
+    },
+    "Request": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000004",
+          "client_id": "00000000-0000-4000-8000-000000000002",
+          "manager_id": "00000000-0000-4000-8000-000000000001",
+          "destination": "Сочи",
+          "starts_on": "2027-06-01",
+          "ends_on": "2027-06-08",
+          "tourist_count": 2,
+          "budget": "120000.00",
+          "wishes": "Море",
+          "status": "booked",
+          "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+          "completed_at": null,
+          "cancelled_at": null,
+          "version": 4,
+          "created_at": "2026-11-15T09:00:00Z",
+          "updated_at": "2026-11-15T09:00:00Z",
+          "client": {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "client_number": 1,
+            "full_name": "Тестовый Клиент"
+          },
+          "manager": {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "full_name": "Тестовый Менеджер",
+            "role": "manager"
+          },
+          "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+          "selected_offer": {
+            "title": "Учебный тур",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "supplier": "Тестовый поставщик",
+            "services": [
+              "Перелёт",
+              "Отель"
+            ],
+            "price": "100000.00",
+            "currency": "RUB"
+          },
+          "active_booking": {
+            "id": "00000000-0000-4000-8000-000000000008",
+            "status": "confirmed",
+            "total_amount": "100000.00",
+            "currency": "RUB",
+            "paid_amount": "30000.00",
+            "remaining_amount": "70000.00"
+          },
+          "tourists_received": 2,
+          "tourist_form_editable": false,
+          "tourist_link": null,
+          "cancellation_reason": null,
+          "allowed_actions": []
+        }
+      ]
+    },
+    "TouristSnapshot": {
+      "examples": [
+        {
+          "full_name": "Тестовый Турист",
+          "birth_date": "1995-05-20",
+          "document_type": "passport",
+          "document_number": "TEST-000001",
+          "document_expires_on": null
+        }
+      ]
+    },
+    "Tourist": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000007",
+          "request_id": "00000000-0000-4000-8000-000000000004",
+          "full_name": "Тестовый Турист",
+          "birth_date": "1995-05-20",
+          "document_type": "passport",
+          "document_number": "TEST-000001",
+          "document_expires_on": null,
+          "version": 1
+        }
+      ]
+    },
+    "PublicTouristForm": {
+      "examples": [
+        {
+          "tourist_count": 2,
+          "request_version": 3,
+          "expires_at": "2026-11-22T09:00:00Z",
+          "is_editable": true,
+          "closed_reason": null
+        }
+      ]
+    },
+    "TouristSubmissionItem": {
+      "examples": [
+        {
+          "id": null,
+          "full_name": "Тестовый Турист",
+          "birth_date": "1995-05-20",
+          "document_type": "passport",
+          "document_number": "TEST-000001",
+          "document_expires_on": null
+        }
+      ]
+    },
+    "TouristSubmission": {
+      "examples": [
+        {
+          "request_version": 3,
+          "tourists": [
+            {
+              "id": null,
+              "full_name": "Тестовый Турист",
+              "birth_date": "1995-05-20",
+              "document_type": "passport",
+              "document_number": "TEST-000001",
+              "document_expires_on": null
+            },
+            {
+              "id": null,
+              "full_name": "Второй Тестовый Турист",
+              "birth_date": "1995-05-20",
+              "document_type": "passport",
+              "document_number": "TEST-000002",
+              "document_expires_on": null
+            }
+          ]
+        }
+      ]
+    },
+    "TouristSubmissionResult": {
+      "examples": [
+        {
+          "accepted_count": 2,
+          "request_version": 4
+        }
+      ]
+    },
+    "Booking": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000008",
+          "request_id": "00000000-0000-4000-8000-000000000004",
+          "selection_item_id": "00000000-0000-4000-8000-000000000005",
+          "offer_snapshot": {
+            "title": "Учебный тур",
+            "destination": "Сочи",
+            "starts_on": "2027-06-01",
+            "ends_on": "2027-06-08",
+            "tourist_count": 2,
+            "supplier": "Тестовый поставщик",
+            "services": [
+              "Перелёт",
+              "Отель"
+            ],
+            "price": "100000.00",
+            "currency": "RUB"
+          },
+          "total_amount": "100000.00",
+          "currency": "RUB",
+          "status": "confirmed",
+          "supplier_booking_number": "DEMO-001",
+          "rejection_reason": null,
+          "cancellation_reason": null,
+          "cancellation_response": null,
+          "confirmed_at": "2026-11-15T09:00:00Z",
+          "cancelled_at": null,
+          "paid_amount": "30000.00",
+          "reserved_payment_amount": "20000.00",
+          "remaining_amount": "70000.00",
+          "available_payment_amount": "50000.00",
+          "refunded_amount": "0.00",
+          "version": 3,
+          "created_at": "2026-11-15T09:00:00Z",
+          "updated_at": "2026-11-15T09:00:00Z",
+          "tourists": [
+            {
+              "tourist_id": "00000000-0000-4000-8000-000000000007",
+              "tourist_snapshot": {
+                "full_name": "Тестовый Турист",
+                "birth_date": "1995-05-20",
+                "document_type": "passport",
+                "document_number": "TEST-000001",
+                "document_expires_on": null
+              }
+            },
+            {
+              "tourist_id": "00000000-0000-4000-8000-000000000014",
+              "tourist_snapshot": {
+                "full_name": "Второй Тестовый Турист",
+                "birth_date": "1995-05-20",
+                "document_type": "passport",
+                "document_number": "TEST-000002",
+                "document_expires_on": null
+              }
+            }
+          ],
+          "allowed_actions": [
+            "create_payment",
+            "request_cancellation"
+          ]
+        }
+      ]
+    },
+    "Payment": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000009",
+          "booking_id": "00000000-0000-4000-8000-000000000008",
+          "amount": "30000.00",
+          "currency": "RUB",
+          "status": "succeeded",
+          "external_operation_id": "DEMO-PAY-1",
+          "payment_url": "http://localhost:8080/demo-payments/DEMO-PAY-1",
+          "failure_reason": null,
+          "succeeded_at": "2026-11-15T09:00:00Z",
+          "created_at": "2026-11-15T09:00:00Z",
+          "request_id": "00000000-0000-4000-8000-000000000004",
+          "booking_status": "confirmed",
+          "pending_reason": null,
+          "refunded_amount": "0.00",
+          "reserved_refund_amount": "0.00",
+          "available_refund_amount": "0.00",
+          "can_open_request": true,
+          "allowed_actions": []
+        }
+      ]
+    },
+    "Refund": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000010",
+          "payment_id": "00000000-0000-4000-8000-000000000009",
+          "amount": "10000.00",
+          "currency": "RUB",
+          "status": "processing",
+          "external_operation_id": "DEMO-REFUND-1",
+          "failure_reason": null,
+          "succeeded_at": null,
+          "created_at": "2026-11-15T09:00:00Z",
+          "booking_id": "00000000-0000-4000-8000-000000000008",
+          "request_id": "00000000-0000-4000-8000-000000000004",
+          "pending_reason": null,
+          "can_open_request": true,
+          "allowed_actions": [
+            "reconcile"
+          ]
+        }
+      ]
+    },
+    "Communication": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000011",
+          "client_id": "00000000-0000-4000-8000-000000000002",
+          "request_id": "00000000-0000-4000-8000-000000000004",
+          "author_id": "00000000-0000-4000-8000-000000000001",
+          "channel": "phone",
+          "text": "Клиент сообщил пожелания",
+          "occurred_at": "2026-11-15T09:00:00Z",
+          "created_at": "2026-11-15T09:00:00Z",
+          "author": {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "full_name": "Тестовый Менеджер",
+            "role": "manager"
+          }
+        }
+      ]
+    },
+    "Notification": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000012",
+          "recipient_id": "00000000-0000-4000-8000-000000000001",
+          "payment_id": "00000000-0000-4000-8000-000000000009",
+          "type": "payment_succeeded",
+          "read_at": null,
+          "created_at": "2026-11-15T09:00:00Z",
+          "request_id": "00000000-0000-4000-8000-000000000004",
+          "amount": "30000.00",
+          "currency": "RUB",
+          "can_open_request": true
+        }
+      ]
+    },
+    "PublicLink": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000013",
+          "purpose": "selection",
+          "url": "http://localhost:8080/public/selections/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "expires_at": "2026-11-22T09:00:00Z"
+        }
+      ]
+    },
+    "Report": {
+      "examples": [
+        {
+          "date_from": "2026-11-01",
+          "date_to": "2026-11-30",
+          "timezone": "Europe/Moscow",
+          "currency": "RUB",
+          "requests_created": 1,
+          "bookings_confirmed": 1,
+          "payments_succeeded_amount": "30000.00",
+          "refunds_succeeded_amount": "0.00"
+        }
+      ]
+    },
+    "ClientBrief": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000002",
+          "client_number": 1,
+          "full_name": "Тестовый Клиент"
+        }
+      ]
+    },
+    "PublicLinkInfo": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000013",
+          "purpose": "selection",
+          "expires_at": "2026-11-22T09:00:00Z",
+          "is_active": true
+        }
+      ]
+    },
+    "BookingSummary": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000008",
+          "status": "confirmed",
+          "total_amount": "100000.00",
+          "currency": "RUB",
+          "paid_amount": "30000.00",
+          "remaining_amount": "70000.00"
+        }
+      ]
+    },
+    "BookingTourist": {
+      "examples": [
+        {
+          "tourist_id": "00000000-0000-4000-8000-000000000007",
+          "tourist_snapshot": {
+            "full_name": "Тестовый Турист",
+            "birth_date": "1995-05-20",
+            "document_type": "passport",
+            "document_number": "TEST-000001",
+            "document_expires_on": null
+          }
+        }
+      ]
+    },
+    "FinancialBooking": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000008",
+          "request_id": "00000000-0000-4000-8000-000000000004",
+          "status": "confirmed",
+          "total_amount": "100000.00",
+          "currency": "RUB",
+          "paid_amount": "30000.00",
+          "reserved_payment_amount": "20000.00",
+          "remaining_amount": "70000.00",
+          "refunded_amount": "0.00",
+          "can_open_request": false,
+          "confirmed_at": "2026-11-15T09:00:00Z",
+          "cancelled_at": null,
+          "created_at": "2026-11-15T09:00:00Z"
+        }
+      ]
+    },
+    "DuplicateCheckResult": {
+      "examples": [
+        {
+          "matches": [
+            {
+              "id": "00000000-0000-4000-8000-000000000002",
+              "client_number": 1,
+              "full_name": "Тестовый Клиент"
+            }
+          ],
+          "requires_head_review": false
+        }
+      ]
+    },
+    "ExpectedVersion": {
+      "examples": [
+        {
+          "version": 1
+        }
+      ]
+    },
+    "ReasonCommand": {
+      "examples": [
+        {
+          "version": 1,
+          "reason": "Учебный пример"
+        }
+      ]
+    },
+    "LoginInput": {
+      "examples": [
+        {
+          "email": "manager@example.test",
+          "password": "EXAMPLE_ONLY_NOT_A_REAL_PASSWORD"
+        }
+      ]
+    },
+    "ClientCreate": {
+      "examples": [
+        {
+          "full_name": "Тестовый Клиент",
+          "phone": "+79990000000",
+          "email": null,
+          "preferences": "Море",
+          "note": "Вымышленные данные",
+          "duplicate_acknowledged": false
+        }
+      ]
+    },
+    "ClientUpdate": {
+      "examples": [
+        {
+          "full_name": "Тестовый Клиент",
+          "phone": "+79990000000",
+          "email": null,
+          "preferences": "Море",
+          "note": "Вымышленные данные",
+          "duplicate_acknowledged": false,
+          "version": 1
+        }
+      ]
+    },
+    "RequestCreate": {
+      "examples": [
+        {
+          "client_id": "00000000-0000-4000-8000-000000000002",
+          "manager_id": null,
+          "destination": "Сочи",
+          "starts_on": "2027-06-01",
+          "ends_on": "2027-06-08",
+          "tourist_count": 2,
+          "budget": "120000.00",
+          "wishes": "Море"
+        }
+      ]
+    },
+    "RequestUpdate": {
+      "examples": [
+        {
+          "version": 1,
+          "destination": "Сочи",
+          "starts_on": "2027-06-01",
+          "ends_on": "2027-06-08",
+          "tourist_count": 2,
+          "budget": "120000.00",
+          "wishes": "Море"
+        }
+      ]
+    },
+    "AssignRequest": {
+      "examples": [
+        {
+          "version": 1,
+          "manager_id": "00000000-0000-4000-8000-000000000001"
+        }
+      ]
+    },
+    "SelectTour": {
+      "examples": [
+        {
+          "version": 1,
+          "selection_item_id": "00000000-0000-4000-8000-000000000001"
+        }
+      ]
+    },
+    "SelectionCreate": {
+      "examples": [
+        {
+          "version": 1,
+          "tour_offer_ids": [
+            "00000000-0000-4000-8000-000000000001"
+          ]
+        }
+      ]
+    },
+    "ConfirmBooking": {
+      "examples": [
+        {
+          "version": 1,
+          "supplier_booking_number": "Учебный пример"
+        }
+      ]
+    },
+    "ConfirmCancellation": {
+      "examples": [
+        {
+          "version": 1,
+          "supplier_response": "Учебный пример"
+        }
+      ]
+    },
+    "PaymentCreate": {
+      "examples": [
+        {
+          "version": 1,
+          "amount": "1.00",
+          "currency": "RUB"
+        }
+      ]
+    },
+    "RefundCreate": {
+      "examples": [
+        {
+          "amount": "1.00",
+          "currency": "RUB"
+        }
+      ]
+    },
+    "CommunicationCreate": {
+      "examples": [
+        {
+          "request_id": "00000000-0000-4000-8000-000000000001",
+          "channel": "phone",
+          "text": "Учебный пример",
+          "occurred_at": "2026-11-15T09:00:00Z"
+        }
+      ]
+    },
+    "AuditChange": {
+      "examples": [
+        {
+          "field": "payment_status",
+          "old_value": "pending",
+          "new_value": "succeeded"
+        }
+      ]
+    },
+    "AuditRecord": {
+      "examples": [
+        {
+          "id": "00000000-0000-4000-8000-000000000015",
+          "request_id": "00000000-0000-4000-8000-000000000004",
+          "entity_id": "00000000-0000-4000-8000-000000000009",
+          "entity_type": "payment",
+          "actor": null,
+          "source": "payment_service",
+          "action": "payment_succeeded",
+          "changes": [
+            {
+              "field": "payment_status",
+              "old_value": "pending",
+              "new_value": "succeeded"
+            }
+          ],
+          "created_at": "2026-11-15T09:00:00Z"
+        }
+      ]
+    },
+    "UserPage": {
+      "examples": [
+        {
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "full_name": "Тестовый Менеджер",
+              "role": "manager"
+            }
+          ],
+          "page": 1,
+          "page_size": 20,
+          "total": 1
+        }
+      ]
+    },
+    "ClientPage": {
+      "examples": [
+        {
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000002",
+              "client_number": 1,
+              "full_name": "Тестовый Клиент",
+              "phone": "+79990000000",
+              "email": null,
+              "preferences": "Море",
+              "note": "Вымышленные данные",
+              "version": 1,
+              "created_at": "2026-11-15T09:00:00Z",
+              "updated_at": "2026-11-15T09:00:00Z",
+              "allowed_actions": [
+                "update",
+                "create_request"
+              ]
+            }
+          ],
+          "page": 1,
+          "page_size": 20,
+          "total": 1
+        }
+      ]
+    },
+    "RequestPage": {
+      "examples": [
+        {
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000004",
+              "client_id": "00000000-0000-4000-8000-000000000002",
+              "manager_id": "00000000-0000-4000-8000-000000000001",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "budget": "120000.00",
+              "wishes": "Море",
+              "status": "booked",
+              "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+              "completed_at": null,
+              "cancelled_at": null,
+              "version": 4,
+              "created_at": "2026-11-15T09:00:00Z",
+              "updated_at": "2026-11-15T09:00:00Z",
+              "client": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "client_number": 1,
+                "full_name": "Тестовый Клиент"
+              },
+              "manager": {
+                "id": "00000000-0000-4000-8000-000000000001",
+                "full_name": "Тестовый Менеджер",
+                "role": "manager"
+              },
+              "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+              "selected_offer": {
+                "title": "Учебный тур",
+                "destination": "Сочи",
+                "starts_on": "2027-06-01",
+                "ends_on": "2027-06-08",
+                "tourist_count": 2,
+                "supplier": "Тестовый поставщик",
+                "services": [
+                  "Перелёт",
+                  "Отель"
+                ],
+                "price": "100000.00",
+                "currency": "RUB"
+              },
+              "active_booking": {
+                "id": "00000000-0000-4000-8000-000000000008",
+                "status": "confirmed",
+                "total_amount": "100000.00",
+                "currency": "RUB",
+                "paid_amount": "30000.00",
+                "remaining_amount": "70000.00"
+              },
+              "tourists_received": 2,
+              "tourist_form_editable": false,
+              "tourist_link": null,
+              "cancellation_reason": null,
+              "allowed_actions": []
+            }
+          ],
+          "page": 1,
+          "page_size": 20,
+          "total": 1
+        }
+      ]
+    },
+    "SelectionPage": {
+      "examples": [
+        {
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000006",
+              "request_id": "00000000-0000-4000-8000-000000000004",
+              "items": [
+                {
+                  "id": "00000000-0000-4000-8000-000000000005",
+                  "tour_offer_id": "00000000-0000-4000-8000-000000000003",
+                  "position": 0,
+                  "offer_snapshot": {
+                    "title": "Учебный тур",
+                    "destination": "Сочи",
+                    "starts_on": "2027-06-01",
+                    "ends_on": "2027-06-08",
+                    "tourist_count": 2,
+                    "supplier": "Тестовый поставщик",
+                    "services": [
+                      "Перелёт",
+                      "Отель"
+                    ],
+                    "price": "100000.00",
+                    "currency": "RUB"
+                  }
+                }
+              ],
+              "created_at": "2026-11-15T09:00:00Z",
+              "public_link": {
+                "id": "00000000-0000-4000-8000-000000000013",
+                "purpose": "selection",
+                "expires_at": "2026-11-22T09:00:00Z",
+                "is_active": true
+              }
+            }
+          ],
+          "page": 1,
+          "page_size": 20,
+          "total": 1
+        }
+      ]
+    },
+    "TourOfferPage": {
+      "examples": [
+        {
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000003",
+              "title": "Учебный тур",
+              "destination": "Сочи",
+              "starts_on": "2027-06-01",
+              "ends_on": "2027-06-08",
+              "tourist_count": 2,
+              "supplier": "Тестовый поставщик",
+              "services": [
+                "Перелёт",
+                "Отель"
+              ],
+              "price": "100000.00",
+              "currency": "RUB",
+              "is_active": true,
+              "version": 1
+            }
+          ],
+          "page": 1,
+          "page_size": 20,
+          "total": 1
+        }
+      ]
+    },
+    "BookingPage": {
+      "examples": [
+        {
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "request_id": "00000000-0000-4000-8000-000000000004",
+              "selection_item_id": "00000000-0000-4000-8000-000000000005",
+              "offer_snapshot": {
+                "title": "Учебный тур",
+                "destination": "Сочи",
+                "starts_on": "2027-06-01",
+                "ends_on": "2027-06-08",
+                "tourist_count": 2,
+                "supplier": "Тестовый поставщик",
+                "services": [
+                  "Перелёт",
+                  "Отель"
+                ],
+                "price": "100000.00",
+                "currency": "RUB"
+              },
+              "total_amount": "100000.00",
+              "currency": "RUB",
+              "status": "confirmed",
+              "supplier_booking_number": "DEMO-001",
+              "rejection_reason": null,
+              "cancellation_reason": null,
+              "cancellation_response": null,
+              "confirmed_at": "2026-11-15T09:00:00Z",
+              "cancelled_at": null,
+              "paid_amount": "30000.00",
+              "reserved_payment_amount": "20000.00",
+              "remaining_amount": "70000.00",
+              "available_payment_amount": "50000.00",
+              "refunded_amount": "0.00",
+              "version": 3,
+              "created_at": "2026-11-15T09:00:00Z",
+              "updated_at": "2026-11-15T09:00:00Z",
+              "tourists": [
+                {
+                  "tourist_id": "00000000-0000-4000-8000-000000000007",
+                  "tourist_snapshot": {
+                    "full_name": "Тестовый Турист",
+                    "birth_date": "1995-05-20",
+                    "document_type": "passport",
+                    "document_number": "TEST-000001",
+                    "document_expires_on": null
+                  }
+                },
+                {
+                  "tourist_id": "00000000-0000-4000-8000-000000000014",
+                  "tourist_snapshot": {
+                    "full_name": "Второй Тестовый Турист",
+                    "birth_date": "1995-05-20",
+                    "document_type": "passport",
+                    "document_number": "TEST-000002",
+                    "document_expires_on": null
+                  }
+                }
+              ],
+              "allowed_actions": [
+                "create_payment",
+                "request_cancellation"
+              ]
+            }
+          ],
+          "page": 1,
+          "page_size": 20,
+          "total": 1
+        }
+      ]
+    },
+    "PaymentPage": {
+      "examples": [
+        {
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000009",
+              "booking_id": "00000000-0000-4000-8000-000000000008",
+              "amount": "30000.00",
+              "currency": "RUB",
+              "status": "succeeded",
+              "external_operation_id": "DEMO-PAY-1",
+              "payment_url": "http://localhost:8080/demo-payments/DEMO-PAY-1",
+              "failure_reason": null,
+              "succeeded_at": "2026-11-15T09:00:00Z",
+              "created_at": "2026-11-15T09:00:00Z",
+              "request_id": "00000000-0000-4000-8000-000000000004",
+              "booking_status": "confirmed",
+              "pending_reason": null,
+              "refunded_amount": "0.00",
+              "reserved_refund_amount": "0.00",
+              "available_refund_amount": "0.00",
+              "can_open_request": true,
+              "allowed_actions": []
+            }
+          ],
+          "page": 1,
+          "page_size": 20,
+          "total": 1
+        }
+      ]
+    },
+    "RefundPage": {
+      "examples": [
+        {
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000010",
+              "payment_id": "00000000-0000-4000-8000-000000000009",
+              "amount": "10000.00",
+              "currency": "RUB",
+              "status": "processing",
+              "external_operation_id": "DEMO-REFUND-1",
+              "failure_reason": null,
+              "succeeded_at": null,
+              "created_at": "2026-11-15T09:00:00Z",
+              "booking_id": "00000000-0000-4000-8000-000000000008",
+              "request_id": "00000000-0000-4000-8000-000000000004",
+              "pending_reason": null,
+              "can_open_request": true,
+              "allowed_actions": [
+                "reconcile"
+              ]
+            }
+          ],
+          "page": 1,
+          "page_size": 20,
+          "total": 1
+        }
+      ]
+    },
+    "CommunicationPage": {
+      "examples": [
+        {
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000011",
+              "client_id": "00000000-0000-4000-8000-000000000002",
+              "request_id": "00000000-0000-4000-8000-000000000004",
+              "author_id": "00000000-0000-4000-8000-000000000001",
+              "channel": "phone",
+              "text": "Клиент сообщил пожелания",
+              "occurred_at": "2026-11-15T09:00:00Z",
+              "created_at": "2026-11-15T09:00:00Z",
+              "author": {
+                "id": "00000000-0000-4000-8000-000000000001",
+                "full_name": "Тестовый Менеджер",
+                "role": "manager"
+              }
+            }
+          ],
+          "page": 1,
+          "page_size": 20,
+          "total": 1
+        }
+      ]
+    },
+    "AuditRecordPage": {
+      "examples": [
+        {
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000015",
+              "request_id": "00000000-0000-4000-8000-000000000004",
+              "entity_id": "00000000-0000-4000-8000-000000000009",
+              "entity_type": "payment",
+              "actor": null,
+              "source": "payment_service",
+              "action": "payment_succeeded",
+              "changes": [
+                {
+                  "field": "payment_status",
+                  "old_value": "pending",
+                  "new_value": "succeeded"
+                }
+              ],
+              "created_at": "2026-11-15T09:00:00Z"
+            }
+          ],
+          "page": 1,
+          "page_size": 20,
+          "total": 1
+        }
+      ]
+    },
+    "FinancialBookingPage": {
+      "examples": [
+        {
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "request_id": "00000000-0000-4000-8000-000000000004",
+              "status": "confirmed",
+              "total_amount": "100000.00",
+              "currency": "RUB",
+              "paid_amount": "30000.00",
+              "reserved_payment_amount": "20000.00",
+              "remaining_amount": "70000.00",
+              "refunded_amount": "0.00",
+              "can_open_request": false,
+              "confirmed_at": "2026-11-15T09:00:00Z",
+              "cancelled_at": null,
+              "created_at": "2026-11-15T09:00:00Z"
+            }
+          ],
+          "page": 1,
+          "page_size": 20,
+          "total": 1
+        }
+      ]
+    },
+    "NotificationPage": {
+      "examples": [
+        {
+          "items": [
+            {
+              "id": "00000000-0000-4000-8000-000000000012",
+              "recipient_id": "00000000-0000-4000-8000-000000000001",
+              "payment_id": "00000000-0000-4000-8000-000000000009",
+              "type": "payment_succeeded",
+              "read_at": null,
+              "created_at": "2026-11-15T09:00:00Z",
+              "request_id": "00000000-0000-4000-8000-000000000004",
+              "amount": "30000.00",
+              "currency": "RUB",
+              "can_open_request": true
+            }
+          ],
+          "page": 1,
+          "page_size": 20,
+          "total": 1,
+          "unread_count": 1
+        }
+      ]
+    }
+  }
+}

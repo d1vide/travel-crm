@@ -1,7 +1,3 @@
-# /// script
-# requires-python = ">=3.12"
-# dependencies = ["jsonschema==4.26.0", "openapi-spec-validator==0.9.0"]
-# ///
 """Validate the proposed domain schema, examples and status vocabulary."""
 
 import copy
@@ -18,9 +14,7 @@ from openapi_spec_validator import validate as validate_openapi
 def main() -> None:
     directory = Path(__file__).resolve().parent
     schema = json.loads((directory / "domain.schema.json").read_text(encoding="utf-8"))
-    examples = json.loads(
-        (directory / "domain.examples.json").read_text(encoding="utf-8")
-    )
+    examples = json.loads((directory / "domain.examples.json").read_text(encoding="utf-8"))
     Draft202012Validator.check_schema(schema)
     if examples["contract_version"] != schema["x-contract-version"]:
         raise ValueError("Schema and example versions differ")
@@ -48,16 +42,12 @@ def main() -> None:
         validated.add(name)
 
     object_names = {
-        name
-        for name, definition in schema["$defs"].items()
-        if definition.get("type") == "object"
+        name for name, definition in schema["$defs"].items() if definition.get("type") == "object"
     }
     if object_names - validated:
         raise ValueError(f"Missing object examples: {sorted(object_names - validated)}")
 
-    examples_by_name = {
-        example["schema"]: example["value"] for example in examples["examples"]
-    }
+    examples_by_name = {example["schema"]: example["value"] for example in examples["examples"]}
     # Contact composition must preserve the same rule for cards and both commands.
     for name in ("Client", "ClientCreate", "ClientUpdate"):
         validator = Draft202012Validator(
@@ -126,9 +116,7 @@ def main() -> None:
     documented = {name: set() for name in sections.values()}
     current = None
     for line in (
-        (directory.parent / "state-transitions.md")
-        .read_text(encoding="utf-8")
-        .splitlines()
+        (directory.parent / "state-transitions.md").read_text(encoding="utf-8").splitlines()
     ):
         if line.startswith("## "):
             current = sections.get(line)
@@ -152,6 +140,13 @@ def main() -> None:
     validate_openapi(spec)
     if spec["info"]["version"] != schema["x-contract-version"]:
         raise ValueError("OpenAPI and domain versions differ")
+
+    for definition in spec["components"]["schemas"].values():
+        validator = Draft202012Validator(
+            {"components": spec["components"], **definition}, format_checker=checker
+        )
+        for example in definition.get("examples", []):
+            validator.validate(example)
 
     def resolve(value):
         while isinstance(value, dict) and "$ref" in value:
@@ -184,14 +179,8 @@ def main() -> None:
             requirements.update(operation["x-requirements"])
             roles = operation["x-roles"]
             if "public" in roles and operation.get("security") != []:
-                raise ValueError(
-                    f"Public route unexpectedly requires a session: {path}"
-                )
-            if (
-                "accountant" in roles
-                and not path.startswith("/api/auth/")
-                and method != "get"
-            ):
+                raise ValueError(f"Public route unexpectedly requires a session: {path}")
+            if "accountant" in roles and not path.startswith("/api/auth/") and method != "get":
                 raise ValueError(f"Accountant may mutate business data: {path}")
             for response in operation["responses"].values():
                 check_media(resolve(response).get("content", {}))
@@ -201,9 +190,7 @@ def main() -> None:
         raise ValueError("OpenAPI does not cover exactly FR-01 through FR-13")
 
     for name in ("README.md", "frontend-review.md"):
-        for target in re.findall(
-            r"\]\(([^)]+)\)", (directory / name).read_text(encoding="utf-8")
-        ):
+        for target in re.findall(r"\]\(([^)]+)\)", (directory / name).read_text(encoding="utf-8")):
             if (
                 "://" not in target
                 and not target.startswith("#")
