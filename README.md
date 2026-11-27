@@ -60,6 +60,12 @@
 
 ## Запуск
 
+## Автоматические проверки
+
+GitHub Actions проверяет backend с PostgreSQL 16, frontend, контракт и сборку Docker на PR и push в main. [Команды локального запуска и устройство CI](docs/ci.md).
+
+## Запуск приложения
+
 
 На новом окружении выполните `python scripts/init_env.py`. Если локальный `.env` создан до появления оплаты, выполните `python scripts/init_env.py --add-payment-settings`. Затем запустите `docker compose up -d --build --wait`. Compose запускает PostgreSQL, FastAPI, платёжную заглушку и nginx с интерфейсом на http://localhost:8080. [Подробности запуска](backend/README.md)
 
