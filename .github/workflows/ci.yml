@@ -48,7 +48,7 @@ jobs:
       - name: PostgreSQL integration tests
         working-directory: backend
         run: uv run --frozen pytest -q
-      - name: Checkout script tests
+      - name: Set up Node for checkout tests
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: '22'
