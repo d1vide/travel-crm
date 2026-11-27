@@ -84,26 +84,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/users": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Сотрудники для назначения ответственным
-         * @description Только активные manager/head, без email и технических полей учётной записи. Менеджер создаёт заявку на себя; руководитель выбирает ответственного.
-         */
-        get: operations["list_assignees"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/clients": {
         parameters: {
             query?: never;
@@ -165,6 +145,26 @@ export interface paths {
          * @description Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.
          */
         put: operations["update_client"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Сотрудники для назначения ответственным
+         * @description Только активные manager/head, без email и технических полей учётной записи. Менеджер создаёт заявку на себя; руководитель выбирает ответственного.
+         */
+        get: operations["list_assignees"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -260,26 +260,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/requests/{request_id}/actions/return-to-work": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Действие заявки: return-to-work
-         * @description Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.
-         */
-        post: operations["return_to_work_request"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/requests/{request_id}/actions/cancel": {
         parameters: {
             query?: never;
@@ -294,26 +274,6 @@ export interface paths {
          * @description Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.
          */
         post: operations["cancel_request"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/requests/{request_id}/actions/complete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Действие заявки: complete
-         * @description Только booked с confirmed-бронью, полной оплатой, без pending платежей и возвратов. После ends_on сохранённого снимка брони по Москве; version относится к заявке.
-         */
-        post: operations["complete_request"];
         delete?: never;
         options?: never;
         head?: never;
@@ -340,7 +300,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/requests/{request_id}/selected-tour": {
+    "/api/requests/{request_id}/actions/return-to-work": {
         parameters: {
             query?: never;
             header?: never;
@@ -348,11 +308,71 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
+        put?: never;
         /**
-         * Записать выбор клиента
+         * Действие заявки: return-to-work
          * @description Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.
          */
-        put: operations["select_request_tour"];
+        post: operations["return_to_work_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/requests/{request_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * История статусов и ответственных
+         * @description Только белый список изменений: ответственный и статусы/суммы. Нет паспортов, хешей, токенов и произвольного внутреннего JSON аудита.
+         */
+        get: operations["list_request_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/requests/{request_id}/actions/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Действие заявки: complete
+         * @description Только booked с confirmed-бронью, полной оплатой, без pending платежей и возвратов. После ends_on сохранённого снимка брони по Москве; version относится к заявке.
+         */
+        post: operations["complete_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Сводный отчёт за период
+         * @description date_to >= date_from. Интервал [начало date_from, начало дня после date_to) в Europe/Moscow. Заявки: created_at; брони: confirmed_at, включая позже отменённые; оплаты/возвраты: succeeded_at. Пустой период возвращает нули.
+         */
+        get: operations["get_summary_report"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -392,6 +412,50 @@ export interface paths {
          * @description Активное предложение общего каталога доступно manager/head независимо от наличия заявок. Неактивный и отсутствующий тур дают одинаковый 404.
          */
         get: operations["get_tour"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/clients/{client_id}/communications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * История общения с клиентом
+         * @description В карточке клиента выдаются записи без заявки и по доступным заявкам; записи чужих заявок исключены до пагинации и подсчёта total.
+         */
+        get: operations["list_client_communications"];
+        put?: never;
+        /**
+         * Записать контакт с клиентом
+         * @description Автор и created_at назначаются сервером; occurred_at передаёт время контакта. request_id=null либо доступная заявка этого клиента. Фактическая отправка сообщений отсутствует.
+         */
+        post: operations["create_communication"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/requests/{request_id}/communications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Общение по заявке
+         * @description Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.
+         */
+        get: operations["list_request_communications"];
         put?: never;
         post?: never;
         delete?: never;
@@ -444,6 +508,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/requests/{request_id}/selected-tour": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Записать выбор клиента
+         * @description Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.
+         */
+        put: operations["select_request_tour"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/selections/{selection_id}/public-link": {
         parameters: {
             query?: never;
@@ -458,26 +542,6 @@ export interface paths {
          * @description Выдаёт случайный токен на 7 дней, отзывает предыдущую ссылку этой подборки. В хранилище только хеш. Повтор создаёт новую ссылку; не повторять автоматически после сетевой ошибки. Скопировать url можно из ответа в текущей сессии интерфейса.
          */
         post: operations["issue_selection_link"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/requests/{request_id}/tourist-link": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Выдать или перевыпустить ссылку формы туристов
-         * @description Только при редактируемой форме. Срок 7 дней, предыдущая ссылка отзывается. При неопределённом результате сети использовать явный перевыпуск, не слепой повтор.
-         */
-        post: operations["issue_tourist_link"];
         delete?: never;
         options?: never;
         head?: never;
@@ -524,30 +588,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/public/tourist-forms/{token}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Открыть форму туристов без входа
-         * @description Только число туристов, версия заявки, срок и редактируемость. Ранее введённые персональные данные не возвращаются. При действующей брони форма закрыта, is_editable=false и closed_reason заполнен.
-         */
-        get: operations["get_public_tourist_form"];
-        /**
-         * Передать полный список туристов
-         * @description Атомарная замена полного списка, количество равно tourist_count. version проверяется по request_version. Новые туристы имеют id=null; переданный id обязан принадлежать этой заявке. После создания действующей брони: 409 tourist_form_closed.
-         */
-        put: operations["submit_public_tourists"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/requests/{request_id}/tourists": {
         parameters: {
             query?: never;
@@ -565,6 +605,50 @@ export interface paths {
          * @description Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.
          */
         put: operations["replace_request_tourists"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/requests/{request_id}/tourist-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Выдать или перевыпустить ссылку формы туристов
+         * @description Только при редактируемой форме. Срок 7 дней, предыдущая ссылка отзывается. При неопределённом результате сети использовать явный перевыпуск, не слепой повтор.
+         */
+        post: operations["issue_tourist_link"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/tourist-forms/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Открыть форму туристов без входа
+         * @description Только число туристов, версия заявки, срок и редактируемость. Ранее введённые персональные данные не возвращаются. При действующей брони форма закрыта, is_editable=false и closed_reason заполнен.
+         */
+        get: operations["get_public_tourist_form"];
+        /**
+         * Передать полный список туристов
+         * @description Атомарная замена полного списка, количество равно tourist_count. version проверяется по request_version. Новые туристы имеют id=null; переданный id обязан принадлежать этой заявке. После создания действующей брони: 409 tourist_form_closed.
+         */
+        put: operations["submit_public_tourists"];
         post?: never;
         delete?: never;
         options?: never;
@@ -710,26 +794,6 @@ export interface paths {
          * @description version относится к брони. Сервер также блокирует заявку и проверяет условия из state-transitions.md; связанные статусы и аудит меняются транзакционно. Только cancellation_requested при booked-заявке; причина отказа поставщика обязательна. Бронь снова confirmed, заявка остаётся booked.
          */
         post: operations["reject_cancellation_booking"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/financial-bookings": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Финансовая сводка броней
-         * @description Бухгалтер получает только суммы, статусы и идентификаторы, can_open_request=false. Полная Booking содержит туристов и бухгалтеру недоступна.
-         */
-        get: operations["list_financial_bookings"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -904,70 +968,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/clients/{client_id}/communications": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * История общения с клиентом
-         * @description В карточке клиента выдаются записи без заявки и по доступным заявкам; записи чужих заявок исключены до пагинации и подсчёта total.
-         */
-        get: operations["list_client_communications"];
-        put?: never;
-        /**
-         * Записать контакт с клиентом
-         * @description Автор и created_at назначаются сервером; occurred_at передаёт время контакта. request_id=null либо доступная заявка этого клиента. Фактическая отправка сообщений отсутствует.
-         */
-        post: operations["create_communication"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/requests/{request_id}/communications": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Общение по заявке
-         * @description Доступ менеджера ограничен его заявками. Для DTO с allowed_actions список учитывает роль, состояние и условия команды; сервер повторно проверяет их при записи.
-         */
-        get: operations["list_request_communications"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/requests/{request_id}/history": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * История статусов и ответственных
-         * @description Только белый список изменений: ответственный и статусы/суммы. Нет паспортов, хешей, токенов и произвольного внутреннего JSON аудита.
-         */
-        get: operations["list_request_history"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/notifications": {
         parameters: {
             query?: never;
@@ -1008,7 +1008,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/reports/summary": {
+    "/api/financial-bookings": {
         parameters: {
             query?: never;
             header?: never;
@@ -1016,10 +1016,44 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Сводный отчёт за период
-         * @description date_to >= date_from. Интервал [начало date_from, начало дня после date_to) в Europe/Moscow. Заявки: created_at; брони: confirmed_at, включая позже отменённые; оплаты/возвраты: succeeded_at. Пустой период возвращает нули.
+         * Финансовая сводка броней
+         * @description Бухгалтер получает только суммы, статусы и идентификаторы, can_open_request=false. Полная Booking содержит туристов и бухгалтеру недоступна.
          */
-        get: operations["get_summary_report"];
+        get: operations["list_financial_bookings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/health/live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Liveness */
+        get: operations["health_live"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/health/ready": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** PostgreSQL readiness */
+        get: operations["health_ready"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1032,65 +1066,137 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** Format: uuid */
-        Id: string;
-        /** Format: date */
-        Date: string;
-        /** Format: date-time */
-        Timestamp: string;
-        /** @description RUB, decimal string; numeric(14,2), never float. */
-        Money: string;
-        PositiveMoney: components["schemas"]["Money"] & unknown;
-        /** @enum {string} */
-        Role: "manager" | "head" | "accountant";
-        /** @enum {string} */
-        RequestStatus: "new" | "in_progress" | "offer_prepared" | "booked" | "completed" | "cancelled";
-        /** @enum {string} */
-        BookingStatus: "pending_confirmation" | "confirmed" | "rejected" | "cancellation_requested" | "cancelled";
-        /** @enum {string} */
-        PaymentStatus: "pending" | "succeeded" | "failed";
-        /** @enum {string} */
-        RefundStatus: "processing" | "succeeded" | "failed";
-        /** @enum {string} */
-        CommunicationChannel: "phone" | "email" | "messenger" | "office" | "other";
-        /** @enum {string} */
-        DocumentType: "passport" | "international_passport";
-        /** @enum {string} */
-        PublicLinkPurpose: "selection" | "tourists";
         /**
+         * AssignRequest
          * @example {
-         *       "id": "00000000-0000-4000-8000-000000000001",
-         *       "full_name": "Тестовый Менеджер",
-         *       "role": "manager"
+         *       "version": 1,
+         *       "manager_id": "00000000-0000-4000-8000-000000000001"
          *     }
          */
-        User: {
-            id: components["schemas"]["Id"];
-            full_name: string;
-            role: components["schemas"]["Role"];
+        AssignRequest: {
+            /** Version */
+            version: number;
+            /**
+             * Manager Id
+             * Format: uuid
+             */
+            manager_id: string;
         };
         /**
-         * @description Личный профиль текущего сотрудника; расширенные поля не входят в User списка ответственных и бизнес-карточек.
+         * AuditChange
          * @example {
-         *       "id": "00000000-0000-4000-8000-000000000001",
-         *       "full_name": "Тестовый Менеджер",
-         *       "role": "manager",
-         *       "email": "manager@example.com",
-         *       "department": "Учебный отдел продаж",
-         *       "position": "Менеджер по туризму",
-         *       "work_phone": "+7 000 000-00-01"
+         *       "field": "payment_status",
+         *       "old_value": "pending",
+         *       "new_value": "succeeded"
          *     }
          */
-        UserProfile: {
-            id: components["schemas"]["Id"];
-            full_name: string;
-            role: components["schemas"]["Role"];
-            email: string;
-            department: string | null;
-            position: string | null;
-            work_phone: string | null;
+        AuditChange: {
+            /**
+             * Field
+             * @enum {string}
+             */
+            field: "manager_id" | "request_status" | "booking_status" | "payment_status" | "refund_status" | "amount";
+            /** Old Value */
+            old_value: string | null;
+            /** New Value */
+            new_value: string | null;
         };
         /**
+         * AuditRecord
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000015",
+         *       "request_id": "00000000-0000-4000-8000-000000000004",
+         *       "entity_id": "00000000-0000-4000-8000-000000000009",
+         *       "entity_type": "payment",
+         *       "actor": null,
+         *       "source": "payment_service",
+         *       "action": "payment_succeeded",
+         *       "changes": [
+         *         {
+         *           "field": "payment_status",
+         *           "old_value": "pending",
+         *           "new_value": "succeeded"
+         *         }
+         *       ],
+         *       "created_at": "2026-11-15T09:00:00Z"
+         *     }
+         */
+        AuditRecord: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            /**
+             * Entity Id
+             * Format: uuid
+             */
+            entity_id: string;
+            /**
+             * Entity Type
+             * @enum {string}
+             */
+            entity_type: "request" | "booking" | "payment" | "refund";
+            actor: components["schemas"]["User"] | null;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "staff" | "payment_service" | "system";
+            /** Action */
+            action: string;
+            /** Changes */
+            changes: components["schemas"]["AuditChange"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /**
+         * AuditRecordPage
+         * @example {
+         *       "items": [
+         *         {
+         *           "id": "00000000-0000-4000-8000-000000000015",
+         *           "request_id": "00000000-0000-4000-8000-000000000004",
+         *           "entity_id": "00000000-0000-4000-8000-000000000009",
+         *           "entity_type": "payment",
+         *           "actor": null,
+         *           "source": "payment_service",
+         *           "action": "payment_succeeded",
+         *           "changes": [
+         *             {
+         *               "field": "payment_status",
+         *               "old_value": "pending",
+         *               "new_value": "succeeded"
+         *             }
+         *           ],
+         *           "created_at": "2026-11-15T09:00:00Z"
+         *         }
+         *       ],
+         *       "page": 1,
+         *       "page_size": 20,
+         *       "total": 1
+         *     }
+         */
+        AuditRecordPage: {
+            /** Items */
+            items: components["schemas"]["AuditRecord"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /**
+         * AuthResult
          * @example {
          *       "access_token": "EXAMPLE_NOT_A_REAL_TOKEN",
          *       "user": {
@@ -1101,448 +1207,12 @@ export interface components {
          *     }
          */
         AuthResult: {
+            /** Access Token */
             access_token: string;
             user: components["schemas"]["User"];
         };
         /**
-         * @example {
-         *       "field": "tourist_count",
-         *       "message": "Число туристов должно быть больше нуля"
-         *     }
-         */
-        FieldError: {
-            field: string;
-            message: string;
-        };
-        /**
-         * @example {
-         *       "code": "validation_error",
-         *       "message": "Проверьте данные",
-         *       "fields": [
-         *         {
-         *           "field": "tourist_count",
-         *           "message": "Число туристов должно быть больше нуля"
-         *         }
-         *       ]
-         *     }
-         */
-        Error: {
-            code: components["schemas"]["ErrorCode"];
-            message: string;
-            fields: components["schemas"]["FieldError"][];
-        };
-        /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000002",
-         *       "client_number": 1,
-         *       "full_name": "Тестовый Клиент",
-         *       "phone": "+79990000000",
-         *       "email": null,
-         *       "preferences": "Море",
-         *       "note": "Вымышленные данные",
-         *       "version": 1,
-         *       "created_at": "2026-11-15T09:00:00Z",
-         *       "updated_at": "2026-11-15T09:00:00Z",
-         *       "allowed_actions": [
-         *         "update",
-         *         "create_request"
-         *       ]
-         *     }
-         */
-        Client: {
-            id: components["schemas"]["Id"];
-            client_number: number;
-            full_name: string;
-            phone: string | null;
-            email: string | null;
-            preferences: string;
-            note: string;
-            version: number;
-            created_at: components["schemas"]["Timestamp"];
-            updated_at: components["schemas"]["Timestamp"];
-            allowed_actions: components["schemas"]["ClientAction"][];
-        } & ({
-            phone?: string;
-        } | {
-            email?: string;
-        });
-        /**
-         * @example {
-         *       "title": "Учебный тур",
-         *       "destination": "Сочи",
-         *       "starts_on": "2027-06-01",
-         *       "ends_on": "2027-06-08",
-         *       "tourist_count": 2,
-         *       "supplier": "Тестовый поставщик",
-         *       "services": [
-         *         "Перелёт",
-         *         "Отель"
-         *       ],
-         *       "price": "100000.00",
-         *       "currency": "RUB"
-         *     }
-         */
-        OfferSnapshot: {
-            title: string;
-            destination: string;
-            starts_on: components["schemas"]["Date"];
-            ends_on: components["schemas"]["Date"];
-            tourist_count: number;
-            supplier: string;
-            services: string[];
-            price: components["schemas"]["Money"];
-            /** @constant */
-            currency: "RUB";
-        };
-        /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000003",
-         *       "title": "Учебный тур",
-         *       "destination": "Сочи",
-         *       "starts_on": "2027-06-01",
-         *       "ends_on": "2027-06-08",
-         *       "tourist_count": 2,
-         *       "supplier": "Тестовый поставщик",
-         *       "services": [
-         *         "Перелёт",
-         *         "Отель"
-         *       ],
-         *       "price": "100000.00",
-         *       "currency": "RUB",
-         *       "is_active": true,
-         *       "version": 1
-         *     }
-         */
-        TourOffer: {
-            id: components["schemas"]["Id"];
-            title: string;
-            destination: string;
-            starts_on: components["schemas"]["Date"];
-            ends_on: components["schemas"]["Date"];
-            tourist_count: number;
-            supplier: string;
-            services: string[];
-            price: components["schemas"]["Money"];
-            /** @constant */
-            currency: "RUB";
-            is_active: boolean;
-            version: number;
-        };
-        /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000005",
-         *       "tour_offer_id": "00000000-0000-4000-8000-000000000003",
-         *       "position": 0,
-         *       "offer_snapshot": {
-         *         "title": "Учебный тур",
-         *         "destination": "Сочи",
-         *         "starts_on": "2027-06-01",
-         *         "ends_on": "2027-06-08",
-         *         "tourist_count": 2,
-         *         "supplier": "Тестовый поставщик",
-         *         "services": [
-         *           "Перелёт",
-         *           "Отель"
-         *         ],
-         *         "price": "100000.00",
-         *         "currency": "RUB"
-         *       }
-         *     }
-         */
-        SelectionItem: {
-            id: components["schemas"]["Id"];
-            tour_offer_id: components["schemas"]["Id"];
-            position: number;
-            offer_snapshot: components["schemas"]["OfferSnapshot"];
-        };
-        /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000006",
-         *       "request_id": "00000000-0000-4000-8000-000000000004",
-         *       "items": [
-         *         {
-         *           "id": "00000000-0000-4000-8000-000000000005",
-         *           "tour_offer_id": "00000000-0000-4000-8000-000000000003",
-         *           "position": 0,
-         *           "offer_snapshot": {
-         *             "title": "Учебный тур",
-         *             "destination": "Сочи",
-         *             "starts_on": "2027-06-01",
-         *             "ends_on": "2027-06-08",
-         *             "tourist_count": 2,
-         *             "supplier": "Тестовый поставщик",
-         *             "services": [
-         *               "Перелёт",
-         *               "Отель"
-         *             ],
-         *             "price": "100000.00",
-         *             "currency": "RUB"
-         *           }
-         *         }
-         *       ],
-         *       "created_at": "2026-11-15T09:00:00Z",
-         *       "public_link": {
-         *         "id": "00000000-0000-4000-8000-000000000013",
-         *         "purpose": "selection",
-         *         "expires_at": "2026-11-22T09:00:00Z",
-         *         "is_active": true
-         *       }
-         *     }
-         */
-        Selection: {
-            id: components["schemas"]["Id"];
-            request_id: components["schemas"]["Id"];
-            items: components["schemas"]["SelectionItem"][];
-            created_at: components["schemas"]["Timestamp"];
-            public_link: components["schemas"]["PublicLinkInfo"] | null;
-        };
-        /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000005",
-         *       "offer_snapshot": {
-         *         "title": "Учебный тур",
-         *         "destination": "Сочи",
-         *         "starts_on": "2027-06-01",
-         *         "ends_on": "2027-06-08",
-         *         "tourist_count": 2,
-         *         "supplier": "Тестовый поставщик",
-         *         "services": [
-         *           "Перелёт",
-         *           "Отель"
-         *         ],
-         *         "price": "100000.00",
-         *         "currency": "RUB"
-         *       }
-         *     }
-         */
-        PublicSelectionItem: {
-            id: components["schemas"]["Id"];
-            offer_snapshot: components["schemas"]["OfferSnapshot"];
-        };
-        /**
-         * @example {
-         *       "items": [
-         *         {
-         *           "id": "00000000-0000-4000-8000-000000000005",
-         *           "offer_snapshot": {
-         *             "title": "Учебный тур",
-         *             "destination": "Сочи",
-         *             "starts_on": "2027-06-01",
-         *             "ends_on": "2027-06-08",
-         *             "tourist_count": 2,
-         *             "supplier": "Тестовый поставщик",
-         *             "services": [
-         *               "Перелёт",
-         *               "Отель"
-         *             ],
-         *             "price": "100000.00",
-         *             "currency": "RUB"
-         *           }
-         *         }
-         *       ],
-         *       "expires_at": "2026-11-22T09:00:00Z"
-         *     }
-         */
-        PublicSelection: {
-            items: components["schemas"]["PublicSelectionItem"][];
-            expires_at: components["schemas"]["Timestamp"];
-        };
-        /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000004",
-         *       "client_id": "00000000-0000-4000-8000-000000000002",
-         *       "manager_id": "00000000-0000-4000-8000-000000000001",
-         *       "destination": "Сочи",
-         *       "starts_on": "2027-06-01",
-         *       "ends_on": "2027-06-08",
-         *       "tourist_count": 2,
-         *       "budget": "120000.00",
-         *       "wishes": "Море",
-         *       "status": "booked",
-         *       "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
-         *       "completed_at": null,
-         *       "cancelled_at": null,
-         *       "version": 4,
-         *       "created_at": "2026-11-15T09:00:00Z",
-         *       "updated_at": "2026-11-15T09:00:00Z",
-         *       "client": {
-         *         "id": "00000000-0000-4000-8000-000000000002",
-         *         "client_number": 1,
-         *         "full_name": "Тестовый Клиент"
-         *       },
-         *       "manager": {
-         *         "id": "00000000-0000-4000-8000-000000000001",
-         *         "full_name": "Тестовый Менеджер",
-         *         "role": "manager"
-         *       },
-         *       "selected_selection_id": "00000000-0000-4000-8000-000000000006",
-         *       "selected_offer": {
-         *         "title": "Учебный тур",
-         *         "destination": "Сочи",
-         *         "starts_on": "2027-06-01",
-         *         "ends_on": "2027-06-08",
-         *         "tourist_count": 2,
-         *         "supplier": "Тестовый поставщик",
-         *         "services": [
-         *           "Перелёт",
-         *           "Отель"
-         *         ],
-         *         "price": "100000.00",
-         *         "currency": "RUB"
-         *       },
-         *       "active_booking": {
-         *         "id": "00000000-0000-4000-8000-000000000008",
-         *         "status": "confirmed",
-         *         "total_amount": "100000.00",
-         *         "currency": "RUB",
-         *         "paid_amount": "30000.00",
-         *         "remaining_amount": "70000.00"
-         *       },
-         *       "tourists_received": 2,
-         *       "tourist_form_editable": false,
-         *       "tourist_link": null,
-         *       "cancellation_reason": null,
-         *       "allowed_actions": []
-         *     }
-         */
-        Request: {
-            id: components["schemas"]["Id"];
-            client_id: components["schemas"]["Id"];
-            manager_id: components["schemas"]["Id"];
-            destination: string;
-            starts_on: components["schemas"]["Date"];
-            ends_on: components["schemas"]["Date"];
-            tourist_count: number;
-            budget: components["schemas"]["Money"];
-            wishes: string;
-            status: components["schemas"]["RequestStatus"];
-            selected_selection_item_id: components["schemas"]["Id"] | null;
-            completed_at: components["schemas"]["Timestamp"] | null;
-            cancelled_at: components["schemas"]["Timestamp"] | null;
-            version: number;
-            created_at: components["schemas"]["Timestamp"];
-            updated_at: components["schemas"]["Timestamp"];
-            client: components["schemas"]["ClientBrief"];
-            manager: components["schemas"]["User"];
-            selected_selection_id: components["schemas"]["Id"] | null;
-            selected_offer: components["schemas"]["OfferSnapshot"] | null;
-            active_booking: components["schemas"]["BookingSummary"] | null;
-            tourists_received: number;
-            tourist_form_editable: boolean;
-            tourist_link: components["schemas"]["PublicLinkInfo"] | null;
-            cancellation_reason: string | null;
-            allowed_actions: components["schemas"]["RequestAction"][];
-        };
-        /**
-         * @example {
-         *       "full_name": "Тестовый Турист",
-         *       "birth_date": "1995-05-20",
-         *       "document_type": "passport",
-         *       "document_number": "TEST-000001",
-         *       "document_expires_on": null
-         *     }
-         */
-        TouristSnapshot: {
-            full_name: string;
-            birth_date: components["schemas"]["Date"];
-            document_type: components["schemas"]["DocumentType"];
-            document_number: string;
-            document_expires_on: components["schemas"]["Date"] | null;
-        } & unknown;
-        /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000007",
-         *       "request_id": "00000000-0000-4000-8000-000000000004",
-         *       "full_name": "Тестовый Турист",
-         *       "birth_date": "1995-05-20",
-         *       "document_type": "passport",
-         *       "document_number": "TEST-000001",
-         *       "document_expires_on": null,
-         *       "version": 1
-         *     }
-         */
-        Tourist: {
-            id: components["schemas"]["Id"];
-            request_id: components["schemas"]["Id"];
-            full_name: string;
-            birth_date: components["schemas"]["Date"];
-            document_type: components["schemas"]["DocumentType"];
-            document_number: string;
-            document_expires_on: components["schemas"]["Date"] | null;
-            version: number;
-        } & unknown;
-        /**
-         * @example {
-         *       "tourist_count": 2,
-         *       "request_version": 3,
-         *       "expires_at": "2026-11-22T09:00:00Z",
-         *       "is_editable": true,
-         *       "closed_reason": null
-         *     }
-         */
-        PublicTouristForm: {
-            tourist_count: number;
-            request_version: number;
-            expires_at: components["schemas"]["Timestamp"];
-            is_editable: boolean;
-            closed_reason: string | null;
-        };
-        /**
-         * @example {
-         *       "id": null,
-         *       "full_name": "Тестовый Турист",
-         *       "birth_date": "1995-05-20",
-         *       "document_type": "passport",
-         *       "document_number": "TEST-000001",
-         *       "document_expires_on": null
-         *     }
-         */
-        TouristSubmissionItem: {
-            id: components["schemas"]["Id"] | null;
-            full_name: string;
-            birth_date: components["schemas"]["Date"];
-            document_type: components["schemas"]["DocumentType"];
-            document_number: string;
-            document_expires_on: components["schemas"]["Date"] | null;
-        } & unknown;
-        /**
-         * @example {
-         *       "request_version": 3,
-         *       "tourists": [
-         *         {
-         *           "id": null,
-         *           "full_name": "Тестовый Турист",
-         *           "birth_date": "1995-05-20",
-         *           "document_type": "passport",
-         *           "document_number": "TEST-000001",
-         *           "document_expires_on": null
-         *         },
-         *         {
-         *           "id": null,
-         *           "full_name": "Второй Тестовый Турист",
-         *           "birth_date": "1995-05-20",
-         *           "document_type": "passport",
-         *           "document_number": "TEST-000002",
-         *           "document_expires_on": null
-         *         }
-         *       ]
-         *     }
-         */
-        TouristSubmission: {
-            request_version: number;
-            tourists: components["schemas"]["TouristSubmissionItem"][];
-        };
-        /**
-         * @example {
-         *       "accepted_count": 2,
-         *       "request_version": 4
-         *     }
-         */
-        TouristSubmissionResult: {
-            accepted_count: number;
-            request_version: number;
-        };
-        /**
+         * Booking
          * @example {
          *       "id": "00000000-0000-4000-8000-000000000008",
          *       "request_id": "00000000-0000-4000-8000-000000000004",
@@ -1607,780 +1277,75 @@ export interface components {
          *     }
          */
         Booking: {
-            id: components["schemas"]["Id"];
-            request_id: components["schemas"]["Id"];
-            selection_item_id: components["schemas"]["Id"];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            /**
+             * Selection Item Id
+             * Format: uuid
+             */
+            selection_item_id: string;
             offer_snapshot: components["schemas"]["OfferSnapshot"];
-            total_amount: components["schemas"]["Money"];
-            /** @constant */
+            /** Total Amount */
+            total_amount: string;
+            /**
+             * Currency
+             * @constant
+             */
             currency: "RUB";
-            status: components["schemas"]["BookingStatus"];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending_confirmation" | "confirmed" | "rejected" | "cancellation_requested" | "cancelled";
+            /** Supplier Booking Number */
             supplier_booking_number: string | null;
+            /** Rejection Reason */
             rejection_reason: string | null;
+            /** Cancellation Reason */
             cancellation_reason: string | null;
+            /** Cancellation Response */
             cancellation_response: string | null;
-            confirmed_at: components["schemas"]["Timestamp"] | null;
-            cancelled_at: components["schemas"]["Timestamp"] | null;
-            paid_amount: components["schemas"]["Money"];
-            reserved_payment_amount: components["schemas"]["Money"];
-            remaining_amount: components["schemas"]["Money"];
-            available_payment_amount: components["schemas"]["Money"];
-            refunded_amount: components["schemas"]["Money"];
+            /** Confirmed At */
+            confirmed_at: string | null;
+            /** Cancelled At */
+            cancelled_at: string | null;
+            /** Paid Amount */
+            paid_amount: string;
+            /** Reserved Payment Amount */
+            reserved_payment_amount: string;
+            /** Remaining Amount */
+            remaining_amount: string;
+            /** Available Payment Amount */
+            available_payment_amount: string;
+            /** Refunded Amount */
+            refunded_amount: string;
+            /** Version */
             version: number;
-            created_at: components["schemas"]["Timestamp"];
-            updated_at: components["schemas"]["Timestamp"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Tourists */
             tourists: components["schemas"]["BookingTourist"][];
-            allowed_actions: components["schemas"]["BookingAction"][];
+            /** Allowed Actions */
+            allowed_actions: ("confirm" | "reject" | "request_cancellation" | "confirm_cancellation" | "reject_cancellation" | "create_payment")[];
         };
         /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000009",
-         *       "booking_id": "00000000-0000-4000-8000-000000000008",
-         *       "amount": "30000.00",
-         *       "currency": "RUB",
-         *       "status": "succeeded",
-         *       "external_operation_id": "DEMO-PAY-1",
-         *       "payment_url": "http://localhost:8080/demo-payments/DEMO-PAY-1",
-         *       "failure_reason": null,
-         *       "succeeded_at": "2026-11-15T09:00:00Z",
-         *       "created_at": "2026-11-15T09:00:00Z",
-         *       "request_id": "00000000-0000-4000-8000-000000000004",
-         *       "booking_status": "confirmed",
-         *       "pending_reason": null,
-         *       "refunded_amount": "0.00",
-         *       "reserved_refund_amount": "0.00",
-         *       "available_refund_amount": "0.00",
-         *       "can_open_request": true,
-         *       "allowed_actions": []
-         *     }
-         */
-        Payment: {
-            id: components["schemas"]["Id"];
-            booking_id: components["schemas"]["Id"];
-            amount: components["schemas"]["PositiveMoney"];
-            /** @constant */
-            currency: "RUB";
-            status: components["schemas"]["PaymentStatus"];
-            external_operation_id: string | null;
-            payment_url: string | null;
-            failure_reason: string | null;
-            succeeded_at: components["schemas"]["Timestamp"] | null;
-            created_at: components["schemas"]["Timestamp"];
-            request_id: components["schemas"]["Id"];
-            booking_status: components["schemas"]["BookingStatus"];
-            pending_reason: string | null;
-            refunded_amount: components["schemas"]["Money"];
-            reserved_refund_amount: components["schemas"]["Money"];
-            available_refund_amount: components["schemas"]["Money"];
-            can_open_request: boolean;
-            allowed_actions: components["schemas"]["PaymentAction"][];
-        };
-        /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000010",
-         *       "payment_id": "00000000-0000-4000-8000-000000000009",
-         *       "amount": "10000.00",
-         *       "currency": "RUB",
-         *       "status": "processing",
-         *       "external_operation_id": "DEMO-REFUND-1",
-         *       "failure_reason": null,
-         *       "succeeded_at": null,
-         *       "created_at": "2026-11-15T09:00:00Z",
-         *       "booking_id": "00000000-0000-4000-8000-000000000008",
-         *       "request_id": "00000000-0000-4000-8000-000000000004",
-         *       "pending_reason": null,
-         *       "can_open_request": true,
-         *       "allowed_actions": [
-         *         "reconcile"
-         *       ]
-         *     }
-         */
-        Refund: {
-            id: components["schemas"]["Id"];
-            payment_id: components["schemas"]["Id"];
-            amount: components["schemas"]["PositiveMoney"];
-            /** @constant */
-            currency: "RUB";
-            status: components["schemas"]["RefundStatus"];
-            external_operation_id: string | null;
-            failure_reason: string | null;
-            succeeded_at: components["schemas"]["Timestamp"] | null;
-            created_at: components["schemas"]["Timestamp"];
-            booking_id: components["schemas"]["Id"];
-            request_id: components["schemas"]["Id"];
-            pending_reason: string | null;
-            can_open_request: boolean;
-            allowed_actions: components["schemas"]["RefundAction"][];
-        };
-        /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000011",
-         *       "client_id": "00000000-0000-4000-8000-000000000002",
-         *       "request_id": "00000000-0000-4000-8000-000000000004",
-         *       "author_id": "00000000-0000-4000-8000-000000000001",
-         *       "channel": "phone",
-         *       "text": "Клиент сообщил пожелания",
-         *       "occurred_at": "2026-11-15T09:00:00Z",
-         *       "created_at": "2026-11-15T09:00:00Z",
-         *       "author": {
-         *         "id": "00000000-0000-4000-8000-000000000001",
-         *         "full_name": "Тестовый Менеджер",
-         *         "role": "manager"
-         *       }
-         *     }
-         */
-        Communication: {
-            id: components["schemas"]["Id"];
-            client_id: components["schemas"]["Id"];
-            request_id: components["schemas"]["Id"] | null;
-            author_id: components["schemas"]["Id"];
-            channel: components["schemas"]["CommunicationChannel"];
-            text: string;
-            occurred_at: components["schemas"]["Timestamp"];
-            created_at: components["schemas"]["Timestamp"];
-            author: components["schemas"]["User"];
-        };
-        /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000012",
-         *       "recipient_id": "00000000-0000-4000-8000-000000000001",
-         *       "payment_id": "00000000-0000-4000-8000-000000000009",
-         *       "type": "payment_succeeded",
-         *       "read_at": null,
-         *       "created_at": "2026-11-15T09:00:00Z",
-         *       "request_id": "00000000-0000-4000-8000-000000000004",
-         *       "amount": "30000.00",
-         *       "currency": "RUB",
-         *       "can_open_request": true
-         *     }
-         */
-        Notification: {
-            id: components["schemas"]["Id"];
-            recipient_id: components["schemas"]["Id"];
-            payment_id: components["schemas"]["Id"];
-            /** @constant */
-            type: "payment_succeeded";
-            read_at: components["schemas"]["Timestamp"] | null;
-            created_at: components["schemas"]["Timestamp"];
-            request_id: components["schemas"]["Id"] | null;
-            amount: components["schemas"]["Money"];
-            /** @constant */
-            currency: "RUB";
-            can_open_request: boolean;
-        };
-        /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000013",
-         *       "purpose": "selection",
-         *       "url": "http://localhost:8080/public/selections/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-         *       "expires_at": "2026-11-22T09:00:00Z"
-         *     }
-         */
-        PublicLink: {
-            id: components["schemas"]["Id"];
-            purpose: components["schemas"]["PublicLinkPurpose"];
-            /** Format: uri */
-            url: string;
-            expires_at: components["schemas"]["Timestamp"];
-        };
-        /**
-         * @example {
-         *       "date_from": "2026-11-01",
-         *       "date_to": "2026-11-30",
-         *       "timezone": "Europe/Moscow",
-         *       "currency": "RUB",
-         *       "requests_created": 1,
-         *       "bookings_confirmed": 1,
-         *       "payments_succeeded_amount": "30000.00",
-         *       "refunds_succeeded_amount": "0.00"
-         *     }
-         */
-        Report: {
-            date_from: components["schemas"]["Date"];
-            date_to: components["schemas"]["Date"];
-            /** @constant */
-            timezone: "Europe/Moscow";
-            /** @constant */
-            currency: "RUB";
-            requests_created: number;
-            bookings_confirmed: number;
-            payments_succeeded_amount: components["schemas"]["Money"];
-            refunds_succeeded_amount: components["schemas"]["Money"];
-        };
-        /** @enum {string} */
-        ClientAction: "update" | "create_request";
-        /** @enum {string} */
-        RequestAction: "update" | "start_work" | "return_to_work" | "prepare_selection" | "select_tour" | "issue_tourist_link" | "edit_tourists" | "create_booking" | "reassign" | "cancel" | "complete" | "resume";
-        /** @enum {string} */
-        BookingAction: "confirm" | "reject" | "request_cancellation" | "confirm_cancellation" | "reject_cancellation" | "create_payment";
-        /** @enum {string} */
-        PaymentAction: "reconcile" | "create_refund";
-        /** @enum {string} */
-        RefundAction: "reconcile";
-        /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000002",
-         *       "client_number": 1,
-         *       "full_name": "Тестовый Клиент"
-         *     }
-         */
-        ClientBrief: {
-            id: components["schemas"]["Id"];
-            client_number: number;
-            full_name: string;
-        };
-        /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000013",
-         *       "purpose": "selection",
-         *       "expires_at": "2026-11-22T09:00:00Z",
-         *       "is_active": true
-         *     }
-         */
-        PublicLinkInfo: {
-            id: components["schemas"]["Id"];
-            purpose: components["schemas"]["PublicLinkPurpose"];
-            expires_at: components["schemas"]["Timestamp"];
-            is_active: boolean;
-        };
-        /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000008",
-         *       "status": "confirmed",
-         *       "total_amount": "100000.00",
-         *       "currency": "RUB",
-         *       "paid_amount": "30000.00",
-         *       "remaining_amount": "70000.00"
-         *     }
-         */
-        BookingSummary: {
-            id: components["schemas"]["Id"];
-            status: components["schemas"]["BookingStatus"];
-            total_amount: components["schemas"]["Money"];
-            /** @constant */
-            currency: "RUB";
-            paid_amount: components["schemas"]["Money"];
-            remaining_amount: components["schemas"]["Money"];
-        };
-        /**
-         * @example {
-         *       "tourist_id": "00000000-0000-4000-8000-000000000007",
-         *       "tourist_snapshot": {
-         *         "full_name": "Тестовый Турист",
-         *         "birth_date": "1995-05-20",
-         *         "document_type": "passport",
-         *         "document_number": "TEST-000001",
-         *         "document_expires_on": null
-         *       }
-         *     }
-         */
-        BookingTourist: {
-            tourist_id: components["schemas"]["Id"];
-            tourist_snapshot: components["schemas"]["TouristSnapshot"];
-        };
-        /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000008",
-         *       "request_id": "00000000-0000-4000-8000-000000000004",
-         *       "status": "confirmed",
-         *       "total_amount": "100000.00",
-         *       "currency": "RUB",
-         *       "paid_amount": "30000.00",
-         *       "reserved_payment_amount": "20000.00",
-         *       "remaining_amount": "70000.00",
-         *       "refunded_amount": "0.00",
-         *       "can_open_request": false,
-         *       "confirmed_at": "2026-11-15T09:00:00Z",
-         *       "cancelled_at": null,
-         *       "created_at": "2026-11-15T09:00:00Z"
-         *     }
-         */
-        FinancialBooking: {
-            id: components["schemas"]["Id"];
-            request_id: components["schemas"]["Id"];
-            status: components["schemas"]["BookingStatus"];
-            total_amount: components["schemas"]["Money"];
-            /** @constant */
-            currency: "RUB";
-            paid_amount: components["schemas"]["Money"];
-            reserved_payment_amount: components["schemas"]["Money"];
-            remaining_amount: components["schemas"]["Money"];
-            refunded_amount: components["schemas"]["Money"];
-            can_open_request: boolean;
-            confirmed_at: components["schemas"]["Timestamp"] | null;
-            cancelled_at: components["schemas"]["Timestamp"] | null;
-            created_at: components["schemas"]["Timestamp"];
-        };
-        /**
-         * @example {
-         *       "matches": [
-         *         {
-         *           "id": "00000000-0000-4000-8000-000000000002",
-         *           "client_number": 1,
-         *           "full_name": "Тестовый Клиент"
-         *         }
-         *       ],
-         *       "requires_head_review": false
-         *     }
-         */
-        DuplicateCheckResult: {
-            matches: components["schemas"]["ClientBrief"][];
-            requires_head_review: boolean;
-        };
-        /**
-         * @example {
-         *       "version": 1
-         *     }
-         */
-        ExpectedVersion: {
-            version: number;
-        };
-        /**
-         * @example {
-         *       "version": 1,
-         *       "reason": "Учебный пример"
-         *     }
-         */
-        ReasonCommand: {
-            version: number;
-            reason: string;
-        };
-        /**
-         * @example {
-         *       "email": "manager@example.test",
-         *       "password": "EXAMPLE_ONLY_NOT_A_REAL_PASSWORD"
-         *     }
-         */
-        LoginInput: {
-            /** Format: email */
-            email: string;
-            password: string;
-        };
-        /**
-         * @example {
-         *       "full_name": "Тестовый Клиент",
-         *       "phone": "+79990000000",
-         *       "email": null,
-         *       "preferences": "Море",
-         *       "note": "Вымышленные данные",
-         *       "duplicate_acknowledged": false
-         *     }
-         */
-        ClientCreate: {
-            full_name: string;
-            phone: string | null;
-            email: string | null;
-            preferences: string;
-            note: string;
-            duplicate_acknowledged: boolean;
-        } & ({
-            phone?: string;
-        } | {
-            email?: string;
-        });
-        /**
-         * @example {
-         *       "full_name": "Тестовый Клиент",
-         *       "phone": "+79990000000",
-         *       "email": null,
-         *       "preferences": "Море",
-         *       "note": "Вымышленные данные",
-         *       "duplicate_acknowledged": false,
-         *       "version": 1
-         *     }
-         */
-        ClientUpdate: {
-            version: number;
-            full_name: string;
-            phone: string | null;
-            email: string | null;
-            preferences: string;
-            note: string;
-            duplicate_acknowledged: boolean;
-        } & ({
-            phone?: string;
-        } | {
-            email?: string;
-        });
-        /**
-         * @example {
-         *       "client_id": "00000000-0000-4000-8000-000000000002",
-         *       "manager_id": null,
-         *       "destination": "Сочи",
-         *       "starts_on": "2027-06-01",
-         *       "ends_on": "2027-06-08",
-         *       "tourist_count": 2,
-         *       "budget": "120000.00",
-         *       "wishes": "Море"
-         *     }
-         */
-        RequestCreate: {
-            client_id: components["schemas"]["Id"];
-            manager_id: components["schemas"]["Id"] | null;
-            destination: string;
-            starts_on: components["schemas"]["Date"];
-            ends_on: components["schemas"]["Date"];
-            tourist_count: number;
-            budget: components["schemas"]["Money"];
-            wishes: string;
-        };
-        /**
-         * @example {
-         *       "version": 1,
-         *       "destination": "Сочи",
-         *       "starts_on": "2027-06-01",
-         *       "ends_on": "2027-06-08",
-         *       "tourist_count": 2,
-         *       "budget": "120000.00",
-         *       "wishes": "Море"
-         *     }
-         */
-        RequestUpdate: {
-            version: number;
-            destination: string;
-            starts_on: components["schemas"]["Date"];
-            ends_on: components["schemas"]["Date"];
-            tourist_count: number;
-            budget: components["schemas"]["Money"];
-            wishes: string;
-        };
-        /**
-         * @example {
-         *       "version": 1,
-         *       "manager_id": "00000000-0000-4000-8000-000000000001"
-         *     }
-         */
-        AssignRequest: {
-            version: number;
-            manager_id: components["schemas"]["Id"];
-        };
-        /**
-         * @example {
-         *       "version": 1,
-         *       "selection_item_id": "00000000-0000-4000-8000-000000000001"
-         *     }
-         */
-        SelectTour: {
-            version: number;
-            selection_item_id: components["schemas"]["Id"];
-        };
-        /**
-         * @example {
-         *       "version": 1,
-         *       "tour_offer_ids": [
-         *         "00000000-0000-4000-8000-000000000001"
-         *       ]
-         *     }
-         */
-        SelectionCreate: {
-            version: number;
-            tour_offer_ids: components["schemas"]["Id"][];
-        };
-        /**
-         * @example {
-         *       "version": 1,
-         *       "supplier_booking_number": "Учебный пример"
-         *     }
-         */
-        ConfirmBooking: {
-            version: number;
-            supplier_booking_number: string;
-        };
-        /**
-         * @example {
-         *       "version": 1,
-         *       "supplier_response": "Учебный пример"
-         *     }
-         */
-        ConfirmCancellation: {
-            version: number;
-            supplier_response: string;
-        };
-        /**
-         * @example {
-         *       "version": 1,
-         *       "amount": "1.00",
-         *       "currency": "RUB"
-         *     }
-         */
-        PaymentCreate: {
-            version: number;
-            amount: components["schemas"]["PositiveMoney"];
-            /** @constant */
-            currency: "RUB";
-        };
-        /**
-         * @example {
-         *       "amount": "1.00",
-         *       "currency": "RUB"
-         *     }
-         */
-        RefundCreate: {
-            amount: components["schemas"]["PositiveMoney"];
-            /** @constant */
-            currency: "RUB";
-        };
-        /**
-         * @example {
-         *       "request_id": "00000000-0000-4000-8000-000000000001",
-         *       "channel": "phone",
-         *       "text": "Учебный пример",
-         *       "occurred_at": "2026-11-15T09:00:00Z"
-         *     }
-         */
-        CommunicationCreate: {
-            request_id: components["schemas"]["Id"] | null;
-            channel: components["schemas"]["CommunicationChannel"];
-            text: string;
-            occurred_at: components["schemas"]["Timestamp"];
-        };
-        /**
-         * @example {
-         *       "field": "payment_status",
-         *       "old_value": "pending",
-         *       "new_value": "succeeded"
-         *     }
-         */
-        AuditChange: {
-            /** @enum {unknown} */
-            field: "manager_id" | "request_status" | "booking_status" | "payment_status" | "refund_status" | "amount";
-            old_value: string | null;
-            new_value: string | null;
-        };
-        /**
-         * @example {
-         *       "id": "00000000-0000-4000-8000-000000000015",
-         *       "request_id": "00000000-0000-4000-8000-000000000004",
-         *       "entity_id": "00000000-0000-4000-8000-000000000009",
-         *       "entity_type": "payment",
-         *       "actor": null,
-         *       "source": "payment_service",
-         *       "action": "payment_succeeded",
-         *       "changes": [
-         *         {
-         *           "field": "payment_status",
-         *           "old_value": "pending",
-         *           "new_value": "succeeded"
-         *         }
-         *       ],
-         *       "created_at": "2026-11-15T09:00:00Z"
-         *     }
-         */
-        AuditRecord: {
-            id: components["schemas"]["Id"];
-            request_id: components["schemas"]["Id"];
-            entity_id: components["schemas"]["Id"];
-            /** @enum {unknown} */
-            entity_type: "request" | "booking" | "payment" | "refund";
-            actor: components["schemas"]["User"] | null;
-            /** @enum {unknown} */
-            source: "staff" | "payment_service" | "system";
-            action: string;
-            changes: components["schemas"]["AuditChange"][];
-            created_at: components["schemas"]["Timestamp"];
-        };
-        /**
-         * @example {
-         *       "items": [
-         *         {
-         *           "id": "00000000-0000-4000-8000-000000000001",
-         *           "full_name": "Тестовый Менеджер",
-         *           "role": "manager"
-         *         }
-         *       ],
-         *       "page": 1,
-         *       "page_size": 20,
-         *       "total": 1
-         *     }
-         */
-        UserPage: {
-            items: components["schemas"]["User"][];
-            page: number;
-            page_size: number;
-            total: number;
-        };
-        /**
-         * @example {
-         *       "items": [
-         *         {
-         *           "id": "00000000-0000-4000-8000-000000000002",
-         *           "client_number": 1,
-         *           "full_name": "Тестовый Клиент",
-         *           "phone": "+79990000000",
-         *           "email": null,
-         *           "preferences": "Море",
-         *           "note": "Вымышленные данные",
-         *           "version": 1,
-         *           "created_at": "2026-11-15T09:00:00Z",
-         *           "updated_at": "2026-11-15T09:00:00Z",
-         *           "allowed_actions": [
-         *             "update",
-         *             "create_request"
-         *           ]
-         *         }
-         *       ],
-         *       "page": 1,
-         *       "page_size": 20,
-         *       "total": 1
-         *     }
-         */
-        ClientPage: {
-            items: components["schemas"]["Client"][];
-            page: number;
-            page_size: number;
-            total: number;
-        };
-        /**
-         * @example {
-         *       "items": [
-         *         {
-         *           "id": "00000000-0000-4000-8000-000000000004",
-         *           "client_id": "00000000-0000-4000-8000-000000000002",
-         *           "manager_id": "00000000-0000-4000-8000-000000000001",
-         *           "destination": "Сочи",
-         *           "starts_on": "2027-06-01",
-         *           "ends_on": "2027-06-08",
-         *           "tourist_count": 2,
-         *           "budget": "120000.00",
-         *           "wishes": "Море",
-         *           "status": "booked",
-         *           "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
-         *           "completed_at": null,
-         *           "cancelled_at": null,
-         *           "version": 4,
-         *           "created_at": "2026-11-15T09:00:00Z",
-         *           "updated_at": "2026-11-15T09:00:00Z",
-         *           "client": {
-         *             "id": "00000000-0000-4000-8000-000000000002",
-         *             "client_number": 1,
-         *             "full_name": "Тестовый Клиент"
-         *           },
-         *           "manager": {
-         *             "id": "00000000-0000-4000-8000-000000000001",
-         *             "full_name": "Тестовый Менеджер",
-         *             "role": "manager"
-         *           },
-         *           "selected_selection_id": "00000000-0000-4000-8000-000000000006",
-         *           "selected_offer": {
-         *             "title": "Учебный тур",
-         *             "destination": "Сочи",
-         *             "starts_on": "2027-06-01",
-         *             "ends_on": "2027-06-08",
-         *             "tourist_count": 2,
-         *             "supplier": "Тестовый поставщик",
-         *             "services": [
-         *               "Перелёт",
-         *               "Отель"
-         *             ],
-         *             "price": "100000.00",
-         *             "currency": "RUB"
-         *           },
-         *           "active_booking": {
-         *             "id": "00000000-0000-4000-8000-000000000008",
-         *             "status": "confirmed",
-         *             "total_amount": "100000.00",
-         *             "currency": "RUB",
-         *             "paid_amount": "30000.00",
-         *             "remaining_amount": "70000.00"
-         *           },
-         *           "tourists_received": 2,
-         *           "tourist_form_editable": false,
-         *           "tourist_link": null,
-         *           "cancellation_reason": null,
-         *           "allowed_actions": []
-         *         }
-         *       ],
-         *       "page": 1,
-         *       "page_size": 20,
-         *       "total": 1
-         *     }
-         */
-        RequestPage: {
-            items: components["schemas"]["Request"][];
-            page: number;
-            page_size: number;
-            total: number;
-        };
-        /**
-         * @example {
-         *       "items": [
-         *         {
-         *           "id": "00000000-0000-4000-8000-000000000006",
-         *           "request_id": "00000000-0000-4000-8000-000000000004",
-         *           "items": [
-         *             {
-         *               "id": "00000000-0000-4000-8000-000000000005",
-         *               "tour_offer_id": "00000000-0000-4000-8000-000000000003",
-         *               "position": 0,
-         *               "offer_snapshot": {
-         *                 "title": "Учебный тур",
-         *                 "destination": "Сочи",
-         *                 "starts_on": "2027-06-01",
-         *                 "ends_on": "2027-06-08",
-         *                 "tourist_count": 2,
-         *                 "supplier": "Тестовый поставщик",
-         *                 "services": [
-         *                   "Перелёт",
-         *                   "Отель"
-         *                 ],
-         *                 "price": "100000.00",
-         *                 "currency": "RUB"
-         *               }
-         *             }
-         *           ],
-         *           "created_at": "2026-11-15T09:00:00Z",
-         *           "public_link": {
-         *             "id": "00000000-0000-4000-8000-000000000013",
-         *             "purpose": "selection",
-         *             "expires_at": "2026-11-22T09:00:00Z",
-         *             "is_active": true
-         *           }
-         *         }
-         *       ],
-         *       "page": 1,
-         *       "page_size": 20,
-         *       "total": 1
-         *     }
-         */
-        SelectionPage: {
-            items: components["schemas"]["Selection"][];
-            page: number;
-            page_size: number;
-            total: number;
-        };
-        /**
-         * @example {
-         *       "items": [
-         *         {
-         *           "id": "00000000-0000-4000-8000-000000000003",
-         *           "title": "Учебный тур",
-         *           "destination": "Сочи",
-         *           "starts_on": "2027-06-01",
-         *           "ends_on": "2027-06-08",
-         *           "tourist_count": 2,
-         *           "supplier": "Тестовый поставщик",
-         *           "services": [
-         *             "Перелёт",
-         *             "Отель"
-         *           ],
-         *           "price": "100000.00",
-         *           "currency": "RUB",
-         *           "is_active": true,
-         *           "version": 1
-         *         }
-         *       ],
-         *       "page": 1,
-         *       "page_size": 20,
-         *       "total": 1
-         *     }
-         */
-        TourOfferPage: {
-            items: components["schemas"]["TourOffer"][];
-            page: number;
-            page_size: number;
-            total: number;
-        };
-        /**
+         * BookingPage
          * @example {
          *       "items": [
          *         {
@@ -2452,12 +1417,812 @@ export interface components {
          *     }
          */
         BookingPage: {
+            /** Items */
             items: components["schemas"]["Booking"][];
+            /** Page */
             page: number;
+            /** Page Size */
             page_size: number;
+            /** Total */
             total: number;
         };
         /**
+         * BookingStatus
+         * @enum {string}
+         */
+        BookingStatus: "pending_confirmation" | "confirmed" | "rejected" | "cancellation_requested" | "cancelled";
+        /**
+         * BookingSummary
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000008",
+         *       "status": "confirmed",
+         *       "total_amount": "100000.00",
+         *       "currency": "RUB",
+         *       "paid_amount": "30000.00",
+         *       "remaining_amount": "70000.00"
+         *     }
+         */
+        BookingSummary: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending_confirmation" | "confirmed" | "rejected" | "cancellation_requested" | "cancelled";
+            /** Total Amount */
+            total_amount: string;
+            /**
+             * Currency
+             * @constant
+             */
+            currency: "RUB";
+            /** Paid Amount */
+            paid_amount: string;
+            /** Remaining Amount */
+            remaining_amount: string;
+        };
+        /**
+         * BookingTourist
+         * @example {
+         *       "tourist_id": "00000000-0000-4000-8000-000000000007",
+         *       "tourist_snapshot": {
+         *         "full_name": "Тестовый Турист",
+         *         "birth_date": "1995-05-20",
+         *         "document_type": "passport",
+         *         "document_number": "TEST-000001",
+         *         "document_expires_on": null
+         *       }
+         *     }
+         */
+        BookingTourist: {
+            /**
+             * Tourist Id
+             * Format: uuid
+             */
+            tourist_id: string;
+            tourist_snapshot: components["schemas"]["TouristSnapshot"];
+        };
+        /**
+         * Client
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000002",
+         *       "client_number": 1,
+         *       "full_name": "Тестовый Клиент",
+         *       "phone": "+79990000000",
+         *       "email": null,
+         *       "preferences": "Море",
+         *       "note": "Вымышленные данные",
+         *       "version": 1,
+         *       "created_at": "2026-11-15T09:00:00Z",
+         *       "updated_at": "2026-11-15T09:00:00Z",
+         *       "allowed_actions": [
+         *         "update",
+         *         "create_request"
+         *       ]
+         *     }
+         */
+        Client: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Client Number */
+            client_number: number;
+            /** Full Name */
+            full_name: string;
+            /** Phone */
+            phone: string | null;
+            /** Email */
+            email: string | null;
+            /** Preferences */
+            preferences: string;
+            /** Note */
+            note: string;
+            /** Version */
+            version: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Allowed Actions */
+            allowed_actions: components["schemas"]["ClientAction"][];
+        } & ({
+            phone: string;
+        } | {
+            email: string;
+        });
+        /**
+         * ClientAction
+         * @enum {string}
+         */
+        ClientAction: "update" | "create_request";
+        /**
+         * ClientBrief
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000002",
+         *       "client_number": 1,
+         *       "full_name": "Тестовый Клиент"
+         *     }
+         */
+        ClientBrief: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Client Number */
+            client_number: number;
+            /** Full Name */
+            full_name: string;
+        };
+        /**
+         * ClientCreate
+         * @example {
+         *       "full_name": "Тестовый Клиент",
+         *       "phone": "+79990000000",
+         *       "email": null,
+         *       "preferences": "Море",
+         *       "note": "Вымышленные данные",
+         *       "duplicate_acknowledged": false
+         *     }
+         */
+        ClientCreate: {
+            /** Phone */
+            phone: string | null;
+            /** Email */
+            email: string | null;
+            /** Full Name */
+            full_name: string;
+            /** Preferences */
+            preferences: string;
+            /** Note */
+            note: string;
+            /** Duplicate Acknowledged */
+            duplicate_acknowledged: boolean;
+        } & ({
+            phone: string;
+        } | {
+            email: string;
+        });
+        /**
+         * ClientPage
+         * @example {
+         *       "items": [
+         *         {
+         *           "id": "00000000-0000-4000-8000-000000000002",
+         *           "client_number": 1,
+         *           "full_name": "Тестовый Клиент",
+         *           "phone": "+79990000000",
+         *           "email": null,
+         *           "preferences": "Море",
+         *           "note": "Вымышленные данные",
+         *           "version": 1,
+         *           "created_at": "2026-11-15T09:00:00Z",
+         *           "updated_at": "2026-11-15T09:00:00Z",
+         *           "allowed_actions": [
+         *             "update",
+         *             "create_request"
+         *           ]
+         *         }
+         *       ],
+         *       "page": 1,
+         *       "page_size": 20,
+         *       "total": 1
+         *     }
+         */
+        ClientPage: {
+            /** Items */
+            items: components["schemas"]["Client"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /**
+         * ClientUpdate
+         * @example {
+         *       "full_name": "Тестовый Клиент",
+         *       "phone": "+79990000000",
+         *       "email": null,
+         *       "preferences": "Море",
+         *       "note": "Вымышленные данные",
+         *       "duplicate_acknowledged": false,
+         *       "version": 1
+         *     }
+         */
+        ClientUpdate: {
+            /** Phone */
+            phone: string | null;
+            /** Email */
+            email: string | null;
+            /** Full Name */
+            full_name: string;
+            /** Preferences */
+            preferences: string;
+            /** Note */
+            note: string;
+            /** Duplicate Acknowledged */
+            duplicate_acknowledged: boolean;
+            /** Version */
+            version: number;
+        } & ({
+            phone: string;
+        } | {
+            email: string;
+        });
+        /**
+         * Communication
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000011",
+         *       "client_id": "00000000-0000-4000-8000-000000000002",
+         *       "request_id": "00000000-0000-4000-8000-000000000004",
+         *       "author_id": "00000000-0000-4000-8000-000000000001",
+         *       "channel": "phone",
+         *       "text": "Клиент сообщил пожелания",
+         *       "occurred_at": "2026-11-15T09:00:00Z",
+         *       "created_at": "2026-11-15T09:00:00Z",
+         *       "author": {
+         *         "id": "00000000-0000-4000-8000-000000000001",
+         *         "full_name": "Тестовый Менеджер",
+         *         "role": "manager"
+         *       }
+         *     }
+         */
+        Communication: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Client Id
+             * Format: uuid
+             */
+            client_id: string;
+            /** Request Id */
+            request_id: string | null;
+            /**
+             * Author Id
+             * Format: uuid
+             */
+            author_id: string;
+            channel: components["schemas"]["CommunicationChannel"];
+            /** Text */
+            text: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            author: components["schemas"]["User"];
+        };
+        /**
+         * CommunicationChannel
+         * @enum {string}
+         */
+        CommunicationChannel: "phone" | "email" | "messenger" | "office" | "other";
+        /**
+         * CommunicationCreate
+         * @example {
+         *       "request_id": "00000000-0000-4000-8000-000000000001",
+         *       "channel": "phone",
+         *       "text": "Учебный пример",
+         *       "occurred_at": "2026-11-15T09:00:00Z"
+         *     }
+         */
+        CommunicationCreate: {
+            /** Request Id */
+            request_id: string | null;
+            channel: components["schemas"]["CommunicationChannel"];
+            /** Text */
+            text: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+        };
+        /**
+         * CommunicationPage
+         * @example {
+         *       "items": [
+         *         {
+         *           "id": "00000000-0000-4000-8000-000000000011",
+         *           "client_id": "00000000-0000-4000-8000-000000000002",
+         *           "request_id": "00000000-0000-4000-8000-000000000004",
+         *           "author_id": "00000000-0000-4000-8000-000000000001",
+         *           "channel": "phone",
+         *           "text": "Клиент сообщил пожелания",
+         *           "occurred_at": "2026-11-15T09:00:00Z",
+         *           "created_at": "2026-11-15T09:00:00Z",
+         *           "author": {
+         *             "id": "00000000-0000-4000-8000-000000000001",
+         *             "full_name": "Тестовый Менеджер",
+         *             "role": "manager"
+         *           }
+         *         }
+         *       ],
+         *       "page": 1,
+         *       "page_size": 20,
+         *       "total": 1
+         *     }
+         */
+        CommunicationPage: {
+            /** Items */
+            items: components["schemas"]["Communication"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /**
+         * ConfirmBooking
+         * @example {
+         *       "version": 1,
+         *       "supplier_booking_number": "Учебный пример"
+         *     }
+         */
+        ConfirmBooking: {
+            /** Version */
+            version: number;
+            /** Supplier Booking Number */
+            supplier_booking_number: string;
+        };
+        /**
+         * ConfirmCancellation
+         * @example {
+         *       "version": 1,
+         *       "supplier_response": "Учебный пример"
+         *     }
+         */
+        ConfirmCancellation: {
+            /** Version */
+            version: number;
+            /** Supplier Response */
+            supplier_response: string;
+        };
+        /**
+         * DuplicateCheckResult
+         * @example {
+         *       "matches": [
+         *         {
+         *           "id": "00000000-0000-4000-8000-000000000002",
+         *           "client_number": 1,
+         *           "full_name": "Тестовый Клиент"
+         *         }
+         *       ],
+         *       "requires_head_review": false
+         *     }
+         */
+        DuplicateCheckResult: {
+            /** Matches */
+            matches: components["schemas"]["ClientBrief"][];
+            /** Requires Head Review */
+            requires_head_review: boolean;
+        };
+        /**
+         * Error
+         * @example {
+         *       "code": "validation_error",
+         *       "message": "Проверьте данные",
+         *       "fields": [
+         *         {
+         *           "field": "tourist_count",
+         *           "message": "Число туристов должно быть больше нуля"
+         *         }
+         *       ]
+         *     }
+         */
+        Error: {
+            code: components["schemas"]["ErrorCode"];
+            /** Message */
+            message: string;
+            /** Fields */
+            fields: components["schemas"]["FieldError"][];
+        };
+        /**
+         * ErrorCode
+         * @enum {string}
+         */
+        ErrorCode: "validation_error" | "unauthorized" | "forbidden" | "not_found" | "conflict" | "version_conflict" | "invalid_transition" | "idempotency_conflict" | "duplicate_contacts" | "duplicate_requires_head_review" | "payment_limit_exceeded" | "refund_limit_exceeded" | "tourist_form_closed" | "rate_limited" | "server_error" | "not_implemented";
+        /**
+         * ExpectedVersion
+         * @example {
+         *       "version": 1
+         *     }
+         */
+        ExpectedVersion: {
+            /** Version */
+            version: number;
+        };
+        /**
+         * FieldError
+         * @example {
+         *       "field": "tourist_count",
+         *       "message": "Число туристов должно быть больше нуля"
+         *     }
+         */
+        FieldError: {
+            /** Field */
+            field: string;
+            /** Message */
+            message: string;
+        };
+        /**
+         * FinancialBooking
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000008",
+         *       "request_id": "00000000-0000-4000-8000-000000000004",
+         *       "status": "confirmed",
+         *       "total_amount": "100000.00",
+         *       "currency": "RUB",
+         *       "paid_amount": "30000.00",
+         *       "reserved_payment_amount": "20000.00",
+         *       "remaining_amount": "70000.00",
+         *       "refunded_amount": "0.00",
+         *       "can_open_request": false,
+         *       "confirmed_at": "2026-11-15T09:00:00Z",
+         *       "cancelled_at": null,
+         *       "created_at": "2026-11-15T09:00:00Z"
+         *     }
+         */
+        FinancialBooking: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            status: components["schemas"]["BookingStatus"];
+            /** Total Amount */
+            total_amount: string;
+            /**
+             * Currency
+             * @constant
+             */
+            currency: "RUB";
+            /** Paid Amount */
+            paid_amount: string;
+            /** Reserved Payment Amount */
+            reserved_payment_amount: string;
+            /** Remaining Amount */
+            remaining_amount: string;
+            /** Refunded Amount */
+            refunded_amount: string;
+            /** Can Open Request */
+            can_open_request: boolean;
+            /** Confirmed At */
+            confirmed_at: string | null;
+            /** Cancelled At */
+            cancelled_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /**
+         * FinancialBookingPage
+         * @example {
+         *       "items": [
+         *         {
+         *           "id": "00000000-0000-4000-8000-000000000008",
+         *           "request_id": "00000000-0000-4000-8000-000000000004",
+         *           "status": "confirmed",
+         *           "total_amount": "100000.00",
+         *           "currency": "RUB",
+         *           "paid_amount": "30000.00",
+         *           "reserved_payment_amount": "20000.00",
+         *           "remaining_amount": "70000.00",
+         *           "refunded_amount": "0.00",
+         *           "can_open_request": false,
+         *           "confirmed_at": "2026-11-15T09:00:00Z",
+         *           "cancelled_at": null,
+         *           "created_at": "2026-11-15T09:00:00Z"
+         *         }
+         *       ],
+         *       "page": 1,
+         *       "page_size": 20,
+         *       "total": 1
+         *     }
+         */
+        FinancialBookingPage: {
+            /** Items */
+            items: components["schemas"]["FinancialBooking"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /** Health */
+        Health: {
+            /**
+             * Status
+             * @constant
+             */
+            status: "ok";
+        };
+        /**
+         * LoginInput
+         * @example {
+         *       "email": "manager@example.test",
+         *       "password": "EXAMPLE_ONLY_NOT_A_REAL_PASSWORD"
+         *     }
+         */
+        LoginInput: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Password */
+            password: string;
+        };
+        /**
+         * Notification
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000012",
+         *       "recipient_id": "00000000-0000-4000-8000-000000000001",
+         *       "payment_id": "00000000-0000-4000-8000-000000000009",
+         *       "type": "payment_succeeded",
+         *       "read_at": null,
+         *       "created_at": "2026-11-15T09:00:00Z",
+         *       "request_id": "00000000-0000-4000-8000-000000000004",
+         *       "amount": "30000.00",
+         *       "currency": "RUB",
+         *       "can_open_request": true
+         *     }
+         */
+        Notification: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Recipient Id
+             * Format: uuid
+             */
+            recipient_id: string;
+            /**
+             * Payment Id
+             * Format: uuid
+             */
+            payment_id: string;
+            /**
+             * Type
+             * @constant
+             */
+            type: "payment_succeeded";
+            /** Read At */
+            read_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Request Id */
+            request_id: string | null;
+            /** Amount */
+            amount: string;
+            /**
+             * Currency
+             * @constant
+             */
+            currency: "RUB";
+            /** Can Open Request */
+            can_open_request: boolean;
+        };
+        /**
+         * NotificationPage
+         * @example {
+         *       "items": [
+         *         {
+         *           "id": "00000000-0000-4000-8000-000000000012",
+         *           "recipient_id": "00000000-0000-4000-8000-000000000001",
+         *           "payment_id": "00000000-0000-4000-8000-000000000009",
+         *           "type": "payment_succeeded",
+         *           "read_at": null,
+         *           "created_at": "2026-11-15T09:00:00Z",
+         *           "request_id": "00000000-0000-4000-8000-000000000004",
+         *           "amount": "30000.00",
+         *           "currency": "RUB",
+         *           "can_open_request": true
+         *         }
+         *       ],
+         *       "page": 1,
+         *       "page_size": 20,
+         *       "total": 1,
+         *       "unread_count": 1
+         *     }
+         */
+        NotificationPage: {
+            /** Items */
+            items: components["schemas"]["Notification"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+            /** Unread Count */
+            unread_count: number;
+        };
+        /**
+         * OfferSnapshot
+         * @example {
+         *       "title": "Учебный тур",
+         *       "destination": "Сочи",
+         *       "starts_on": "2027-06-01",
+         *       "ends_on": "2027-06-08",
+         *       "tourist_count": 2,
+         *       "supplier": "Тестовый поставщик",
+         *       "services": [
+         *         "Перелёт",
+         *         "Отель"
+         *       ],
+         *       "price": "100000.00",
+         *       "currency": "RUB"
+         *     }
+         */
+        OfferSnapshot: {
+            /** Title */
+            title: string;
+            /** Destination */
+            destination: string;
+            /**
+             * Starts On
+             * Format: date
+             */
+            starts_on: string;
+            /**
+             * Ends On
+             * Format: date
+             */
+            ends_on: string;
+            /** Tourist Count */
+            tourist_count: number;
+            /** Supplier */
+            supplier: string;
+            /** Services */
+            services: string[];
+            /** Price */
+            price: string;
+            /**
+             * Currency
+             * @constant
+             */
+            currency: "RUB";
+        };
+        /**
+         * Payment
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000009",
+         *       "booking_id": "00000000-0000-4000-8000-000000000008",
+         *       "amount": "30000.00",
+         *       "currency": "RUB",
+         *       "status": "succeeded",
+         *       "external_operation_id": "DEMO-PAY-1",
+         *       "payment_url": "http://localhost:8080/demo-payments/DEMO-PAY-1",
+         *       "failure_reason": null,
+         *       "succeeded_at": "2026-11-15T09:00:00Z",
+         *       "created_at": "2026-11-15T09:00:00Z",
+         *       "request_id": "00000000-0000-4000-8000-000000000004",
+         *       "booking_status": "confirmed",
+         *       "pending_reason": null,
+         *       "refunded_amount": "0.00",
+         *       "reserved_refund_amount": "0.00",
+         *       "available_refund_amount": "0.00",
+         *       "can_open_request": true,
+         *       "allowed_actions": []
+         *     }
+         */
+        Payment: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Booking Id
+             * Format: uuid
+             */
+            booking_id: string;
+            /** Amount */
+            amount: string;
+            /**
+             * Currency
+             * @constant
+             */
+            currency: "RUB";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "succeeded" | "failed";
+            /** External Operation Id */
+            external_operation_id: string | null;
+            /** Payment Url */
+            payment_url: string | null;
+            /** Failure Reason */
+            failure_reason: string | null;
+            /** Succeeded At */
+            succeeded_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            /**
+             * Booking Status
+             * @enum {string}
+             */
+            booking_status: "pending_confirmation" | "confirmed" | "rejected" | "cancellation_requested" | "cancelled";
+            /** Pending Reason */
+            pending_reason: string | null;
+            /** Refunded Amount */
+            refunded_amount: string;
+            /** Reserved Refund Amount */
+            reserved_refund_amount: string;
+            /** Available Refund Amount */
+            available_refund_amount: string;
+            /** Can Open Request */
+            can_open_request: boolean;
+            /** Allowed Actions */
+            allowed_actions: ("reconcile" | "create_refund")[];
+        };
+        /**
+         * PaymentCreate
+         * @example {
+         *       "version": 1,
+         *       "amount": "1.00",
+         *       "currency": "RUB"
+         *     }
+         */
+        PaymentCreate: {
+            /** Version */
+            version: number;
+            /** Amount */
+            amount: string;
+            /**
+             * Currency
+             * @constant
+             */
+            currency: "RUB";
+        };
+        /**
+         * PaymentPage
          * @example {
          *       "items": [
          *         {
@@ -2487,12 +2252,264 @@ export interface components {
          *     }
          */
         PaymentPage: {
+            /** Items */
             items: components["schemas"]["Payment"][];
+            /** Page */
             page: number;
+            /** Page Size */
             page_size: number;
+            /** Total */
             total: number;
         };
         /**
+         * PublicLink
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000013",
+         *       "purpose": "selection",
+         *       "url": "http://localhost:8080/public/selections/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+         *       "expires_at": "2026-11-22T09:00:00Z"
+         *     }
+         */
+        PublicLink: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Purpose
+             * @enum {string}
+             */
+            purpose: "selection" | "tourists";
+            /**
+             * Url
+             * Format: uri
+             */
+            url: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+        };
+        /**
+         * PublicLinkInfo
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000013",
+         *       "purpose": "selection",
+         *       "expires_at": "2026-11-22T09:00:00Z",
+         *       "is_active": true
+         *     }
+         */
+        PublicLinkInfo: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Purpose
+             * @enum {string}
+             */
+            purpose: "selection" | "tourists";
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Is Active */
+            is_active: boolean;
+        };
+        /**
+         * PublicSelection
+         * @example {
+         *       "items": [
+         *         {
+         *           "id": "00000000-0000-4000-8000-000000000005",
+         *           "offer_snapshot": {
+         *             "title": "Учебный тур",
+         *             "destination": "Сочи",
+         *             "starts_on": "2027-06-01",
+         *             "ends_on": "2027-06-08",
+         *             "tourist_count": 2,
+         *             "supplier": "Тестовый поставщик",
+         *             "services": [
+         *               "Перелёт",
+         *               "Отель"
+         *             ],
+         *             "price": "100000.00",
+         *             "currency": "RUB"
+         *           }
+         *         }
+         *       ],
+         *       "expires_at": "2026-11-22T09:00:00Z"
+         *     }
+         */
+        PublicSelection: {
+            /** Items */
+            items: components["schemas"]["PublicSelectionItem"][];
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+        };
+        /**
+         * PublicSelectionItem
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000005",
+         *       "offer_snapshot": {
+         *         "title": "Учебный тур",
+         *         "destination": "Сочи",
+         *         "starts_on": "2027-06-01",
+         *         "ends_on": "2027-06-08",
+         *         "tourist_count": 2,
+         *         "supplier": "Тестовый поставщик",
+         *         "services": [
+         *           "Перелёт",
+         *           "Отель"
+         *         ],
+         *         "price": "100000.00",
+         *         "currency": "RUB"
+         *       }
+         *     }
+         */
+        PublicSelectionItem: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            offer_snapshot: components["schemas"]["OfferSnapshot"];
+        };
+        /**
+         * PublicTouristForm
+         * @example {
+         *       "tourist_count": 2,
+         *       "request_version": 3,
+         *       "expires_at": "2026-11-22T09:00:00Z",
+         *       "is_editable": true,
+         *       "closed_reason": null
+         *     }
+         */
+        PublicTouristForm: {
+            /** Tourist Count */
+            tourist_count: number;
+            /** Request Version */
+            request_version: number;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Is Editable */
+            is_editable: boolean;
+            /** Closed Reason */
+            closed_reason: string | null;
+        };
+        /**
+         * ReasonCommand
+         * @example {
+         *       "version": 1,
+         *       "reason": "Учебный пример"
+         *     }
+         */
+        ReasonCommand: {
+            /** Version */
+            version: number;
+            /** Reason */
+            reason: string;
+        };
+        /**
+         * Refund
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000010",
+         *       "payment_id": "00000000-0000-4000-8000-000000000009",
+         *       "amount": "10000.00",
+         *       "currency": "RUB",
+         *       "status": "processing",
+         *       "external_operation_id": "DEMO-REFUND-1",
+         *       "failure_reason": null,
+         *       "succeeded_at": null,
+         *       "created_at": "2026-11-15T09:00:00Z",
+         *       "booking_id": "00000000-0000-4000-8000-000000000008",
+         *       "request_id": "00000000-0000-4000-8000-000000000004",
+         *       "pending_reason": null,
+         *       "can_open_request": true,
+         *       "allowed_actions": [
+         *         "reconcile"
+         *       ]
+         *     }
+         */
+        Refund: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Payment Id
+             * Format: uuid
+             */
+            payment_id: string;
+            /** Amount */
+            amount: string;
+            /**
+             * Currency
+             * @constant
+             */
+            currency: "RUB";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "processing" | "succeeded" | "failed";
+            /** External Operation Id */
+            external_operation_id: string | null;
+            /** Failure Reason */
+            failure_reason: string | null;
+            /** Succeeded At */
+            succeeded_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Booking Id
+             * Format: uuid
+             */
+            booking_id: string;
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            /** Pending Reason */
+            pending_reason: string | null;
+            /** Can Open Request */
+            can_open_request: boolean;
+            /** Allowed Actions */
+            allowed_actions: "reconcile"[];
+        };
+        /**
+         * RefundCreate
+         * @example {
+         *       "amount": "1.00",
+         *       "currency": "RUB"
+         *     }
+         */
+        RefundCreate: {
+            /** Amount */
+            amount: string;
+            /**
+             * Currency
+             * @constant
+             */
+            currency: "RUB";
+        };
+        /**
+         * RefundPage
          * @example {
          *       "items": [
          *         {
@@ -2520,27 +2537,505 @@ export interface components {
          *     }
          */
         RefundPage: {
+            /** Items */
             items: components["schemas"]["Refund"][];
+            /** Page */
             page: number;
+            /** Page Size */
             page_size: number;
+            /** Total */
             total: number;
         };
         /**
+         * Report
+         * @example {
+         *       "date_from": "2026-11-01",
+         *       "date_to": "2026-11-30",
+         *       "timezone": "Europe/Moscow",
+         *       "currency": "RUB",
+         *       "requests_created": 1,
+         *       "bookings_confirmed": 1,
+         *       "payments_succeeded_amount": "30000.00",
+         *       "refunds_succeeded_amount": "0.00"
+         *     }
+         */
+        Report: {
+            /**
+             * Date From
+             * Format: date
+             */
+            date_from: string;
+            /**
+             * Date To
+             * Format: date
+             */
+            date_to: string;
+            /**
+             * Timezone
+             * @default Europe/Moscow
+             * @constant
+             */
+            timezone: "Europe/Moscow";
+            /**
+             * Currency
+             * @default RUB
+             * @constant
+             */
+            currency: "RUB";
+            /** Requests Created */
+            requests_created: number;
+            /** Bookings Confirmed */
+            bookings_confirmed: number;
+            /** Payments Succeeded Amount */
+            payments_succeeded_amount: string;
+            /** Refunds Succeeded Amount */
+            refunds_succeeded_amount: string;
+        };
+        /**
+         * Request
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000004",
+         *       "client_id": "00000000-0000-4000-8000-000000000002",
+         *       "manager_id": "00000000-0000-4000-8000-000000000001",
+         *       "destination": "Сочи",
+         *       "starts_on": "2027-06-01",
+         *       "ends_on": "2027-06-08",
+         *       "tourist_count": 2,
+         *       "budget": "120000.00",
+         *       "wishes": "Море",
+         *       "status": "booked",
+         *       "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+         *       "completed_at": null,
+         *       "cancelled_at": null,
+         *       "version": 4,
+         *       "created_at": "2026-11-15T09:00:00Z",
+         *       "updated_at": "2026-11-15T09:00:00Z",
+         *       "client": {
+         *         "id": "00000000-0000-4000-8000-000000000002",
+         *         "client_number": 1,
+         *         "full_name": "Тестовый Клиент"
+         *       },
+         *       "manager": {
+         *         "id": "00000000-0000-4000-8000-000000000001",
+         *         "full_name": "Тестовый Менеджер",
+         *         "role": "manager"
+         *       },
+         *       "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+         *       "selected_offer": {
+         *         "title": "Учебный тур",
+         *         "destination": "Сочи",
+         *         "starts_on": "2027-06-01",
+         *         "ends_on": "2027-06-08",
+         *         "tourist_count": 2,
+         *         "supplier": "Тестовый поставщик",
+         *         "services": [
+         *           "Перелёт",
+         *           "Отель"
+         *         ],
+         *         "price": "100000.00",
+         *         "currency": "RUB"
+         *       },
+         *       "active_booking": {
+         *         "id": "00000000-0000-4000-8000-000000000008",
+         *         "status": "confirmed",
+         *         "total_amount": "100000.00",
+         *         "currency": "RUB",
+         *         "paid_amount": "30000.00",
+         *         "remaining_amount": "70000.00"
+         *       },
+         *       "tourists_received": 2,
+         *       "tourist_form_editable": false,
+         *       "tourist_link": null,
+         *       "cancellation_reason": null,
+         *       "allowed_actions": []
+         *     }
+         */
+        Request: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Client Id
+             * Format: uuid
+             */
+            client_id: string;
+            /**
+             * Manager Id
+             * Format: uuid
+             */
+            manager_id: string;
+            /** Destination */
+            destination: string;
+            /**
+             * Starts On
+             * Format: date
+             */
+            starts_on: string;
+            /**
+             * Ends On
+             * Format: date
+             */
+            ends_on: string;
+            /** Tourist Count */
+            tourist_count: number;
+            /** Budget */
+            budget: string;
+            /** Wishes */
+            wishes: string;
+            status: components["schemas"]["RequestStatus"];
+            /** Selected Selection Item Id */
+            selected_selection_item_id: string | null;
+            /** Completed At */
+            completed_at: string | null;
+            /** Cancelled At */
+            cancelled_at: string | null;
+            /** Version */
+            version: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            client: components["schemas"]["ClientBrief"];
+            manager: components["schemas"]["User"];
+            /** Selected Selection Id */
+            selected_selection_id: string | null;
+            selected_offer: components["schemas"]["OfferSnapshot"] | null;
+            active_booking: components["schemas"]["BookingSummary"] | null;
+            /** Tourists Received */
+            tourists_received: number;
+            /** Tourist Form Editable */
+            tourist_form_editable: boolean;
+            tourist_link: components["schemas"]["PublicLinkInfo"] | null;
+            /** Cancellation Reason */
+            cancellation_reason: string | null;
+            /** Allowed Actions */
+            allowed_actions: ("update" | "start_work" | "return_to_work" | "prepare_selection" | "select_tour" | "issue_tourist_link" | "edit_tourists" | "create_booking" | "reassign" | "cancel" | "complete" | "resume")[];
+        };
+        /**
+         * RequestCreate
+         * @example {
+         *       "client_id": "00000000-0000-4000-8000-000000000002",
+         *       "manager_id": null,
+         *       "destination": "Сочи",
+         *       "starts_on": "2027-06-01",
+         *       "ends_on": "2027-06-08",
+         *       "tourist_count": 2,
+         *       "budget": "120000.00",
+         *       "wishes": "Море"
+         *     }
+         */
+        RequestCreate: {
+            /** Destination */
+            destination: string;
+            /**
+             * Starts On
+             * Format: date
+             */
+            starts_on: string;
+            /**
+             * Ends On
+             * Format: date
+             */
+            ends_on: string;
+            /** Tourist Count */
+            tourist_count: number;
+            /** Budget */
+            budget: string;
+            /** Wishes */
+            wishes: string;
+            /**
+             * Client Id
+             * Format: uuid
+             */
+            client_id: string;
+            /** Manager Id */
+            manager_id: string | null;
+        };
+        /**
+         * RequestPage
          * @example {
          *       "items": [
          *         {
-         *           "id": "00000000-0000-4000-8000-000000000011",
+         *           "id": "00000000-0000-4000-8000-000000000004",
          *           "client_id": "00000000-0000-4000-8000-000000000002",
-         *           "request_id": "00000000-0000-4000-8000-000000000004",
-         *           "author_id": "00000000-0000-4000-8000-000000000001",
-         *           "channel": "phone",
-         *           "text": "Клиент сообщил пожелания",
-         *           "occurred_at": "2026-11-15T09:00:00Z",
+         *           "manager_id": "00000000-0000-4000-8000-000000000001",
+         *           "destination": "Сочи",
+         *           "starts_on": "2027-06-01",
+         *           "ends_on": "2027-06-08",
+         *           "tourist_count": 2,
+         *           "budget": "120000.00",
+         *           "wishes": "Море",
+         *           "status": "booked",
+         *           "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+         *           "completed_at": null,
+         *           "cancelled_at": null,
+         *           "version": 4,
          *           "created_at": "2026-11-15T09:00:00Z",
-         *           "author": {
+         *           "updated_at": "2026-11-15T09:00:00Z",
+         *           "client": {
+         *             "id": "00000000-0000-4000-8000-000000000002",
+         *             "client_number": 1,
+         *             "full_name": "Тестовый Клиент"
+         *           },
+         *           "manager": {
          *             "id": "00000000-0000-4000-8000-000000000001",
          *             "full_name": "Тестовый Менеджер",
          *             "role": "manager"
+         *           },
+         *           "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+         *           "selected_offer": {
+         *             "title": "Учебный тур",
+         *             "destination": "Сочи",
+         *             "starts_on": "2027-06-01",
+         *             "ends_on": "2027-06-08",
+         *             "tourist_count": 2,
+         *             "supplier": "Тестовый поставщик",
+         *             "services": [
+         *               "Перелёт",
+         *               "Отель"
+         *             ],
+         *             "price": "100000.00",
+         *             "currency": "RUB"
+         *           },
+         *           "active_booking": {
+         *             "id": "00000000-0000-4000-8000-000000000008",
+         *             "status": "confirmed",
+         *             "total_amount": "100000.00",
+         *             "currency": "RUB",
+         *             "paid_amount": "30000.00",
+         *             "remaining_amount": "70000.00"
+         *           },
+         *           "tourists_received": 2,
+         *           "tourist_form_editable": false,
+         *           "tourist_link": null,
+         *           "cancellation_reason": null,
+         *           "allowed_actions": []
+         *         }
+         *       ],
+         *       "page": 1,
+         *       "page_size": 20,
+         *       "total": 1
+         *     }
+         */
+        RequestPage: {
+            /** Items */
+            items: components["schemas"]["Request"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /**
+         * RequestStatus
+         * @enum {string}
+         */
+        RequestStatus: "new" | "in_progress" | "offer_prepared" | "booked" | "completed" | "cancelled";
+        /**
+         * RequestUpdate
+         * @example {
+         *       "version": 1,
+         *       "destination": "Сочи",
+         *       "starts_on": "2027-06-01",
+         *       "ends_on": "2027-06-08",
+         *       "tourist_count": 2,
+         *       "budget": "120000.00",
+         *       "wishes": "Море"
+         *     }
+         */
+        RequestUpdate: {
+            /** Version */
+            version: number;
+            /** Destination */
+            destination: string;
+            /**
+             * Starts On
+             * Format: date
+             */
+            starts_on: string;
+            /**
+             * Ends On
+             * Format: date
+             */
+            ends_on: string;
+            /** Tourist Count */
+            tourist_count: number;
+            /** Budget */
+            budget: string;
+            /** Wishes */
+            wishes: string;
+        };
+        /**
+         * Role
+         * @enum {string}
+         */
+        Role: "manager" | "head" | "accountant";
+        /**
+         * SelectTour
+         * @example {
+         *       "version": 1,
+         *       "selection_item_id": "00000000-0000-4000-8000-000000000001"
+         *     }
+         */
+        SelectTour: {
+            /** Version */
+            version: number;
+            /**
+             * Selection Item Id
+             * Format: uuid
+             */
+            selection_item_id: string;
+        };
+        /**
+         * Selection
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000006",
+         *       "request_id": "00000000-0000-4000-8000-000000000004",
+         *       "items": [
+         *         {
+         *           "id": "00000000-0000-4000-8000-000000000005",
+         *           "tour_offer_id": "00000000-0000-4000-8000-000000000003",
+         *           "position": 0,
+         *           "offer_snapshot": {
+         *             "title": "Учебный тур",
+         *             "destination": "Сочи",
+         *             "starts_on": "2027-06-01",
+         *             "ends_on": "2027-06-08",
+         *             "tourist_count": 2,
+         *             "supplier": "Тестовый поставщик",
+         *             "services": [
+         *               "Перелёт",
+         *               "Отель"
+         *             ],
+         *             "price": "100000.00",
+         *             "currency": "RUB"
+         *           }
+         *         }
+         *       ],
+         *       "created_at": "2026-11-15T09:00:00Z",
+         *       "public_link": {
+         *         "id": "00000000-0000-4000-8000-000000000013",
+         *         "purpose": "selection",
+         *         "expires_at": "2026-11-22T09:00:00Z",
+         *         "is_active": true
+         *       }
+         *     }
+         */
+        Selection: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            /** Items */
+            items: components["schemas"]["SelectionItem"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            public_link: components["schemas"]["PublicLinkInfo"] | null;
+        };
+        /**
+         * SelectionCreate
+         * @example {
+         *       "version": 1,
+         *       "tour_offer_ids": [
+         *         "00000000-0000-4000-8000-000000000001"
+         *       ]
+         *     }
+         */
+        SelectionCreate: {
+            /** Version */
+            version: number;
+            /** Tour Offer Ids */
+            tour_offer_ids: string[];
+        };
+        /**
+         * SelectionItem
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000005",
+         *       "tour_offer_id": "00000000-0000-4000-8000-000000000003",
+         *       "position": 0,
+         *       "offer_snapshot": {
+         *         "title": "Учебный тур",
+         *         "destination": "Сочи",
+         *         "starts_on": "2027-06-01",
+         *         "ends_on": "2027-06-08",
+         *         "tourist_count": 2,
+         *         "supplier": "Тестовый поставщик",
+         *         "services": [
+         *           "Перелёт",
+         *           "Отель"
+         *         ],
+         *         "price": "100000.00",
+         *         "currency": "RUB"
+         *       }
+         *     }
+         */
+        SelectionItem: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Tour Offer Id
+             * Format: uuid
+             */
+            tour_offer_id: string;
+            /** Position */
+            position: number;
+            offer_snapshot: components["schemas"]["OfferSnapshot"];
+        };
+        /**
+         * SelectionPage
+         * @example {
+         *       "items": [
+         *         {
+         *           "id": "00000000-0000-4000-8000-000000000006",
+         *           "request_id": "00000000-0000-4000-8000-000000000004",
+         *           "items": [
+         *             {
+         *               "id": "00000000-0000-4000-8000-000000000005",
+         *               "tour_offer_id": "00000000-0000-4000-8000-000000000003",
+         *               "position": 0,
+         *               "offer_snapshot": {
+         *                 "title": "Учебный тур",
+         *                 "destination": "Сочи",
+         *                 "starts_on": "2027-06-01",
+         *                 "ends_on": "2027-06-08",
+         *                 "tourist_count": 2,
+         *                 "supplier": "Тестовый поставщик",
+         *                 "services": [
+         *                   "Перелёт",
+         *                   "Отель"
+         *                 ],
+         *                 "price": "100000.00",
+         *                 "currency": "RUB"
+         *               }
+         *             }
+         *           ],
+         *           "created_at": "2026-11-15T09:00:00Z",
+         *           "public_link": {
+         *             "id": "00000000-0000-4000-8000-000000000013",
+         *             "purpose": "selection",
+         *             "expires_at": "2026-11-22T09:00:00Z",
+         *             "is_active": true
          *           }
          *         }
          *       ],
@@ -2549,31 +3044,94 @@ export interface components {
          *       "total": 1
          *     }
          */
-        CommunicationPage: {
-            items: components["schemas"]["Communication"][];
+        SelectionPage: {
+            /** Items */
+            items: components["schemas"]["Selection"][];
+            /** Page */
             page: number;
+            /** Page Size */
             page_size: number;
+            /** Total */
             total: number;
         };
         /**
+         * TourOffer
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000003",
+         *       "title": "Учебный тур",
+         *       "destination": "Сочи",
+         *       "starts_on": "2027-06-01",
+         *       "ends_on": "2027-06-08",
+         *       "tourist_count": 2,
+         *       "supplier": "Тестовый поставщик",
+         *       "services": [
+         *         "Перелёт",
+         *         "Отель"
+         *       ],
+         *       "price": "100000.00",
+         *       "currency": "RUB",
+         *       "is_active": true,
+         *       "version": 1
+         *     }
+         */
+        TourOffer: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /** Destination */
+            destination: string;
+            /**
+             * Starts On
+             * Format: date
+             */
+            starts_on: string;
+            /**
+             * Ends On
+             * Format: date
+             */
+            ends_on: string;
+            /** Tourist Count */
+            tourist_count: number;
+            /** Supplier */
+            supplier: string;
+            /** Services */
+            services: string[];
+            /** Price */
+            price: string;
+            /**
+             * Currency
+             * @constant
+             */
+            currency: "RUB";
+            /** Is Active */
+            is_active: boolean;
+            /** Version */
+            version: number;
+        };
+        /**
+         * TourOfferPage
          * @example {
          *       "items": [
          *         {
-         *           "id": "00000000-0000-4000-8000-000000000015",
-         *           "request_id": "00000000-0000-4000-8000-000000000004",
-         *           "entity_id": "00000000-0000-4000-8000-000000000009",
-         *           "entity_type": "payment",
-         *           "actor": null,
-         *           "source": "payment_service",
-         *           "action": "payment_succeeded",
-         *           "changes": [
-         *             {
-         *               "field": "payment_status",
-         *               "old_value": "pending",
-         *               "new_value": "succeeded"
-         *             }
+         *           "id": "00000000-0000-4000-8000-000000000003",
+         *           "title": "Учебный тур",
+         *           "destination": "Сочи",
+         *           "starts_on": "2027-06-01",
+         *           "ends_on": "2027-06-08",
+         *           "tourist_count": 2,
+         *           "supplier": "Тестовый поставщик",
+         *           "services": [
+         *             "Перелёт",
+         *             "Отель"
          *           ],
-         *           "created_at": "2026-11-15T09:00:00Z"
+         *           "price": "100000.00",
+         *           "currency": "RUB",
+         *           "is_active": true,
+         *           "version": 1
          *         }
          *       ],
          *       "page": 1,
@@ -2581,29 +3139,187 @@ export interface components {
          *       "total": 1
          *     }
          */
-        AuditRecordPage: {
-            items: components["schemas"]["AuditRecord"][];
+        TourOfferPage: {
+            /** Items */
+            items: components["schemas"]["TourOffer"][];
+            /** Page */
             page: number;
+            /** Page Size */
             page_size: number;
+            /** Total */
             total: number;
         };
         /**
+         * Tourist
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000007",
+         *       "request_id": "00000000-0000-4000-8000-000000000004",
+         *       "full_name": "Тестовый Турист",
+         *       "birth_date": "1995-05-20",
+         *       "document_type": "passport",
+         *       "document_number": "TEST-000001",
+         *       "document_expires_on": null,
+         *       "version": 1
+         *     }
+         */
+        Tourist: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            /** Full Name */
+            full_name: string;
+            /**
+             * Birth Date
+             * Format: date
+             */
+            birth_date: string;
+            /**
+             * Document Type
+             * @enum {string}
+             */
+            document_type: "passport" | "international_passport";
+            /** Document Number */
+            document_number: string;
+            /** Document Expires On */
+            document_expires_on: string | null;
+            /** Version */
+            version: number;
+        };
+        /**
+         * TouristSnapshot
+         * @example {
+         *       "full_name": "Тестовый Турист",
+         *       "birth_date": "1995-05-20",
+         *       "document_type": "passport",
+         *       "document_number": "TEST-000001",
+         *       "document_expires_on": null
+         *     }
+         */
+        TouristSnapshot: {
+            /** Full Name */
+            full_name: string;
+            /**
+             * Birth Date
+             * Format: date
+             */
+            birth_date: string;
+            /**
+             * Document Type
+             * @enum {string}
+             */
+            document_type: "passport" | "international_passport";
+            /** Document Number */
+            document_number: string;
+            /** Document Expires On */
+            document_expires_on: string | null;
+        };
+        /**
+         * TouristSubmission
+         * @example {
+         *       "request_version": 3,
+         *       "tourists": [
+         *         {
+         *           "id": null,
+         *           "full_name": "Тестовый Турист",
+         *           "birth_date": "1995-05-20",
+         *           "document_type": "passport",
+         *           "document_number": "TEST-000001",
+         *           "document_expires_on": null
+         *         },
+         *         {
+         *           "id": null,
+         *           "full_name": "Второй Тестовый Турист",
+         *           "birth_date": "1995-05-20",
+         *           "document_type": "passport",
+         *           "document_number": "TEST-000002",
+         *           "document_expires_on": null
+         *         }
+         *       ]
+         *     }
+         */
+        TouristSubmission: {
+            /** Request Version */
+            request_version: number;
+            /** Tourists */
+            tourists: components["schemas"]["TouristSubmissionItem"][];
+        };
+        /**
+         * TouristSubmissionItem
+         * @example {
+         *       "id": null,
+         *       "full_name": "Тестовый Турист",
+         *       "birth_date": "1995-05-20",
+         *       "document_type": "passport",
+         *       "document_number": "TEST-000001",
+         *       "document_expires_on": null
+         *     }
+         */
+        TouristSubmissionItem: {
+            /** Full Name */
+            full_name: string;
+            /**
+             * Birth Date
+             * Format: date
+             */
+            birth_date: string;
+            /**
+             * Document Type
+             * @enum {string}
+             */
+            document_type: "passport" | "international_passport";
+            /** Document Number */
+            document_number: string;
+            /** Document Expires On */
+            document_expires_on: string | null;
+            /** Id */
+            id: string | null;
+        };
+        /**
+         * TouristSubmissionResult
+         * @example {
+         *       "accepted_count": 2,
+         *       "request_version": 4
+         *     }
+         */
+        TouristSubmissionResult: {
+            /** Accepted Count */
+            accepted_count: number;
+            /** Request Version */
+            request_version: number;
+        };
+        /**
+         * UserDto
+         * @example {
+         *       "id": "00000000-0000-4000-8000-000000000001",
+         *       "full_name": "Тестовый Менеджер",
+         *       "role": "manager"
+         *     }
+         */
+        User: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Full Name */
+            full_name: string;
+            role: components["schemas"]["Role"];
+        };
+        /**
+         * UserPage
          * @example {
          *       "items": [
          *         {
-         *           "id": "00000000-0000-4000-8000-000000000008",
-         *           "request_id": "00000000-0000-4000-8000-000000000004",
-         *           "status": "confirmed",
-         *           "total_amount": "100000.00",
-         *           "currency": "RUB",
-         *           "paid_amount": "30000.00",
-         *           "reserved_payment_amount": "20000.00",
-         *           "remaining_amount": "70000.00",
-         *           "refunded_amount": "0.00",
-         *           "can_open_request": false,
-         *           "confirmed_at": "2026-11-15T09:00:00Z",
-         *           "cancelled_at": null,
-         *           "created_at": "2026-11-15T09:00:00Z"
+         *           "id": "00000000-0000-4000-8000-000000000001",
+         *           "full_name": "Тестовый Менеджер",
+         *           "role": "manager"
          *         }
          *       ],
          *       "page": 1,
@@ -2611,201 +3327,100 @@ export interface components {
          *       "total": 1
          *     }
          */
-        FinancialBookingPage: {
-            items: components["schemas"]["FinancialBooking"][];
+        UserPage: {
+            /** Items */
+            items: components["schemas"]["User"][];
+            /** Page */
             page: number;
+            /** Page Size */
             page_size: number;
+            /** Total */
             total: number;
         };
         /**
+         * UserProfileDto
+         * @description Личный профиль текущего сотрудника; расширенные поля не входят в User списка ответственных и бизнес-карточек.
          * @example {
-         *       "items": [
-         *         {
-         *           "id": "00000000-0000-4000-8000-000000000012",
-         *           "recipient_id": "00000000-0000-4000-8000-000000000001",
-         *           "payment_id": "00000000-0000-4000-8000-000000000009",
-         *           "type": "payment_succeeded",
-         *           "read_at": null,
-         *           "created_at": "2026-11-15T09:00:00Z",
-         *           "request_id": "00000000-0000-4000-8000-000000000004",
-         *           "amount": "30000.00",
-         *           "currency": "RUB",
-         *           "can_open_request": true
-         *         }
-         *       ],
-         *       "page": 1,
-         *       "page_size": 20,
-         *       "total": 1,
-         *       "unread_count": 1
+         *       "id": "00000000-0000-4000-8000-000000000001",
+         *       "full_name": "Тестовый Менеджер",
+         *       "role": "manager",
+         *       "email": "manager@example.com",
+         *       "department": "Учебный отдел продаж",
+         *       "position": "Менеджер по туризму",
+         *       "work_phone": "+7 000 000-00-01"
          *     }
          */
-        NotificationPage: {
-            items: components["schemas"]["Notification"][];
-            page: number;
-            page_size: number;
-            total: number;
-            unread_count: number;
+        UserProfile: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Full Name */
+            full_name: string;
+            role: components["schemas"]["Role"];
+            /** Email */
+            email: string;
+            /** Department */
+            department: string | null;
+            /** Position */
+            position: string | null;
+            /** Work Phone */
+            work_phone: string | null;
         };
+        /**
+         * Id
+         * Format: uuid
+         */
+        Id: string;
+        /**
+         * Amount
+         * @description RUB, decimal string; numeric(14,2), never float.
+         */
+        Money: string;
+        /** Amount */
+        PositiveMoney: string;
+        /**
+         * Starts On
+         * Format: date
+         */
+        Date: string;
+        /**
+         * Created At
+         * Format: date-time
+         */
+        Timestamp: string;
         /** @enum {string} */
-        ErrorCode: "validation_error" | "unauthorized" | "forbidden" | "not_found" | "conflict" | "version_conflict" | "invalid_transition" | "idempotency_conflict" | "duplicate_contacts" | "duplicate_requires_head_review" | "payment_limit_exceeded" | "refund_limit_exceeded" | "tourist_form_closed" | "rate_limited" | "server_error" | "not_implemented";
+        RequestAction: "update" | "start_work" | "return_to_work" | "prepare_selection" | "select_tour" | "issue_tourist_link" | "edit_tourists" | "create_booking" | "reassign" | "cancel" | "complete" | "resume";
+        /** @enum {string} */
+        BookingAction: "confirm" | "reject" | "request_cancellation" | "confirm_cancellation" | "reject_cancellation" | "create_payment";
+        /** @enum {string} */
+        PaymentAction: "reconcile" | "create_refund";
+        /** @constant */
+        RefundAction: "reconcile";
+        /**
+         * Status
+         * @enum {string}
+         */
+        PaymentStatus: "pending" | "succeeded" | "failed";
+        /**
+         * Status
+         * @enum {string}
+         */
+        RefundStatus: "processing" | "succeeded" | "failed";
+        /**
+         * Document Type
+         * @enum {string}
+         */
+        DocumentType: "passport" | "international_passport";
+        /**
+         * Purpose
+         * @enum {string}
+         */
+        PublicLinkPurpose: "selection" | "tourists";
     };
-    responses: {
-        /** @description Необходим вход или обновление access-токена */
-        Error401: {
-            headers: {
-                /** @description Bearer */
-                "WWW-Authenticate"?: string;
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "code": "unauthorized",
-                 *       "message": "Необходим вход или обновление access-токена",
-                 *       "fields": []
-                 *     }
-                 */
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description Роль или фильтр недоступны сотруднику */
-        Error403: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "code": "forbidden",
-                 *       "message": "Роль или фильтр недоступны сотруднику",
-                 *       "fields": []
-                 *     }
-                 */
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description Ресурс не найден, недоступен или публичная ссылка недействительна */
-        Error404: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "code": "not_found",
-                 *       "message": "Ресурс не найден, недоступен или публичная ссылка недействительна",
-                 *       "fields": []
-                 *     }
-                 */
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description Конфликт версии, перехода, ключа повтора, дублей или финансового остатка */
-        Error409: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "code": "conflict",
-                 *       "message": "Конфликт версии, перехода, ключа повтора, дублей или финансового остатка",
-                 *       "fields": []
-                 *     }
-                 */
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description Некорректные поля тела или параметры запроса */
-        Error422: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "code": "validation_error",
-                 *       "message": "Проверьте данные",
-                 *       "fields": [
-                 *         {
-                 *           "field": "tourists.0.birth_date",
-                 *           "message": "Дата рождения не может быть в будущем"
-                 *         }
-                 *       ]
-                 *     }
-                 */
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description Слишком много запросов */
-        Error429: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "code": "rate_limited",
-                 *       "message": "Слишком много запросов",
-                 *       "fields": []
-                 *     }
-                 */
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description Внутренняя ошибка сервера */
-        Error500: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "code": "server_error",
-                 *       "message": "Внутренняя ошибка сервера",
-                 *       "fields": []
-                 *     }
-                 */
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description Эндпоинт ещё не реализован в текущей сборке */
-        Error501: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "code": "not_implemented",
-                 *       "message": "Эндпоинт ещё не реализован в текущей сборке",
-                 *       "fields": []
-                 *     }
-                 */
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description База данных или сервис недоступны */
-        Error503: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "code": "server_error",
-                 *       "message": "База данных или сервис недоступны",
-                 *       "fields": []
-                 *     }
-                 */
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-    };
-    parameters: {
-        /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-        IdempotencyKey: string;
-    };
+    responses: never;
+    parameters: never;
     requestBodies: never;
     headers: never;
     pathItems: never;
@@ -2852,15 +3467,62 @@ export interface operations {
                     "application/json": components["schemas"]["AuthResult"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     refresh_session: {
@@ -2893,15 +3555,62 @@ export interface operations {
                     "application/json": components["schemas"]["AuthResult"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     logout: {
@@ -2922,14 +3631,62 @@ export interface operations {
                 };
                 content?: never;
             };
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     get_current_user: {
@@ -2961,70 +3718,69 @@ export interface operations {
                     "application/json": components["schemas"]["UserProfile"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
-        };
-    };
-    list_assignees: {
-        parameters: {
-            query?: {
-                /** @description Номер страницы с 1 */
-                page?: number;
-                /** @description Размер страницы */
-                page_size?: number;
-                /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
-                sort?: "full_name";
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
             };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Сотрудники для назначения ответственным */
-            200: {
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "items": [
-                     *         {
-                     *           "id": "00000000-0000-4000-8000-000000000001",
-                     *           "full_name": "Тестовый Менеджер",
-                     *           "role": "manager"
-                     *         }
-                     *       ],
-                     *       "page": 1,
-                     *       "page_size": 20,
-                     *       "total": 1
-                     *     }
-                     */
-                    "application/json": components["schemas"]["UserPage"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     list_clients: {
         parameters: {
             query?: {
                 /** @description Поиск по части имени, нормализованному телефону или email */
-                q?: string;
+                q?: string | null;
                 /** @description Номер страницы с 1 */
                 page?: number;
                 /** @description Размер страницы */
@@ -3072,22 +3828,87 @@ export interface operations {
                     "application/json": components["schemas"]["ClientPage"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     create_client: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path?: never;
             cookie?: never;
@@ -3135,26 +3956,91 @@ export interface operations {
                     "application/json": components["schemas"]["Client"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     check_duplicate_clients: {
         parameters: {
             query?: {
                 /** @description Телефон; нужен phone либо email */
-                phone?: string;
+                phone?: string | null;
                 /** @description Email; нужен phone либо email */
-                email?: string;
+                email?: string | null;
                 /** @description Своя карточка, исключаемая при редактировании */
-                exclude_client_id?: components["schemas"]["Id"];
+                exclude_client_id?: string | null;
             };
             header?: never;
             path?: never;
@@ -3183,14 +4069,80 @@ export interface operations {
                     "application/json": components["schemas"]["DuplicateCheckResult"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     get_client: {
@@ -3198,7 +4150,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                client_id: components["schemas"]["Id"];
+                client_id: string;
             };
             cookie?: never;
         };
@@ -3231,25 +4183,90 @@ export interface operations {
                     "application/json": components["schemas"]["Client"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     update_client: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path: {
-                client_id: components["schemas"]["Id"];
+                client_id: string;
             };
             cookie?: never;
         };
@@ -3297,30 +4314,192 @@ export interface operations {
                     "application/json": components["schemas"]["Client"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    list_assignees: {
+        parameters: {
+            query?: {
+                /** @description Номер страницы с 1 */
+                page?: number;
+                /** @description Размер страницы */
+                page_size?: number;
+                /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
+                sort?: "full_name";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Сотрудники для назначения ответственным */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": "00000000-0000-4000-8000-000000000001",
+                     *           "full_name": "Тестовый Менеджер",
+                     *           "role": "manager"
+                     *         }
+                     *       ],
+                     *       "page": 1,
+                     *       "page_size": 20,
+                     *       "total": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["UserPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     list_requests: {
         parameters: {
             query?: {
-                /** @description Статус заявки */
-                status?: components["schemas"]["RequestStatus"];
-                /** @description Ответственный; менеджер может указать только себя */
-                manager_id?: components["schemas"]["Id"];
-                /** @description Заявки доступного клиента */
-                client_id?: components["schemas"]["Id"];
                 /** @description Номер страницы с 1 */
                 page?: number;
                 /** @description Размер страницы */
                 page_size?: number;
+                /** @description Статус заявки */
+                status?: components["schemas"]["RequestStatus"] | null;
+                /** @description Ответственный; менеджер может указать только себя */
+                manager_id?: string | null;
+                /** @description Заявки доступного клиента */
+                client_id?: string | null;
                 /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
                 sort?: "-created_at" | "created_at" | "starts_on";
             };
@@ -3404,22 +4583,87 @@ export interface operations {
                     "application/json": components["schemas"]["RequestPage"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     create_request: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path?: never;
             cookie?: never;
@@ -3509,15 +4753,80 @@ export interface operations {
                     "application/json": components["schemas"]["Request"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     get_request: {
@@ -3525,7 +4834,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                request_id: components["schemas"]["Id"];
+                request_id: string;
             };
             cookie?: never;
         };
@@ -3598,25 +4907,90 @@ export interface operations {
                     "application/json": components["schemas"]["Request"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     update_request: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path: {
-                request_id: components["schemas"]["Id"];
+                request_id: string;
             };
             cookie?: never;
         };
@@ -3704,26 +5078,90 @@ export interface operations {
                     "application/json": components["schemas"]["Request"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     assign_request: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path: {
-                request_id: components["schemas"]["Id"];
+                request_id: string;
             };
             cookie?: never;
         };
@@ -3806,26 +5244,90 @@ export interface operations {
                     "application/json": components["schemas"]["Request"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     start_work_request: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path: {
-                request_id: components["schemas"]["Id"];
+                request_id: string;
             };
             cookie?: never;
         };
@@ -3907,127 +5409,90 @@ export interface operations {
                     "application/json": components["schemas"]["Request"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
-        };
-    };
-    return_to_work_request: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
             };
-            path: {
-                request_id: components["schemas"]["Id"];
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                /**
-                 * @example {
-                 *       "version": 1
-                 *     }
-                 */
-                "application/json": components["schemas"]["ExpectedVersion"];
-            };
-        };
-        responses: {
-            /** @description Действие заявки: return-to-work */
-            200: {
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "id": "00000000-0000-4000-8000-000000000004",
-                     *       "client_id": "00000000-0000-4000-8000-000000000002",
-                     *       "manager_id": "00000000-0000-4000-8000-000000000001",
-                     *       "destination": "Сочи",
-                     *       "starts_on": "2027-06-01",
-                     *       "ends_on": "2027-06-08",
-                     *       "tourist_count": 2,
-                     *       "budget": "120000.00",
-                     *       "wishes": "Море",
-                     *       "status": "booked",
-                     *       "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
-                     *       "completed_at": null,
-                     *       "cancelled_at": null,
-                     *       "version": 4,
-                     *       "created_at": "2026-11-15T09:00:00Z",
-                     *       "updated_at": "2026-11-15T09:00:00Z",
-                     *       "client": {
-                     *         "id": "00000000-0000-4000-8000-000000000002",
-                     *         "client_number": 1,
-                     *         "full_name": "Тестовый Клиент"
-                     *       },
-                     *       "manager": {
-                     *         "id": "00000000-0000-4000-8000-000000000001",
-                     *         "full_name": "Тестовый Менеджер",
-                     *         "role": "manager"
-                     *       },
-                     *       "selected_selection_id": "00000000-0000-4000-8000-000000000006",
-                     *       "selected_offer": {
-                     *         "title": "Учебный тур",
-                     *         "destination": "Сочи",
-                     *         "starts_on": "2027-06-01",
-                     *         "ends_on": "2027-06-08",
-                     *         "tourist_count": 2,
-                     *         "supplier": "Тестовый поставщик",
-                     *         "services": [
-                     *           "Перелёт",
-                     *           "Отель"
-                     *         ],
-                     *         "price": "100000.00",
-                     *         "currency": "RUB"
-                     *       },
-                     *       "active_booking": {
-                     *         "id": "00000000-0000-4000-8000-000000000008",
-                     *         "status": "confirmed",
-                     *         "total_amount": "100000.00",
-                     *         "currency": "RUB",
-                     *         "paid_amount": "30000.00",
-                     *         "remaining_amount": "70000.00"
-                     *       },
-                     *       "tourists_received": 2,
-                     *       "tourist_form_editable": false,
-                     *       "tourist_link": null,
-                     *       "cancellation_reason": null,
-                     *       "allowed_actions": []
-                     *     }
-                     */
-                    "application/json": components["schemas"]["Request"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     cancel_request: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path: {
-                request_id: components["schemas"]["Id"];
+                request_id: string;
             };
             cookie?: never;
         };
@@ -4110,127 +5575,90 @@ export interface operations {
                     "application/json": components["schemas"]["Request"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
-        };
-    };
-    complete_request: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
             };
-            path: {
-                request_id: components["schemas"]["Id"];
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                /**
-                 * @example {
-                 *       "version": 1
-                 *     }
-                 */
-                "application/json": components["schemas"]["ExpectedVersion"];
-            };
-        };
-        responses: {
-            /** @description Действие заявки: complete */
-            200: {
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "id": "00000000-0000-4000-8000-000000000004",
-                     *       "client_id": "00000000-0000-4000-8000-000000000002",
-                     *       "manager_id": "00000000-0000-4000-8000-000000000001",
-                     *       "destination": "Сочи",
-                     *       "starts_on": "2027-06-01",
-                     *       "ends_on": "2027-06-08",
-                     *       "tourist_count": 2,
-                     *       "budget": "120000.00",
-                     *       "wishes": "Море",
-                     *       "status": "completed",
-                     *       "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
-                     *       "completed_at": "2027-06-09T09:00:00Z",
-                     *       "cancelled_at": null,
-                     *       "version": 4,
-                     *       "created_at": "2026-11-15T09:00:00Z",
-                     *       "updated_at": "2027-06-09T09:00:00Z",
-                     *       "client": {
-                     *         "id": "00000000-0000-4000-8000-000000000002",
-                     *         "client_number": 1,
-                     *         "full_name": "Тестовый Клиент"
-                     *       },
-                     *       "manager": {
-                     *         "id": "00000000-0000-4000-8000-000000000001",
-                     *         "full_name": "Тестовый Менеджер",
-                     *         "role": "manager"
-                     *       },
-                     *       "selected_selection_id": "00000000-0000-4000-8000-000000000006",
-                     *       "selected_offer": {
-                     *         "title": "Учебный тур",
-                     *         "destination": "Сочи",
-                     *         "starts_on": "2027-06-01",
-                     *         "ends_on": "2027-06-08",
-                     *         "tourist_count": 2,
-                     *         "supplier": "Тестовый поставщик",
-                     *         "services": [
-                     *           "Перелёт",
-                     *           "Отель"
-                     *         ],
-                     *         "price": "100000.00",
-                     *         "currency": "RUB"
-                     *       },
-                     *       "active_booking": {
-                     *         "id": "00000000-0000-4000-8000-000000000008",
-                     *         "status": "confirmed",
-                     *         "total_amount": "100000.00",
-                     *         "currency": "RUB",
-                     *         "paid_amount": "100000.00",
-                     *         "remaining_amount": "0.00"
-                     *       },
-                     *       "tourists_received": 2,
-                     *       "tourist_form_editable": false,
-                     *       "tourist_link": null,
-                     *       "cancellation_reason": null,
-                     *       "allowed_actions": []
-                     *     }
-                     */
-                    "application/json": components["schemas"]["Request"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     resume_request: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path: {
-                request_id: components["schemas"]["Id"];
+                request_id: string;
             };
             cookie?: never;
         };
@@ -4312,26 +5740,1675 @@ export interface operations {
                     "application/json": components["schemas"]["Request"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    return_to_work_request: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "version": 1
+                 *     }
+                 */
+                "application/json": components["schemas"]["ExpectedVersion"];
+            };
+        };
+        responses: {
+            /** @description Действие заявки: return-to-work */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "00000000-0000-4000-8000-000000000004",
+                     *       "client_id": "00000000-0000-4000-8000-000000000002",
+                     *       "manager_id": "00000000-0000-4000-8000-000000000001",
+                     *       "destination": "Сочи",
+                     *       "starts_on": "2027-06-01",
+                     *       "ends_on": "2027-06-08",
+                     *       "tourist_count": 2,
+                     *       "budget": "120000.00",
+                     *       "wishes": "Море",
+                     *       "status": "booked",
+                     *       "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+                     *       "completed_at": null,
+                     *       "cancelled_at": null,
+                     *       "version": 4,
+                     *       "created_at": "2026-11-15T09:00:00Z",
+                     *       "updated_at": "2026-11-15T09:00:00Z",
+                     *       "client": {
+                     *         "id": "00000000-0000-4000-8000-000000000002",
+                     *         "client_number": 1,
+                     *         "full_name": "Тестовый Клиент"
+                     *       },
+                     *       "manager": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "full_name": "Тестовый Менеджер",
+                     *         "role": "manager"
+                     *       },
+                     *       "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+                     *       "selected_offer": {
+                     *         "title": "Учебный тур",
+                     *         "destination": "Сочи",
+                     *         "starts_on": "2027-06-01",
+                     *         "ends_on": "2027-06-08",
+                     *         "tourist_count": 2,
+                     *         "supplier": "Тестовый поставщик",
+                     *         "services": [
+                     *           "Перелёт",
+                     *           "Отель"
+                     *         ],
+                     *         "price": "100000.00",
+                     *         "currency": "RUB"
+                     *       },
+                     *       "active_booking": {
+                     *         "id": "00000000-0000-4000-8000-000000000008",
+                     *         "status": "confirmed",
+                     *         "total_amount": "100000.00",
+                     *         "currency": "RUB",
+                     *         "paid_amount": "30000.00",
+                     *         "remaining_amount": "70000.00"
+                     *       },
+                     *       "tourists_received": 2,
+                     *       "tourist_form_editable": false,
+                     *       "tourist_link": null,
+                     *       "cancellation_reason": null,
+                     *       "allowed_actions": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Request"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    list_request_history: {
+        parameters: {
+            query?: {
+                /** @description Номер страницы с 1 */
+                page?: number;
+                /** @description Размер страницы */
+                page_size?: number;
+                /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
+                sort?: "-created_at";
+            };
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description История статусов и ответственных */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": "00000000-0000-4000-8000-000000000015",
+                     *           "request_id": "00000000-0000-4000-8000-000000000004",
+                     *           "entity_id": "00000000-0000-4000-8000-000000000009",
+                     *           "entity_type": "payment",
+                     *           "actor": null,
+                     *           "source": "payment_service",
+                     *           "action": "payment_succeeded",
+                     *           "changes": [
+                     *             {
+                     *               "field": "payment_status",
+                     *               "old_value": "pending",
+                     *               "new_value": "succeeded"
+                     *             }
+                     *           ],
+                     *           "created_at": "2026-11-15T09:00:00Z"
+                     *         }
+                     *       ],
+                     *       "page": 1,
+                     *       "page_size": 20,
+                     *       "total": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AuditRecordPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    complete_request: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "version": 1
+                 *     }
+                 */
+                "application/json": components["schemas"]["ExpectedVersion"];
+            };
+        };
+        responses: {
+            /** @description Действие заявки: complete */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "00000000-0000-4000-8000-000000000004",
+                     *       "client_id": "00000000-0000-4000-8000-000000000002",
+                     *       "manager_id": "00000000-0000-4000-8000-000000000001",
+                     *       "destination": "Сочи",
+                     *       "starts_on": "2027-06-01",
+                     *       "ends_on": "2027-06-08",
+                     *       "tourist_count": 2,
+                     *       "budget": "120000.00",
+                     *       "wishes": "Море",
+                     *       "status": "completed",
+                     *       "selected_selection_item_id": "00000000-0000-4000-8000-000000000005",
+                     *       "completed_at": "2027-06-09T09:00:00Z",
+                     *       "cancelled_at": null,
+                     *       "version": 4,
+                     *       "created_at": "2026-11-15T09:00:00Z",
+                     *       "updated_at": "2027-06-09T09:00:00Z",
+                     *       "client": {
+                     *         "id": "00000000-0000-4000-8000-000000000002",
+                     *         "client_number": 1,
+                     *         "full_name": "Тестовый Клиент"
+                     *       },
+                     *       "manager": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "full_name": "Тестовый Менеджер",
+                     *         "role": "manager"
+                     *       },
+                     *       "selected_selection_id": "00000000-0000-4000-8000-000000000006",
+                     *       "selected_offer": {
+                     *         "title": "Учебный тур",
+                     *         "destination": "Сочи",
+                     *         "starts_on": "2027-06-01",
+                     *         "ends_on": "2027-06-08",
+                     *         "tourist_count": 2,
+                     *         "supplier": "Тестовый поставщик",
+                     *         "services": [
+                     *           "Перелёт",
+                     *           "Отель"
+                     *         ],
+                     *         "price": "100000.00",
+                     *         "currency": "RUB"
+                     *       },
+                     *       "active_booking": {
+                     *         "id": "00000000-0000-4000-8000-000000000008",
+                     *         "status": "confirmed",
+                     *         "total_amount": "100000.00",
+                     *         "currency": "RUB",
+                     *         "paid_amount": "100000.00",
+                     *         "remaining_amount": "0.00"
+                     *       },
+                     *       "tourists_received": 2,
+                     *       "tourist_form_editable": false,
+                     *       "tourist_link": null,
+                     *       "cancellation_reason": null,
+                     *       "allowed_actions": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Request"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    get_summary_report: {
+        parameters: {
+            query: {
+                /** @description Первый календарный день Москвы, включительно */
+                date_from: string;
+                /** @description Последний календарный день Москвы, включительно */
+                date_to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Сводный отчёт за период */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "date_from": "2026-11-01",
+                     *       "date_to": "2026-11-30",
+                     *       "timezone": "Europe/Moscow",
+                     *       "currency": "RUB",
+                     *       "requests_created": 1,
+                     *       "bookings_confirmed": 1,
+                     *       "payments_succeeded_amount": "30000.00",
+                     *       "refunds_succeeded_amount": "0.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Report"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    list_tours: {
+        parameters: {
+            query?: {
+                /** @description Номер страницы с 1 */
+                page?: number;
+                /** @description Размер страницы */
+                page_size?: number;
+                /** @description Часть направления без учёта регистра */
+                destination?: string | null;
+                /** @description Начало тура не раньше даты, включительно */
+                starts_from?: string | null;
+                /** @description Окончание тура не позже даты, включительно */
+                ends_until?: string | null;
+                /** @description Точное число туристов */
+                tourist_count?: number | null;
+                /** @description Максимальная общая цена в RUB */
+                max_price?: string | null;
+                /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
+                sort?: "price" | "-price" | "starts_on";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Тестовый каталог туров */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": "00000000-0000-4000-8000-000000000003",
+                     *           "title": "Учебный тур",
+                     *           "destination": "Сочи",
+                     *           "starts_on": "2027-06-01",
+                     *           "ends_on": "2027-06-08",
+                     *           "tourist_count": 2,
+                     *           "supplier": "Тестовый поставщик",
+                     *           "services": [
+                     *             "Перелёт",
+                     *             "Отель"
+                     *           ],
+                     *           "price": "100000.00",
+                     *           "currency": "RUB",
+                     *           "is_active": true,
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "page": 1,
+                     *       "page_size": 20,
+                     *       "total": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["TourOfferPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    get_tour: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tour_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Карточка предложения */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "00000000-0000-4000-8000-000000000003",
+                     *       "title": "Учебный тур",
+                     *       "destination": "Сочи",
+                     *       "starts_on": "2027-06-01",
+                     *       "ends_on": "2027-06-08",
+                     *       "tourist_count": 2,
+                     *       "supplier": "Тестовый поставщик",
+                     *       "services": [
+                     *         "Перелёт",
+                     *         "Отель"
+                     *       ],
+                     *       "price": "100000.00",
+                     *       "currency": "RUB",
+                     *       "is_active": true,
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["TourOffer"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    list_client_communications: {
+        parameters: {
+            query?: {
+                /** @description Номер страницы с 1 */
+                page?: number;
+                /** @description Размер страницы */
+                page_size?: number;
+                /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
+                sort?: "-occurred_at";
+            };
+            header?: never;
+            path: {
+                client_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description История общения с клиентом */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": "00000000-0000-4000-8000-000000000011",
+                     *           "client_id": "00000000-0000-4000-8000-000000000002",
+                     *           "request_id": "00000000-0000-4000-8000-000000000004",
+                     *           "author_id": "00000000-0000-4000-8000-000000000001",
+                     *           "channel": "phone",
+                     *           "text": "Клиент сообщил пожелания",
+                     *           "occurred_at": "2026-11-15T09:00:00Z",
+                     *           "created_at": "2026-11-15T09:00:00Z",
+                     *           "author": {
+                     *             "id": "00000000-0000-4000-8000-000000000001",
+                     *             "full_name": "Тестовый Менеджер",
+                     *             "role": "manager"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "page": 1,
+                     *       "page_size": 20,
+                     *       "total": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CommunicationPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    create_communication: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                client_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "request_id": "00000000-0000-4000-8000-000000000001",
+                 *       "channel": "phone",
+                 *       "text": "Учебный пример",
+                 *       "occurred_at": "2026-11-15T09:00:00Z"
+                 *     }
+                 */
+                "application/json": components["schemas"]["CommunicationCreate"];
+            };
+        };
+        responses: {
+            /** @description Записать контакт с клиентом */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "00000000-0000-4000-8000-000000000011",
+                     *       "client_id": "00000000-0000-4000-8000-000000000002",
+                     *       "request_id": "00000000-0000-4000-8000-000000000004",
+                     *       "author_id": "00000000-0000-4000-8000-000000000001",
+                     *       "channel": "phone",
+                     *       "text": "Клиент сообщил пожелания",
+                     *       "occurred_at": "2026-11-15T09:00:00Z",
+                     *       "created_at": "2026-11-15T09:00:00Z",
+                     *       "author": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "full_name": "Тестовый Менеджер",
+                     *         "role": "manager"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Communication"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    list_request_communications: {
+        parameters: {
+            query?: {
+                /** @description Номер страницы с 1 */
+                page?: number;
+                /** @description Размер страницы */
+                page_size?: number;
+                /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
+                sort?: "-occurred_at";
+            };
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Общение по заявке */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": "00000000-0000-4000-8000-000000000011",
+                     *           "client_id": "00000000-0000-4000-8000-000000000002",
+                     *           "request_id": "00000000-0000-4000-8000-000000000004",
+                     *           "author_id": "00000000-0000-4000-8000-000000000001",
+                     *           "channel": "phone",
+                     *           "text": "Клиент сообщил пожелания",
+                     *           "occurred_at": "2026-11-15T09:00:00Z",
+                     *           "created_at": "2026-11-15T09:00:00Z",
+                     *           "author": {
+                     *             "id": "00000000-0000-4000-8000-000000000001",
+                     *             "full_name": "Тестовый Менеджер",
+                     *             "role": "manager"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "page": 1,
+                     *       "page_size": 20,
+                     *       "total": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CommunicationPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    list_request_selections: {
+        parameters: {
+            query?: {
+                /** @description Номер страницы с 1 */
+                page?: number;
+                /** @description Размер страницы */
+                page_size?: number;
+                /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
+                sort?: "-created_at";
+            };
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description История подборок заявки */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": "00000000-0000-4000-8000-000000000006",
+                     *           "request_id": "00000000-0000-4000-8000-000000000004",
+                     *           "items": [
+                     *             {
+                     *               "id": "00000000-0000-4000-8000-000000000005",
+                     *               "tour_offer_id": "00000000-0000-4000-8000-000000000003",
+                     *               "position": 0,
+                     *               "offer_snapshot": {
+                     *                 "title": "Учебный тур",
+                     *                 "destination": "Сочи",
+                     *                 "starts_on": "2027-06-01",
+                     *                 "ends_on": "2027-06-08",
+                     *                 "tourist_count": 2,
+                     *                 "supplier": "Тестовый поставщик",
+                     *                 "services": [
+                     *                   "Перелёт",
+                     *                   "Отель"
+                     *                 ],
+                     *                 "price": "100000.00",
+                     *                 "currency": "RUB"
+                     *               }
+                     *             }
+                     *           ],
+                     *           "created_at": "2026-11-15T09:00:00Z",
+                     *           "public_link": {
+                     *             "id": "00000000-0000-4000-8000-000000000013",
+                     *             "purpose": "selection",
+                     *             "expires_at": "2026-11-22T09:00:00Z",
+                     *             "is_active": true
+                     *           }
+                     *         }
+                     *       ],
+                     *       "page": 1,
+                     *       "page_size": 20,
+                     *       "total": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SelectionPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    create_selection: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "version": 1,
+                 *       "tour_offer_ids": [
+                 *         "00000000-0000-4000-8000-000000000001"
+                 *       ]
+                 *     }
+                 */
+                "application/json": components["schemas"]["SelectionCreate"];
+            };
+        };
+        responses: {
+            /** @description Опубликовать подборку */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "00000000-0000-4000-8000-000000000006",
+                     *       "request_id": "00000000-0000-4000-8000-000000000004",
+                     *       "items": [
+                     *         {
+                     *           "id": "00000000-0000-4000-8000-000000000005",
+                     *           "tour_offer_id": "00000000-0000-4000-8000-000000000003",
+                     *           "position": 0,
+                     *           "offer_snapshot": {
+                     *             "title": "Учебный тур",
+                     *             "destination": "Сочи",
+                     *             "starts_on": "2027-06-01",
+                     *             "ends_on": "2027-06-08",
+                     *             "tourist_count": 2,
+                     *             "supplier": "Тестовый поставщик",
+                     *             "services": [
+                     *               "Перелёт",
+                     *               "Отель"
+                     *             ],
+                     *             "price": "100000.00",
+                     *             "currency": "RUB"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "created_at": "2026-11-15T09:00:00Z",
+                     *       "public_link": {
+                     *         "id": "00000000-0000-4000-8000-000000000013",
+                     *         "purpose": "selection",
+                     *         "expires_at": "2026-11-22T09:00:00Z",
+                     *         "is_active": true
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Selection"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    get_selection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                selection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Подборка сотрудника */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "00000000-0000-4000-8000-000000000006",
+                     *       "request_id": "00000000-0000-4000-8000-000000000004",
+                     *       "items": [
+                     *         {
+                     *           "id": "00000000-0000-4000-8000-000000000005",
+                     *           "tour_offer_id": "00000000-0000-4000-8000-000000000003",
+                     *           "position": 0,
+                     *           "offer_snapshot": {
+                     *             "title": "Учебный тур",
+                     *             "destination": "Сочи",
+                     *             "starts_on": "2027-06-01",
+                     *             "ends_on": "2027-06-08",
+                     *             "tourist_count": 2,
+                     *             "supplier": "Тестовый поставщик",
+                     *             "services": [
+                     *               "Перелёт",
+                     *               "Отель"
+                     *             ],
+                     *             "price": "100000.00",
+                     *             "currency": "RUB"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "created_at": "2026-11-15T09:00:00Z",
+                     *       "public_link": {
+                     *         "id": "00000000-0000-4000-8000-000000000013",
+                     *         "purpose": "selection",
+                     *         "expires_at": "2026-11-22T09:00:00Z",
+                     *         "is_active": true
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Selection"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     select_request_tour: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path: {
-                request_id: components["schemas"]["Id"];
+                request_id: string;
             };
             cookie?: never;
         };
@@ -4414,357 +7491,80 @@ export interface operations {
                     "application/json": components["schemas"]["Request"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
-        };
-    };
-    list_tours: {
-        parameters: {
-            query?: {
-                /** @description Часть направления без учёта регистра */
-                destination?: string;
-                /** @description Начало тура не раньше даты, включительно */
-                starts_from?: components["schemas"]["Date"];
-                /** @description Окончание тура не позже даты, включительно */
-                ends_until?: components["schemas"]["Date"];
-                /** @description Точное число туристов */
-                tourist_count?: number;
-                /** @description Максимальная общая цена в RUB */
-                max_price?: components["schemas"]["Money"];
-                /** @description Номер страницы с 1 */
-                page?: number;
-                /** @description Размер страницы */
-                page_size?: number;
-                /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
-                sort?: "price" | "-price" | "starts_on";
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
             };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Тестовый каталог туров */
-            200: {
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "items": [
-                     *         {
-                     *           "id": "00000000-0000-4000-8000-000000000003",
-                     *           "title": "Учебный тур",
-                     *           "destination": "Сочи",
-                     *           "starts_on": "2027-06-01",
-                     *           "ends_on": "2027-06-08",
-                     *           "tourist_count": 2,
-                     *           "supplier": "Тестовый поставщик",
-                     *           "services": [
-                     *             "Перелёт",
-                     *             "Отель"
-                     *           ],
-                     *           "price": "100000.00",
-                     *           "currency": "RUB",
-                     *           "is_active": true,
-                     *           "version": 1
-                     *         }
-                     *       ],
-                     *       "page": 1,
-                     *       "page_size": 20,
-                     *       "total": 1
-                     *     }
-                     */
-                    "application/json": components["schemas"]["TourOfferPage"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
-        };
-    };
-    get_tour: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                tour_id: components["schemas"]["Id"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Карточка предложения */
-            200: {
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "id": "00000000-0000-4000-8000-000000000003",
-                     *       "title": "Учебный тур",
-                     *       "destination": "Сочи",
-                     *       "starts_on": "2027-06-01",
-                     *       "ends_on": "2027-06-08",
-                     *       "tourist_count": 2,
-                     *       "supplier": "Тестовый поставщик",
-                     *       "services": [
-                     *         "Перелёт",
-                     *         "Отель"
-                     *       ],
-                     *       "price": "100000.00",
-                     *       "currency": "RUB",
-                     *       "is_active": true,
-                     *       "version": 1
-                     *     }
-                     */
-                    "application/json": components["schemas"]["TourOffer"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
-        };
-    };
-    list_request_selections: {
-        parameters: {
-            query?: {
-                /** @description Номер страницы с 1 */
-                page?: number;
-                /** @description Размер страницы */
-                page_size?: number;
-                /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
-                sort?: "-created_at";
-            };
-            header?: never;
-            path: {
-                request_id: components["schemas"]["Id"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description История подборок заявки */
-            200: {
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "items": [
-                     *         {
-                     *           "id": "00000000-0000-4000-8000-000000000006",
-                     *           "request_id": "00000000-0000-4000-8000-000000000004",
-                     *           "items": [
-                     *             {
-                     *               "id": "00000000-0000-4000-8000-000000000005",
-                     *               "tour_offer_id": "00000000-0000-4000-8000-000000000003",
-                     *               "position": 0,
-                     *               "offer_snapshot": {
-                     *                 "title": "Учебный тур",
-                     *                 "destination": "Сочи",
-                     *                 "starts_on": "2027-06-01",
-                     *                 "ends_on": "2027-06-08",
-                     *                 "tourist_count": 2,
-                     *                 "supplier": "Тестовый поставщик",
-                     *                 "services": [
-                     *                   "Перелёт",
-                     *                   "Отель"
-                     *                 ],
-                     *                 "price": "100000.00",
-                     *                 "currency": "RUB"
-                     *               }
-                     *             }
-                     *           ],
-                     *           "created_at": "2026-11-15T09:00:00Z",
-                     *           "public_link": {
-                     *             "id": "00000000-0000-4000-8000-000000000013",
-                     *             "purpose": "selection",
-                     *             "expires_at": "2026-11-22T09:00:00Z",
-                     *             "is_active": true
-                     *           }
-                     *         }
-                     *       ],
-                     *       "page": 1,
-                     *       "page_size": 20,
-                     *       "total": 1
-                     *     }
-                     */
-                    "application/json": components["schemas"]["SelectionPage"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
-        };
-    };
-    create_selection: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
-            };
-            path: {
-                request_id: components["schemas"]["Id"];
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                /**
-                 * @example {
-                 *       "version": 1,
-                 *       "tour_offer_ids": [
-                 *         "00000000-0000-4000-8000-000000000001"
-                 *       ]
-                 *     }
-                 */
-                "application/json": components["schemas"]["SelectionCreate"];
-            };
-        };
-        responses: {
-            /** @description Опубликовать подборку */
-            201: {
+            /** @description Validation error */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "id": "00000000-0000-4000-8000-000000000006",
-                     *       "request_id": "00000000-0000-4000-8000-000000000004",
-                     *       "items": [
-                     *         {
-                     *           "id": "00000000-0000-4000-8000-000000000005",
-                     *           "tour_offer_id": "00000000-0000-4000-8000-000000000003",
-                     *           "position": 0,
-                     *           "offer_snapshot": {
-                     *             "title": "Учебный тур",
-                     *             "destination": "Сочи",
-                     *             "starts_on": "2027-06-01",
-                     *             "ends_on": "2027-06-08",
-                     *             "tourist_count": 2,
-                     *             "supplier": "Тестовый поставщик",
-                     *             "services": [
-                     *               "Перелёт",
-                     *               "Отель"
-                     *             ],
-                     *             "price": "100000.00",
-                     *             "currency": "RUB"
-                     *           }
-                     *         }
-                     *       ],
-                     *       "created_at": "2026-11-15T09:00:00Z",
-                     *       "public_link": {
-                     *         "id": "00000000-0000-4000-8000-000000000013",
-                     *         "purpose": "selection",
-                     *         "expires_at": "2026-11-22T09:00:00Z",
-                     *         "is_active": true
-                     *       }
-                     *     }
-                     */
-                    "application/json": components["schemas"]["Selection"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
-        };
-    };
-    get_selection: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                selection_id: components["schemas"]["Id"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Подборка сотрудника */
-            200: {
+            /** @description Rate limited */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "id": "00000000-0000-4000-8000-000000000006",
-                     *       "request_id": "00000000-0000-4000-8000-000000000004",
-                     *       "items": [
-                     *         {
-                     *           "id": "00000000-0000-4000-8000-000000000005",
-                     *           "tour_offer_id": "00000000-0000-4000-8000-000000000003",
-                     *           "position": 0,
-                     *           "offer_snapshot": {
-                     *             "title": "Учебный тур",
-                     *             "destination": "Сочи",
-                     *             "starts_on": "2027-06-01",
-                     *             "ends_on": "2027-06-08",
-                     *             "tourist_count": 2,
-                     *             "supplier": "Тестовый поставщик",
-                     *             "services": [
-                     *               "Перелёт",
-                     *               "Отель"
-                     *             ],
-                     *             "price": "100000.00",
-                     *             "currency": "RUB"
-                     *           }
-                     *         }
-                     *       ],
-                     *       "created_at": "2026-11-15T09:00:00Z",
-                     *       "public_link": {
-                     *         "id": "00000000-0000-4000-8000-000000000013",
-                     *         "purpose": "selection",
-                     *         "expires_at": "2026-11-22T09:00:00Z",
-                     *         "is_active": true
-                     *       }
-                     *     }
-                     */
-                    "application/json": components["schemas"]["Selection"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     issue_selection_link: {
@@ -4772,7 +7572,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                selection_id: components["schemas"]["Id"];
+                selection_id: string;
             };
             cookie?: never;
         };
@@ -4795,54 +7595,80 @@ export interface operations {
                     "application/json": components["schemas"]["PublicLink"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
-        };
-    };
-    issue_tourist_link: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                request_id: components["schemas"]["Id"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
             };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Выдать или перевыпустить ссылку формы туристов */
-            201: {
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "id": "00000000-0000-4000-8000-000000000013",
-                     *       "purpose": "tourists",
-                     *       "url": "http://localhost:8080/public/tourist-forms/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                     *       "expires_at": "2026-11-22T09:00:00Z"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["PublicLink"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     revoke_public_link: {
@@ -4850,7 +7676,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                link_id: components["schemas"]["Id"];
+                link_id: string;
             };
             cookie?: never;
         };
@@ -4863,15 +7689,80 @@ export interface operations {
                 };
                 content?: never;
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     get_public_selection: {
@@ -4922,12 +7813,396 @@ export interface operations {
                     "application/json": components["schemas"]["PublicSelection"];
                 };
             };
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    get_request_tourists: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Данные туристов для сотрудника */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "id": "00000000-0000-4000-8000-000000000007",
+                     *         "request_id": "00000000-0000-4000-8000-000000000004",
+                     *         "full_name": "Тестовый Турист",
+                     *         "birth_date": "1995-05-20",
+                     *         "document_type": "passport",
+                     *         "document_number": "TEST-000001",
+                     *         "document_expires_on": null,
+                     *         "version": 1
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["Tourist"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    replace_request_tourists: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "request_version": 3,
+                 *       "tourists": [
+                 *         {
+                 *           "id": null,
+                 *           "full_name": "Тестовый Турист",
+                 *           "birth_date": "1995-05-20",
+                 *           "document_type": "passport",
+                 *           "document_number": "TEST-000001",
+                 *           "document_expires_on": null
+                 *         },
+                 *         {
+                 *           "id": null,
+                 *           "full_name": "Второй Тестовый Турист",
+                 *           "birth_date": "1995-05-20",
+                 *           "document_type": "passport",
+                 *           "document_number": "TEST-000002",
+                 *           "document_expires_on": null
+                 *         }
+                 *       ]
+                 *     }
+                 */
+                "application/json": components["schemas"]["TouristSubmission"];
+            };
+        };
+        responses: {
+            /** @description Исправить список туристов сотрудником */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accepted_count": 2,
+                     *       "request_version": 4
+                     *     }
+                     */
+                    "application/json": components["schemas"]["TouristSubmissionResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    issue_tourist_link: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Выдать или перевыпустить ссылку формы туристов */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "00000000-0000-4000-8000-000000000013",
+                     *       "purpose": "tourists",
+                     *       "url": "http://localhost:8080/public/tourist-forms/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                     *       "expires_at": "2026-11-22T09:00:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PublicLink"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     get_public_tourist_form: {
@@ -4963,20 +8238,67 @@ export interface operations {
                     "application/json": components["schemas"]["PublicTouristForm"];
                 };
             };
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     submit_public_tourists: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path: {
                 token: string;
@@ -5031,124 +8353,60 @@ export interface operations {
                     "application/json": components["schemas"]["TouristSubmissionResult"];
                 };
             };
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
-        };
-    };
-    get_request_tourists: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                request_id: components["schemas"]["Id"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Данные туристов для сотрудника */
-            200: {
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example [
-                     *       {
-                     *         "id": "00000000-0000-4000-8000-000000000007",
-                     *         "request_id": "00000000-0000-4000-8000-000000000004",
-                     *         "full_name": "Тестовый Турист",
-                     *         "birth_date": "1995-05-20",
-                     *         "document_type": "passport",
-                     *         "document_number": "TEST-000001",
-                     *         "document_expires_on": null,
-                     *         "version": 1
-                     *       }
-                     *     ]
-                     */
-                    "application/json": components["schemas"]["Tourist"][];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
-        };
-    };
-    replace_request_tourists: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
-            };
-            path: {
-                request_id: components["schemas"]["Id"];
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                /**
-                 * @example {
-                 *       "request_version": 3,
-                 *       "tourists": [
-                 *         {
-                 *           "id": null,
-                 *           "full_name": "Тестовый Турист",
-                 *           "birth_date": "1995-05-20",
-                 *           "document_type": "passport",
-                 *           "document_number": "TEST-000001",
-                 *           "document_expires_on": null
-                 *         },
-                 *         {
-                 *           "id": null,
-                 *           "full_name": "Второй Тестовый Турист",
-                 *           "birth_date": "1995-05-20",
-                 *           "document_type": "passport",
-                 *           "document_number": "TEST-000002",
-                 *           "document_expires_on": null
-                 *         }
-                 *       ]
-                 *     }
-                 */
-                "application/json": components["schemas"]["TouristSubmission"];
-            };
-        };
-        responses: {
-            /** @description Исправить список туристов сотрудником */
-            200: {
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "accepted_count": 2,
-                     *       "request_version": 4
-                     *     }
-                     */
-                    "application/json": components["schemas"]["TouristSubmissionResult"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     list_request_bookings: {
@@ -5163,7 +8421,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                request_id: components["schemas"]["Id"];
+                request_id: string;
             };
             cookie?: never;
         };
@@ -5249,25 +8507,90 @@ export interface operations {
                     "application/json": components["schemas"]["BookingPage"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     create_booking: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path: {
-                request_id: components["schemas"]["Id"];
+                request_id: string;
             };
             cookie?: never;
         };
@@ -5334,15 +8657,80 @@ export interface operations {
                     "application/json": components["schemas"]["Booking"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     get_booking: {
@@ -5350,7 +8738,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                booking_id: components["schemas"]["Id"];
+                booking_id: string;
             };
             cookie?: never;
         };
@@ -5429,25 +8817,90 @@ export interface operations {
                     "application/json": components["schemas"]["Booking"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     confirm_booking: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path: {
-                booking_id: components["schemas"]["Id"];
+                booking_id: string;
             };
             cookie?: never;
         };
@@ -5536,26 +8989,90 @@ export interface operations {
                     "application/json": components["schemas"]["Booking"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     reject_booking: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path: {
-                booking_id: components["schemas"]["Id"];
+                booking_id: string;
             };
             cookie?: never;
         };
@@ -5620,26 +9137,90 @@ export interface operations {
                     "application/json": components["schemas"]["Booking"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     request_cancellation_booking: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path: {
-                booking_id: components["schemas"]["Id"];
+                booking_id: string;
             };
             cookie?: never;
         };
@@ -5728,26 +9309,90 @@ export interface operations {
                     "application/json": components["schemas"]["Booking"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     confirm_cancellation_booking: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path: {
-                booking_id: components["schemas"]["Id"];
+                booking_id: string;
             };
             cookie?: never;
         };
@@ -5833,26 +9478,90 @@ export interface operations {
                     "application/json": components["schemas"]["Booking"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     reject_cancellation_booking: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path: {
-                booking_id: components["schemas"]["Id"];
+                booking_id: string;
             };
             cookie?: never;
         };
@@ -5941,93 +9650,95 @@ export interface operations {
                     "application/json": components["schemas"]["Booking"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
-        };
-    };
-    list_financial_bookings: {
-        parameters: {
-            query?: {
-                /** @description Идентификатор заявки */
-                request_id?: components["schemas"]["Id"];
-                /** @description Статус брони */
-                status?: components["schemas"]["BookingStatus"];
-                /** @description Номер страницы с 1 */
-                page?: number;
-                /** @description Размер страницы */
-                page_size?: number;
-                /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
-                sort?: "-created_at";
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
             };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Финансовая сводка броней */
-            200: {
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "items": [
-                     *         {
-                     *           "id": "00000000-0000-4000-8000-000000000008",
-                     *           "request_id": "00000000-0000-4000-8000-000000000004",
-                     *           "status": "confirmed",
-                     *           "total_amount": "100000.00",
-                     *           "currency": "RUB",
-                     *           "paid_amount": "30000.00",
-                     *           "reserved_payment_amount": "20000.00",
-                     *           "remaining_amount": "70000.00",
-                     *           "refunded_amount": "0.00",
-                     *           "can_open_request": false,
-                     *           "confirmed_at": "2026-11-15T09:00:00Z",
-                     *           "cancelled_at": null,
-                     *           "created_at": "2026-11-15T09:00:00Z"
-                     *         }
-                     *       ],
-                     *       "page": 1,
-                     *       "page_size": 20,
-                     *       "total": 1
-                     *     }
-                     */
-                    "application/json": components["schemas"]["FinancialBookingPage"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     list_payments: {
         parameters: {
             query?: {
-                /** @description Идентификатор заявки */
-                request_id?: components["schemas"]["Id"];
-                /** @description Идентификатор брони */
-                booking_id?: components["schemas"]["Id"];
-                /** @description Статус платежа */
-                status?: components["schemas"]["PaymentStatus"];
                 /** @description Номер страницы с 1 */
                 page?: number;
                 /** @description Размер страницы */
                 page_size?: number;
+                /** @description Идентификатор заявки */
+                request_id?: string | null;
+                /** @description Идентификатор брони */
+                booking_id?: string | null;
+                /** @description Статус платежа */
+                status?: ("pending" | "succeeded" | "failed") | null;
                 /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
                 sort?: "-created_at" | "created_at";
             };
@@ -6075,14 +9786,80 @@ export interface operations {
                     "application/json": components["schemas"]["PaymentPage"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     list_booking_payments: {
@@ -6097,7 +9874,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                booking_id: components["schemas"]["Id"];
+                booking_id: string;
             };
             cookie?: never;
         };
@@ -6141,25 +9918,90 @@ export interface operations {
                     "application/json": components["schemas"]["PaymentPage"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     create_payment: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path: {
-                booking_id: components["schemas"]["Id"];
+                booking_id: string;
             };
             cookie?: never;
         };
@@ -6209,15 +10051,80 @@ export interface operations {
                     "application/json": components["schemas"]["Payment"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     get_payment: {
@@ -6225,7 +10132,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                payment_id: components["schemas"]["Id"];
+                payment_id: string;
             };
             cookie?: never;
         };
@@ -6262,14 +10169,80 @@ export interface operations {
                     "application/json": components["schemas"]["Payment"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     reconcile_payment: {
@@ -6277,7 +10250,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                payment_id: components["schemas"]["Id"];
+                payment_id: string;
             };
             cookie?: never;
         };
@@ -6316,32 +10289,97 @@ export interface operations {
                     "application/json": components["schemas"]["Payment"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     list_refunds: {
         parameters: {
             query?: {
-                /** @description Идентификатор заявки */
-                request_id?: components["schemas"]["Id"];
-                /** @description Идентификатор брони */
-                booking_id?: components["schemas"]["Id"];
-                /** @description Исходный платёж */
-                payment_id?: components["schemas"]["Id"];
-                /** @description Статус возврата */
-                status?: components["schemas"]["RefundStatus"];
                 /** @description Номер страницы с 1 */
                 page?: number;
                 /** @description Размер страницы */
                 page_size?: number;
+                /** @description Идентификатор заявки */
+                request_id?: string | null;
+                /** @description Идентификатор брони */
+                booking_id?: string | null;
+                /** @description Исходный платёж */
+                payment_id?: string | null;
+                /** @description Статус возврата */
+                status?: ("processing" | "succeeded" | "failed") | null;
                 /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
                 sort?: "-created_at" | "created_at";
             };
@@ -6385,14 +10423,80 @@ export interface operations {
                     "application/json": components["schemas"]["RefundPage"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     list_payment_refunds: {
@@ -6407,7 +10511,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                payment_id: components["schemas"]["Id"];
+                payment_id: string;
             };
             cookie?: never;
         };
@@ -6447,25 +10551,90 @@ export interface operations {
                     "application/json": components["schemas"]["RefundPage"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     create_refund: {
         parameters: {
             query?: never;
             header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "Idempotency-Key": string;
             };
             path: {
-                payment_id: components["schemas"]["Id"];
+                payment_id: string;
             };
             cookie?: never;
         };
@@ -6510,15 +10679,80 @@ export interface operations {
                     "application/json": components["schemas"]["Refund"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     get_refund: {
@@ -6526,7 +10760,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                refund_id: components["schemas"]["Id"];
+                refund_id: string;
             };
             cookie?: never;
         };
@@ -6559,14 +10793,80 @@ export interface operations {
                     "application/json": components["schemas"]["Refund"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     reconcile_refund: {
@@ -6574,7 +10874,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                refund_id: components["schemas"]["Id"];
+                refund_id: string;
             };
             cookie?: never;
         };
@@ -6609,276 +10909,93 @@ export interface operations {
                     "application/json": components["schemas"]["Refund"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
-        };
-    };
-    list_client_communications: {
-        parameters: {
-            query?: {
-                /** @description Номер страницы с 1 */
-                page?: number;
-                /** @description Размер страницы */
-                page_size?: number;
-                /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
-                sort?: "-occurred_at";
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
             };
-            header?: never;
-            path: {
-                client_id: components["schemas"]["Id"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description История общения с клиентом */
-            200: {
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "items": [
-                     *         {
-                     *           "id": "00000000-0000-4000-8000-000000000011",
-                     *           "client_id": "00000000-0000-4000-8000-000000000002",
-                     *           "request_id": "00000000-0000-4000-8000-000000000004",
-                     *           "author_id": "00000000-0000-4000-8000-000000000001",
-                     *           "channel": "phone",
-                     *           "text": "Клиент сообщил пожелания",
-                     *           "occurred_at": "2026-11-15T09:00:00Z",
-                     *           "created_at": "2026-11-15T09:00:00Z",
-                     *           "author": {
-                     *             "id": "00000000-0000-4000-8000-000000000001",
-                     *             "full_name": "Тестовый Менеджер",
-                     *             "role": "manager"
-                     *           }
-                     *         }
-                     *       ],
-                     *       "page": 1,
-                     *       "page_size": 20,
-                     *       "total": 1
-                     *     }
-                     */
-                    "application/json": components["schemas"]["CommunicationPage"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
-        };
-    };
-    create_communication: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description UUID команды. При повторе того же запроса сохраняется; при новой операции меняется. Область: пользователь/публичная ссылка + HTTP-метод и путь ресурса. Другой body с тем же ключом: 409. Проверка доступа предшествует проверке ключа, проверка повтора предшествует version. */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
-            };
-            path: {
-                client_id: components["schemas"]["Id"];
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                /**
-                 * @example {
-                 *       "request_id": "00000000-0000-4000-8000-000000000001",
-                 *       "channel": "phone",
-                 *       "text": "Учебный пример",
-                 *       "occurred_at": "2026-11-15T09:00:00Z"
-                 *     }
-                 */
-                "application/json": components["schemas"]["CommunicationCreate"];
-            };
-        };
-        responses: {
-            /** @description Записать контакт с клиентом */
-            201: {
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "id": "00000000-0000-4000-8000-000000000011",
-                     *       "client_id": "00000000-0000-4000-8000-000000000002",
-                     *       "request_id": "00000000-0000-4000-8000-000000000004",
-                     *       "author_id": "00000000-0000-4000-8000-000000000001",
-                     *       "channel": "phone",
-                     *       "text": "Клиент сообщил пожелания",
-                     *       "occurred_at": "2026-11-15T09:00:00Z",
-                     *       "created_at": "2026-11-15T09:00:00Z",
-                     *       "author": {
-                     *         "id": "00000000-0000-4000-8000-000000000001",
-                     *         "full_name": "Тестовый Менеджер",
-                     *         "role": "manager"
-                     *       }
-                     *     }
-                     */
-                    "application/json": components["schemas"]["Communication"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
-        };
-    };
-    list_request_communications: {
-        parameters: {
-            query?: {
-                /** @description Номер страницы с 1 */
-                page?: number;
-                /** @description Размер страницы */
-                page_size?: number;
-                /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
-                sort?: "-occurred_at";
-            };
-            header?: never;
-            path: {
-                request_id: components["schemas"]["Id"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Общение по заявке */
-            200: {
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "items": [
-                     *         {
-                     *           "id": "00000000-0000-4000-8000-000000000011",
-                     *           "client_id": "00000000-0000-4000-8000-000000000002",
-                     *           "request_id": "00000000-0000-4000-8000-000000000004",
-                     *           "author_id": "00000000-0000-4000-8000-000000000001",
-                     *           "channel": "phone",
-                     *           "text": "Клиент сообщил пожелания",
-                     *           "occurred_at": "2026-11-15T09:00:00Z",
-                     *           "created_at": "2026-11-15T09:00:00Z",
-                     *           "author": {
-                     *             "id": "00000000-0000-4000-8000-000000000001",
-                     *             "full_name": "Тестовый Менеджер",
-                     *             "role": "manager"
-                     *           }
-                     *         }
-                     *       ],
-                     *       "page": 1,
-                     *       "page_size": 20,
-                     *       "total": 1
-                     *     }
-                     */
-                    "application/json": components["schemas"]["CommunicationPage"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
-        };
-    };
-    list_request_history: {
-        parameters: {
-            query?: {
-                /** @description Номер страницы с 1 */
-                page?: number;
-                /** @description Размер страницы */
-                page_size?: number;
-                /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
-                sort?: "-created_at";
-            };
-            header?: never;
-            path: {
-                request_id: components["schemas"]["Id"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description История статусов и ответственных */
-            200: {
+            /** @description Validation error */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "items": [
-                     *         {
-                     *           "id": "00000000-0000-4000-8000-000000000015",
-                     *           "request_id": "00000000-0000-4000-8000-000000000004",
-                     *           "entity_id": "00000000-0000-4000-8000-000000000009",
-                     *           "entity_type": "payment",
-                     *           "actor": null,
-                     *           "source": "payment_service",
-                     *           "action": "payment_succeeded",
-                     *           "changes": [
-                     *             {
-                     *               "field": "payment_status",
-                     *               "old_value": "pending",
-                     *               "new_value": "succeeded"
-                     *             }
-                     *           ],
-                     *           "created_at": "2026-11-15T09:00:00Z"
-                     *         }
-                     *       ],
-                     *       "page": 1,
-                     *       "page_size": 20,
-                     *       "total": 1
-                     *     }
-                     */
-                    "application/json": components["schemas"]["AuditRecordPage"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     list_notifications: {
         parameters: {
             query?: {
-                /** @description Только непрочитанные */
-                unread_only?: boolean;
                 /** @description Номер страницы с 1 */
                 page?: number;
                 /** @description Размер страницы */
                 page_size?: number;
                 /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
                 sort?: "-created_at";
+                /** @description Только непрочитанные */
+                unread_only?: boolean;
             };
             header?: never;
             path?: never;
@@ -6917,14 +11034,71 @@ export interface operations {
                     "application/json": components["schemas"]["NotificationPage"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     read_notification: {
@@ -6932,7 +11106,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                notification_id: components["schemas"]["Id"];
+                notification_id: string;
             };
             cookie?: never;
         };
@@ -6961,24 +11135,86 @@ export interface operations {
                     "application/json": components["schemas"]["Notification"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            409: components["responses"]["Error409"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
-    get_summary_report: {
+    list_financial_bookings: {
         parameters: {
-            query: {
-                /** @description Первый календарный день Москвы, включительно */
-                date_from: components["schemas"]["Date"];
-                /** @description Последний календарный день Москвы, включительно */
-                date_to: components["schemas"]["Date"];
+            query?: {
+                /** @description Номер страницы с 1 */
+                page?: number;
+                /** @description Размер страницы */
+                page_size?: number;
+                /** @description Стабильная сортировка; при равенстве добавляется id в том же направлении */
+                sort?: "-created_at";
+                /** @description Идентификатор заявки */
+                request_id?: string | null;
+                /** @description Статус брони */
+                status?: components["schemas"]["BookingStatus"] | null;
             };
             header?: never;
             path?: never;
@@ -6986,7 +11222,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Сводный отчёт за период */
+            /** @description Финансовая сводка броней */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -6994,27 +11230,190 @@ export interface operations {
                 content: {
                     /**
                      * @example {
-                     *       "date_from": "2026-11-01",
-                     *       "date_to": "2026-11-30",
-                     *       "timezone": "Europe/Moscow",
-                     *       "currency": "RUB",
-                     *       "requests_created": 1,
-                     *       "bookings_confirmed": 1,
-                     *       "payments_succeeded_amount": "30000.00",
-                     *       "refunds_succeeded_amount": "0.00"
+                     *       "items": [
+                     *         {
+                     *           "id": "00000000-0000-4000-8000-000000000008",
+                     *           "request_id": "00000000-0000-4000-8000-000000000004",
+                     *           "status": "confirmed",
+                     *           "total_amount": "100000.00",
+                     *           "currency": "RUB",
+                     *           "paid_amount": "30000.00",
+                     *           "reserved_payment_amount": "20000.00",
+                     *           "remaining_amount": "70000.00",
+                     *           "refunded_amount": "0.00",
+                     *           "can_open_request": false,
+                     *           "confirmed_at": "2026-11-15T09:00:00Z",
+                     *           "cancelled_at": null,
+                     *           "created_at": "2026-11-15T09:00:00Z"
+                     *         }
+                     *       ],
+                     *       "page": 1,
+                     *       "page_size": 20,
+                     *       "total": 1
                      *     }
                      */
-                    "application/json": components["schemas"]["Report"];
+                    "application/json": components["schemas"]["FinancialBookingPage"];
                 };
             };
-            401: components["responses"]["Error401"];
-            403: components["responses"]["Error403"];
-            404: components["responses"]["Error404"];
-            422: components["responses"]["Error422"];
-            429: components["responses"]["Error429"];
-            500: components["responses"]["Error500"];
-            501: components["responses"]["Error501"];
-            503: components["responses"]["Error503"];
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Bearer */
+                    "WWW-Authenticate"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    health_live: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Health"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    health_ready: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Health"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
 }

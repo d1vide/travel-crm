@@ -33,6 +33,7 @@ def require_roles(*roles: Role):
             raise ApiError(403, "forbidden", "Недостаточно прав для этого действия")
         return user
 
+    dependency.allowed_roles = tuple(role.value for role in roles)
     return dependency
 
 

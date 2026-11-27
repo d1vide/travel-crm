@@ -21,6 +21,24 @@ class ClientAction(StrEnum):
 
 
 class Contacts(Dto):
+    model_config = {
+        "json_schema_extra": {
+            "allOf": [
+                {
+                    "anyOf": [
+                        {
+                            "properties": {"phone": {"type": "string", "minLength": 1}},
+                            "required": ["phone"],
+                        },
+                        {
+                            "properties": {"email": {"type": "string", "minLength": 1}},
+                            "required": ["email"],
+                        },
+                    ]
+                }
+            ]
+        }
+    }
     phone: StrictStr | None
     email: StrictStr | None
 
@@ -81,6 +99,7 @@ class ClientUpdate(ClientCreate):
 
 
 class Client(Dto):
+    model_config = {"json_schema_extra": Contacts.model_config["json_schema_extra"]}
     id: UUID
     client_number: int = Field(ge=1)
     full_name: str

@@ -33,13 +33,14 @@ npm run build-only
 Контракт, из корня:
 
 ```sh
-uv run docs/api/validate_contract.py
+uv run --project backend python docs/api/build_openapi.py --check
+uv run --project backend python docs/api/validate_contract.py
 cd frontend
 npm run gen:api
 git diff --exit-code -- src/api/schema.d.ts
 ```
 
-Валидатор проверяет JSON Schema, примеры, реестр операций и актуальность собранного OpenAPI. Backend-тесты сверяют ответы с контрактом и список реализованных HTTP-операций. Полный экспорт OpenAPI из кода остаётся отдельной задачей #26; CI не подменяет спецификацию неполным runtime-экспортом.
+Задание contract устанавливает зависимости backend/uv.lock и сравнивает закоммиченный OpenAPI с экспортом маршрутов и Pydantic-моделей FastAPI. Валидатор проверяет спецификацию, JSON Schema, примеры, права и FR. Backend-тесты сверяют runtime-экспорт и ответы с контрактом. Изменение кода без обновления экспорта или TypeScript делает CI красным.
 
 Docker, из корня:
 
