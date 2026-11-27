@@ -18,12 +18,14 @@ from app.modules.clients.models import Client
 from app.modules.requests.models import RequestStatus, TravelRequest
 from app.modules.tourists.models import Tourist
 from app.modules.tourists.schemas import TouristSubmission
+from app.modules.tours.models import TourOffer
 from tests.test_clients import actors as actors
 from tests.test_clients import create as create_client
 from tests.test_clients import validate
 from tests.test_requests import action, write
 from tests.test_requests import create as create_request
-from tests.test_selections import publish, read_request
+from tests.test_selections import issue as selection_link
+from tests.test_selections import public_path, publish, read_request
 
 
 def item(**changes):
@@ -362,6 +364,33 @@ def test_rotation_expiry_purpose_and_uniform_404(client, actors, context, databa
     assert client.get("/api/public/selections/" + token).status_code == 404
     response = client.delete(f"/api/public-links/{active['id']}", headers=actors["head"]["headers"])
     assert response.status_code == 204 and client.get(path(active)).status_code == 404
+
+
+def test_selection_token_cannot_read_or_replace_existing_tourists(
+    client, actors, context, database
+):
+    with database.sessions() as session:
+        offer_id = str(session.scalar(select(TourOffer.id).limit(1)))
+    selection = publish(client, actors, context, [offer_id]).json()
+    selection_access = selection_link(client, actors, selection).json()
+    current = read_request(client, actors, context["id"])
+    tourist_access = issue(client, actors, current).json()
+    assert submit(client, tourist_access, body(current)).status_code == 200
+    current = read_request(client, actors, context["id"])
+    before = staff_list(client, actors, current).json()
+    token = urlsplit(selection_access["url"]).path.rsplit("/", 1)[-1]
+    wrong_access = {"url": "http://testserver/public/tourist-forms/" + token}
+    for response in (
+        client.get(path(wrong_access)),
+        submit(client, wrong_access, body(current)),
+    ):
+        assert response.status_code == 404
+        assert response.json() == {"code": "not_found", "message": "Форма недоступна", "fields": []}
+        assert_private(response)
+    assert staff_list(client, actors, current).json() == before
+    assert read_request(client, actors, current["id"])["version"] == current["version"]
+    assert client.get(path(tourist_access)).status_code == 200
+    assert client.get(public_path(selection_access)).status_code == 200
 
 
 def test_cancel_resume_return_and_selection_replacement(client, actors, context, database):
