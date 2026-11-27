@@ -18,6 +18,8 @@ import { useRequestsApi, type RequestStatus, type TravelRequest } from '@/api/re
 import PageHeader from '@/components/PageHeader.vue'
 import { useSessionStore } from '@/stores/session'
 
+const props = defineProps<{ embedded?: boolean }>()
+const emit = defineEmits<{ communication: [request: TravelRequest] }>()
 const api = useRequestsApi()
 const session = useSessionStore()
 const statusLabels = requestStatuses
@@ -134,10 +136,22 @@ const columns: DataTableColumns<TravelRequest> = [
       ),
   },
 ]
+if (props.embedded) {
+  columns.push({
+    title: 'Общение',
+    key: 'communication',
+    render: (row) =>
+      h(
+        NButton,
+        { size: 'small', onClick: () => emit('communication', row) },
+        () => 'Открыть ленту',
+      ),
+  })
+}
 </script>
 
 <template>
-  <PageHeader title="Заявки">
+  <PageHeader v-if="!embedded" title="Заявки">
     <template #actions
       ><n-button :aria-pressed="board" @click="board = !board">
         {{ board ? 'Показать таблицу' : 'Показать доску' }} </n-button
